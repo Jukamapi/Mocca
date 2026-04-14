@@ -1,18 +1,32 @@
 #include "context.h"
-#include "engine/core/window.h"
+
+#include "engine/window/window.h"
 
 #include <stdexcept>
 
-Context::Context(Window& window)
-    : m_width(), m_height()
-{
-    if (m_width <= 0 || m_height <= 0) {
-        throw std::runtime_error("Invalid window dimensions");
-    }
+// get window extensions for instance
+// create instance
+// use window to get surface
 
+Context::Context(Window& window)
+    : m_window{&window}
+{
+    // initialize instance
+    // initialize physical device
+    // logical device etc.
 }
 
 Context::~Context()
 {
 
+}
+
+uint32_t Context::getWindowWidth() const
+{
+    return m_window->getWidth();
+}
+
+uint32_t Context::getWindowHeight() const
+{
+    return m_window->getHeight();
 }

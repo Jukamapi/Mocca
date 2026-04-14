@@ -3,7 +3,6 @@
 #include <source_location>
 #include <print>
 
-#include <vulkan/vulkan.h>
 #include <vulkan/vk_enum_string_helper.h>
 
 inline void vk_check_impl(VkResult result, const char* expression, std::source_location loc = std::source_location::current())

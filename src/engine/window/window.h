@@ -1,38 +1,40 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 struct SDL_Window;
 
 class Window {
 public:
-    Window(int width, int height, const std::string& title);
+    Window(uint32_t width, uint32_t height, const std::string& title);
     ~Window();
+
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
     Window(Window&&) = delete;
     Window& operator=(Window&&) = delete;
 
-    // when i start polling for keys i should add a bunch of bools that change
-    // depending on the keypress, this way
-    // i can keep window seperate
+    //  Make Event class that every event inherits from,
+    //  single callback in window
+    //  Use EventDispatcher in Application
 
     void pollEvents();
 
     bool shouldClose() const { return m_shouldClose; }
     bool isMinimized() const { return m_isMinimized; }
 
-    int getHeight() const { return m_height; }
-    int getWidth() const { return m_width; }
+    uint32_t getHeight() const { return m_height; }
+    uint32_t getWidth() const { return m_width; }
 
-    // we create surface here and get extensions!!!
-
+    // for surface created in context
+    SDL_Window* getNativeWindow() const { return m_window; }
 
 private:
     SDL_Window* m_window{ nullptr };
     bool m_shouldClose{ false };
     bool m_isMinimized{ false };
 
-    int m_width{ 0 };
-    int m_height{ 0 };
+    uint32_t m_width{ 0 };
+    uint32_t m_height{ 0 };
 };

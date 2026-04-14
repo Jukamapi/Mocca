@@ -1,12 +1,23 @@
-//vkinstance, vkphysicaldevice, vkdevice, vkqueue, maybe debug messenger
 #pragma once
 
+#include "engine/vk/deletion_queue.h"
+#include <vulkan/vulkan.h> // needed here
+
 class Window;
+
+
+//  if i want to multithread later i need to snapshot global data
+struct FrameData
+{
+    VkCommandPool commandPool;
+    VkCommandBuffer commandBuffer;
+    DeletionQueue deletionQueue;
+};
 
 class Context
 {
 public:
-    // SDL_Window to create the surface
+    // .getNativeWindow() to create the surface
     Context(Window& window);
     ~Context();
 
@@ -15,17 +26,21 @@ public:
     Context(Context&&) = delete;
     Context& operator=(Context&&) = delete;
 
-    int getWidth() const { return m_width; }
-    int getHeight() const { return m_height; }
+    uint32_t getWindowWidth() const;
+    uint32_t getWindowHeight() const;
 
-    // VkInstance       instance;
-    // VkPhysicalDevice physicalDevice;
-    // VkDevice         device;
-    // VkSurfaceKHR     surface;
-    // VkQueue          graphicsQueue;
+    //  todo: getters for vulkan specific
+
+    FrameData& getCurrentFrame() { return m_frames[m_currentFrameIndex]; }
+    DeletionQueue& getCurrentDeletionQueue() { return getCurrentFrame().deletionQueue; }
+
 
 private:
-    int m_width{ 0 };
-    int m_height{ 0 };
+    Window* m_window{ nullptr };
 
+    // todo: instance, device
+
+    // 2 for double buffering
+    FrameData m_frames[2];
+    uint32_t m_currentFrameIndex{ 0 };
 };

@@ -1,16 +1,31 @@
 #include "renderer.h"
 
-#include "engine/vk/context.h"
-
 Renderer::Renderer(Context& context)
-    : m_context(context)
+    : m_context(&context)
 {
-    int width = m_context.getWidth();
-    int height = m_context.getHeight();
+
 }
 
 
-void Renderer::draw()
+void Renderer::drawFrame()
 {
-    // nothing rn
+    //  wait for fence
+    //  currentFrame.deletionQueue.flush();
+    //  reset fence
+
+    //  start rendering
+    //  execute all features in order
+    // for (auto& feature : m_features)
+}
+
+void Renderer::pushFeature(std::unique_ptr<RenderFeature> feature)
+{
+    feature->onAttach(*m_context);
+    m_features.push_back(std::move(feature));
+}
+
+Renderer::~Renderer()
+{
+    //  detach features
+    //
 }

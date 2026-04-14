@@ -3,6 +3,9 @@
 
 #include "engine/core/application.h"
 
+
+// TODO: Wrap everything in namespaces
+
 int main(int argc, char* argv[])
 {
 
