@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(VulkanEngine LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #options
@@ -16,26 +16,27 @@ include(shaders)
 
 #vendor headers
 add_library(glm INTERFACE)
-target_include_directories(glm INTERFACE vendor/glm)
+target_include_directories(glm INTERFACE vendor)
 
 add_library(stb INTERFACE)
-target_include_directories(stb INTERFACE vendor/stb)
+target_include_directories(stb INTERFACE vendor)
 
 add_library(vma INTERFACE)
-target_include_directories(vma INTERFACE vendor/vma)
+target_include_directories(vma INTERFACE vendor)
 
 #engine
 add_library(engine STATIC
+
     src/engine/core/application.cpp
     src/engine/core/window.cpp
     src/engine/core/logger.cpp
 
-    src/engine/vulkan/vulkan_context.cpp
-    src/engine/vulkan/vulkan_swapchain.cpp
-    src/engine/vulkan/vulkan_buffer.cpp
-    src/engine/vulkan/vulkan_image.cpp
-    src/engine/vulkan/vulkan_pipeline.cpp
-    src/engine/vulkan/vulkan_descriptors.cpp
+    src/engine/vk/context.cpp
+    src/engine/vk/swapchain.cpp
+    src/engine/vk/buffer.cpp
+    src/engine/vk/image.cpp
+    src/engine/vk/pipeline.cpp
+    src/engine/vk/descriptors.cpp
 
     src/engine/renderer/renderer.cpp
     src/engine/renderer/scene.cpp
@@ -49,7 +50,6 @@ target_link_libraries(engine PUBLIC
     Vulkan::Vulkan
     SDL2::SDL2
     fastgltf
-    volk
     glm
     stb
     vma

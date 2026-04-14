@@ -1,20 +1,20 @@
 #include <SDL.h>
 #include <iostream>
 
+#include "engine/core/application.h"
+
 int main(int argc, char* argv[])
 {
-    // Application app;
-    // try
-    // {
-    //     app.run();
-    // }
-    // catch (const std::exception& e)
-    // {
-    //     return EXIT_FAILURE;
-    // }
-    // return EXIT_SUCCESS;
 
+    Application app(1280, 720, "Vulkan App");
 
-    // run the app, very small
-    return 0;
+    try
+    {
+        app.run();
+    }
+    catch (const std::exception& e)
+    {
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }

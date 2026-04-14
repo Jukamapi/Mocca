@@ -1,3 +1,16 @@
-// frame logic
+#include "renderer.h"
 
-// draw(), passes etc.
+#include "engine/vk/context.h"
+
+Renderer::Renderer(Context& context)
+    : m_context(context)
+{
+    int width = m_context.getWidth();
+    int height = m_context.getHeight();
+}
+
+
+void Renderer::draw()
+{
+    // nothing rn
+}
