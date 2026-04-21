@@ -1,4 +1,3 @@
-#include <SDL.h>
 #include <print>
 
 #include "engine/core/application.h"

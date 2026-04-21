@@ -17,8 +17,7 @@ inline void vk_check_impl(VkResult result, const char* expression, std::source_l
 
         if (result < 0)
         {
-            std::println(stderr, "  FATAL ERROR, Aborting...");
-            std::abort();
+            throw std::runtime_error(std::string("Fatal Vulkan Error: ") + string_VkResult(result));
         }
     }
 }

@@ -6,7 +6,7 @@
 #include <algorithm>
 
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
-    : m_window(width, height, title), m_context(m_window), m_renderer(m_context), m_eventHandler(m_context)
+    : m_window(width, height, title), m_context(m_window), m_renderer(), m_eventHandler()
 {
     m_window.onEvent = [this](const Event& event)
     {
@@ -45,5 +45,5 @@ void Application::run()
 
 Application::~Application()
 {
-    vkDeviceWaitIdle(m_context.getDevice());
+    //vkDeviceWaitIdle(m_context.getDevice());
 }

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "engine/vk/deletion_queue.h"
+#include "engine/vk/instance.h"
 #include <vulkan/vulkan.h>
+
+#include <vulkan/vulkan_core.h>
 
 class Window;
 
@@ -16,18 +18,15 @@ public:
     Context(Context&&) = delete;
     Context& operator=(Context&&) = delete;
 
-    uint32_t getWindowWidth() const;
-    uint32_t getWindowHeight() const;
 
-    //  todo: getters for vulkan specific
-    VkDevice getDevice() const { return m_device; }
+    VkInstance getInstance() const { return m_instance.getInstanceHandle(); }
 
     // might modiffy
 
 
 private:
-    Window& m_window;
+    Instance m_instance;
 
     // todo: instance, device
-    VkDevice m_device{};
+    //VkDevice m_device{};
 };

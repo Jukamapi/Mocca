@@ -9,9 +9,9 @@ class RenderFeature
 public:
     virtual ~RenderFeature() = default;
 
-    virtual void onAttach(Context& context) = 0;
-    virtual void onRender(Context& context, VkCommandBuffer cmd) = 0;
-    virtual void onDetach(Context& context) = 0;
+    virtual void onAttach() = 0;
+    virtual void onRender(VkCommandBuffer cmd) = 0;
+    virtual void onDetach() = 0;
 
-    virtual void onResize(Context& context, uint32_t width, uint32_t height) {}
+    virtual void onResize(uint32_t width, uint32_t height) {}
 };

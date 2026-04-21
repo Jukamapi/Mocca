@@ -4,6 +4,9 @@ project(VulkanEngine LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+#for clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 #options
 option(ENGINE_ENABLE_VALIDATION "Enable Vulkan validation layers" ON)
 
@@ -37,6 +40,8 @@ target_sources(engine PRIVATE
 
     src/engine/vk/context.cpp
     src/engine/vk/frame_manager.cpp
+    src/engine/vk/instance.cpp
+    src/engine/vk/physical_device.cpp
 
     src/engine/renderer/renderer.cpp
 
@@ -58,6 +63,9 @@ target_sources(engine PUBLIC
         src/engine/vk/utils.h
         src/engine/vk/deletion_queue.h
         src/engine/vk/frame_manager.h
+        src/engine/vk/instance.h
+        src/engine/vk/physical_device.h
+
 
         src/engine/renderer/renderer.h
         src/engine/renderer/render_feature.h
@@ -79,6 +87,7 @@ target_link_libraries(engine PUBLIC
 
 #app
 add_executable(app src/main.cpp)
+set_target_properties(app PROPERTIES WIN32_EXECUTABLE FALSE)
 
 target_compile_definitions(app PRIVATE SDL_MAIN_HANDLED)
 

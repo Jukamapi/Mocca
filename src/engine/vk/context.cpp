@@ -2,14 +2,12 @@
 
 #include "engine/window/window.h"
 
-#include <stdexcept>
-
 // get window extensions for instance
 // create instance
 // use window to get surface
 
 Context::Context(Window& window)
-    : m_window{window}
+    : m_instance(window.getAppName(), window.getExtensions())
 {
     // initialize instance
     // initialize physical device
@@ -19,14 +17,4 @@ Context::Context(Window& window)
 Context::~Context()
 {
 
-}
-
-uint32_t Context::getWindowWidth() const
-{
-    return m_window.getWidth();
-}
-
-uint32_t Context::getWindowHeight() const
-{
-    return m_window.getHeight();
 }

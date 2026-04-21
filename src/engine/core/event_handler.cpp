@@ -2,8 +2,7 @@
 #include <engine/vk/context.h>
 #include <engine/renderer/renderer.h>
 
-EventHandler::EventHandler(Context& context)
-    : m_context(&context)
+EventHandler::EventHandler()
 {
 }
 

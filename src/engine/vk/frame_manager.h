@@ -5,12 +5,10 @@
 
 #include <array>
 
-class Context;
-
 class FrameManager
 {
 public:
-    FrameManager(const Context& context);
+    FrameManager();
     ~FrameManager();
     FrameManager(const FrameManager&) = delete;
     FrameManager& operator=(const FrameManager&) = delete;

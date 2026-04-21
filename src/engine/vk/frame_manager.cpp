@@ -1,6 +1,6 @@
 #include "engine/vk/frame_manager.h"
 
-FrameManager::FrameManager(const Context& context)
+FrameManager::FrameManager()
     : m_currentFrameIndex(0)
 {
     //createCommandPools later
