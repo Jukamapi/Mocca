@@ -1,24 +1,18 @@
 #pragma once
-
-#include <variant>
 #include <cstdint>
 
-struct WindowCloseEvent {};
-
-struct WindowResizeEvent
+enum class EventType
 {
+    None = 0,
+    WindowClose,
+    WindowResize,
+    WindowMinimize,
+    WindowRestore
+};
+
+struct Event
+{
+    EventType type;
     uint32_t width;
     uint32_t height;
 };
-
-struct MouseMoveEvent
-{
-    int32_t x;
-    int32_t y;
-};
-
-using Event = std::variant<
-    WindowCloseEvent,
-    WindowResizeEvent,
-    MouseMoveEvent
->;

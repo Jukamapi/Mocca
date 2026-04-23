@@ -1,5 +1,6 @@
 #include "window.h"
-#include "engine/core/event_system.h"
+#include "engine/core/event.h"
+#include "engine/core/input.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
@@ -7,9 +8,9 @@
 #include <stdexcept>
 #include <cassert>
 
-static int s_windowCount = 0;
+int Window::s_windowCount = 0;
 
-Window::Window(uint32_t width, uint32_t height, const std::string& title)
+Window::Window(uint32_t width, uint32_t height, const std::string title)
     : m_appName(title), m_width(width), m_height(height)
 {
     if(s_windowCount == 0)
@@ -52,40 +53,65 @@ Window::~Window()
     }
 }
 
+//helper
+Key translateSdlKey(SDL_Scancode code)
+{
+    switch (code)
+    {
+        case SDL_SCANCODE_ESCAPE: return Key::Escape;
+        case SDL_SCANCODE_W:      return Key::W;
+        case SDL_SCANCODE_A:      return Key::A;
+        case SDL_SCANCODE_S:      return Key::S;
+        case SDL_SCANCODE_D:      return Key::D;
+        case SDL_SCANCODE_SPACE:  return Key::Space;
+        default:                  return Key::Unknown;
+    }
+}
+
 void Window::pollEvents()
 {
     SDL_Event event;
+    Key myKey;
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
         {
         case SDL_QUIT:
-            m_shouldClose = true;
-            EventSystem::instance().push(WindowCloseEvent{});
+            if (onEvent) onEvent({EventType::WindowClose});
             break;
 
         case SDL_WINDOWEVENT:
             switch (event.window.event)
             {
             case SDL_WINDOWEVENT_MINIMIZED:
-                m_isMinimized = true;
+                if (onEvent) onEvent({EventType::WindowMinimize});
                 break;
 
             case SDL_WINDOWEVENT_RESTORED:
-                m_isMinimized = false;
+                if (onEvent) onEvent({EventType::WindowRestore});
                 break;
 
             case SDL_WINDOWEVENT_SIZE_CHANGED:
             case SDL_WINDOWEVENT_RESIZED:
                 m_width = static_cast<uint32_t>(event.window.data1);
                 m_height = static_cast<uint32_t>(event.window.data2);
-                EventSystem::instance().push(WindowResizeEvent{m_width, m_height});
+                if (onEvent) onEvent({EventType::WindowResize, m_width, m_height});
                 break;
             }
             break;
 
+        case SDL_KEYDOWN:
+            myKey = translateSdlKey(event.key.keysym.scancode);
+            Input::setKeyState(myKey, true);
+            break;
+        case SDL_KEYUP:
+            myKey = translateSdlKey(event.key.keysym.scancode);
+            Input::setKeyState(myKey, false);
+            break;
+
         case SDL_MOUSEMOTION:
-            EventSystem::instance().push(MouseMoveEvent{event.motion.x, event.motion.y});
+            Input::mouseX = event.motion.x;
+            Input::mouseY = event.motion.y;
             break;
         }
 
@@ -94,5 +120,7 @@ void Window::pollEvents()
 
 void Window::queryExtensions()
 {
+    SDL_Vulkan_GetInstanceExtensions(m_window, &m_sdlExtensionCount, nullptr);
+    m_sdlExtensions.resize(m_sdlExtensionCount);
     SDL_Vulkan_GetInstanceExtensions(m_window, &m_sdlExtensionCount, m_sdlExtensions.data());
 }

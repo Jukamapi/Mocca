@@ -9,11 +9,14 @@
 
 struct SDL_Window;
 
-class Window {
+class Window
+{
 public:
+
+
     using EventCallbackFn = std::function<void(Event&)>;
 
-    Window(uint32_t width, uint32_t height, const std::string& title);
+    Window(uint32_t width, uint32_t height, const std::string title);
     ~Window();
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
@@ -22,9 +25,6 @@ public:
 
     void pollEvents();
     void queryExtensions();
-
-    bool shouldClose() const { return m_shouldClose; }
-    bool isMinimized() const { return m_isMinimized; }
 
     uint32_t getHeight() const { return m_height; }
     uint32_t getWidth() const { return m_width; }
@@ -38,15 +38,13 @@ public:
     std::function<void(const Event&)> onEvent;
 
 private:
-    const std::string& m_appName;
+    const std::string m_appName;
     SDL_Window* m_window{ nullptr };
-    bool m_shouldClose{ false };
-    bool m_isMinimized{ false };
 
     uint32_t m_width{ 0 };
     uint32_t m_height{ 0 };
-
     uint32_t m_sdlExtensionCount{ 0 };
     std::vector<const char*> m_sdlExtensions{};
 
+    static int s_windowCount;
 };

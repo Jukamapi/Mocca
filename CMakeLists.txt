@@ -35,13 +35,14 @@ add_library(engine STATIC)
 
 target_sources(engine PRIVATE
     src/engine/core/application.cpp
-    src/engine/core/event_handler.cpp
+
     src/engine/window/window.cpp
 
     src/engine/vk/context.cpp
     src/engine/vk/frame_manager.cpp
     src/engine/vk/instance.cpp
     src/engine/vk/physical_device.cpp
+    src/engine/vk/logical_device.cpp
 
     src/engine/renderer/renderer.cpp
 
@@ -54,8 +55,8 @@ target_sources(engine PUBLIC
     FILES
         src/engine/core/application.h
         src/engine/core/event.h
-        src/engine/core/event_handler.h
-        src/engine/core/event_system.h
+        src/engine/core/input.h
+
 
         src/engine/window/window.h
 
@@ -65,6 +66,8 @@ target_sources(engine PUBLIC
         src/engine/vk/frame_manager.h
         src/engine/vk/instance.h
         src/engine/vk/physical_device.h
+        src/engine/vk/logical_device.h
+
 
 
         src/engine/renderer/renderer.h
