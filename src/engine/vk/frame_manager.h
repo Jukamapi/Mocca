@@ -1,7 +1,7 @@
 #pragma once
 
 #include "engine/vk/deletion_queue.h"
-#include <vulkan/vulkan.h>
+#include <volk.h>
 
 #include <array>
 
@@ -14,12 +14,13 @@ public:
     FrameManager& operator=(const FrameManager&) = delete;
     FrameManager(FrameManager&&) = delete;
     FrameManager& operator=(FrameManager&&) = delete;
-    //  if i want to multithread later i need to snapshot global data
+
+    // note:  if i want to multithread later i need to snapshot global data
     struct FrameData
     {
         VkCommandPool commandPool;
         VkCommandBuffer commandBuffer;
-        //  use deletion queue for all the data in here as the  lifetime is a bit complicated
+        // use deletion queue for all the data in here as the  lifetime is a bit complicated
         DeletionQueue deletionQueue;
     };
 

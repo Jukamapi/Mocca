@@ -130,7 +130,7 @@ extern "C" {
 #endif
 
 #if !defined(VULKAN_H_)
-#include <vulkan/vulkan.h>
+#include <volk.h>
 #endif
 
 #define VMA_VERSION (VK_MAKE_VERSION(3, 4, 0))
@@ -1341,7 +1341,7 @@ typedef struct VmaAllocationCreateInfo
     /** \brief Additional minimum alignment to be used for this allocation. Can be 0.
 
     Leave 0 (default) not to impose any additional alignment. If not 0, it must be a power of two.
-    
+
     When creating a buffer or an image, specifying a custom alignment is not needed in most cases,
     because Vulkan implementation inspects the `CreateInfo` structure (including intended usage flags)
     and returns required alignment through functions like `vkGetBufferMemoryRequirements2`, which VMA automatically
@@ -1491,17 +1491,17 @@ typedef struct VmaAllocationInfo
 typedef struct VmaAllocationInfo2
 {
     /** \brief Basic parameters of the allocation.
-    
+
     If you need only these, you can use function vmaGetAllocationInfo() and structure #VmaAllocationInfo instead.
     */
     VmaAllocationInfo allocationInfo;
     /** \brief Size of the `VkDeviceMemory` block that the allocation belongs to.
-    
+
     In case of an allocation with dedicated memory, it will be equal to `allocationInfo.size`.
     */
     VkDeviceSize blockSize;
     /** \brief `VK_TRUE` if the allocation has dedicated memory, `VK_FALSE` if it was placed as part of a larger memory block.
-    
+
     When `VK_TRUE`, it also means `VkMemoryDedicatedAllocateInfo` was used when creating the allocation
     (if VK_KHR_dedicated_allocation extension or Vulkan version >= 1.1 is enabled).
     */
@@ -2227,8 +2227,8 @@ For more information, see chapter \ref other_api_interop.
 */
 VMA_CALL_PRE VkResult VMA_CALL_POST vmaGetMemoryWin32Handle(
     VmaAllocator VMA_NOT_NULL allocator,
-    VmaAllocation VMA_NOT_NULL allocation, 
-    HANDLE hTargetProcess, 
+    VmaAllocation VMA_NOT_NULL allocation,
+    HANDLE hTargetProcess,
     HANDLE* VMA_NOT_NULL pHandle);
 
 /**
@@ -2277,9 +2277,9 @@ For more information, see chapter \ref other_api_interop.
 */
 VMA_CALL_PRE VkResult VMA_CALL_POST vmaGetMemoryWin32Handle2(
     VmaAllocator VMA_NOT_NULL allocator,
-    VmaAllocation VMA_NOT_NULL allocation, 
-    VkExternalMemoryHandleTypeFlagBits handleType, 
-    HANDLE hTargetProcess, 
+    VmaAllocation VMA_NOT_NULL allocation,
+    VkExternalMemoryHandleTypeFlagBits handleType,
+    HANDLE hTargetProcess,
     HANDLE* VMA_NOT_NULL pHandle);
 #endif // VMA_EXTERNAL_MEMORY_WIN32
 
@@ -2765,7 +2765,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateAliasingBuffer(
 \param allocator
 \param allocation Allocation that provides memory to be used for binding new buffer to it.
 \param allocationLocalOffset Additional offset to be added while binding, relative to the beginning of the allocation. Normally it should be 0.
-\param pBufferCreateInfo 
+\param pBufferCreateInfo
 \param[out] pBuffer Buffer that was created.
 
 This function automatically:
@@ -6428,7 +6428,7 @@ class VmaWin32Handle
 {
 public:
     VmaWin32Handle() noexcept : m_hHandle(VMA_NULL) { }
-    explicit VmaWin32Handle(HANDLE hHandle) noexcept 
+    explicit VmaWin32Handle(HANDLE hHandle) noexcept
         : m_hHandle(hHandle)
         , m_IsNTHandle(IsNTHandle(hHandle))
     {
@@ -6502,7 +6502,7 @@ private:
     VMA_RW_MUTEX m_Mutex; // Protects access m_Handle
     bool m_IsNTHandle = false; // True if m_Handle is NT handle, false if it's a KMT handle.
 };
-#else 
+#else
 class VmaWin32Handle
 {
     // ABI compatibility
@@ -14548,7 +14548,7 @@ VkResult VmaAllocator_T::AllocateMemory(
     // Can't find any single memory type matching requirements. res is VK_ERROR_FEATURE_NOT_PRESENT.
     if(res != VK_SUCCESS)
         return res;
-    
+
     do
     {
         VmaBlockVector* blockVector = m_pBlockVectors[memTypeIndex];
@@ -15578,7 +15578,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaImportVulkanFunctionsFromVolk(
     VMA_ASSERT(pAllocatorCreateInfo->device != VK_NULL_HANDLE);
 
     memset(pDstVulkanFunctions, 0, sizeof(*pDstVulkanFunctions));
-    
+
     VolkDeviceTable src = {};
     volkLoadDeviceTable(&src, pAllocatorCreateInfo->device);
 
@@ -16057,7 +16057,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaFindMemoryTypeIndexForImageInfo(
             VmaBufferImageUsage(*pImageCreateInfo), pMemoryTypeIndex);
     }
 #endif // VMA_KHR_MAINTENANCE4 || VMA_VULKAN_VERSION >= 1003000
-    
+
     // Must create a dummy image to query :(
     VkImage hImage = VK_NULL_HANDLE;
     res = funcs->vkCreateImage(
@@ -17156,7 +17156,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaGetMemoryWin32Handle2(VmaAllocator VMA_NO
     VMA_DEBUG_GLOBAL_MUTEX_LOCK;
     return allocation->GetWin32Handle(allocator, handleType, hTargetProcess, pHandle);
 }
-#endif // VMA_EXTERNAL_MEMORY_WIN32 
+#endif // VMA_EXTERNAL_MEMORY_WIN32
 #endif // VMA_STATS_STRING_ENABLED
 #endif // _VMA_PUBLIC_INTERFACE
 #endif // VMA_IMPLEMENTATION
@@ -19074,7 +19074,7 @@ res = vmaCreateBuffer(g_Allocator, &bufCreateInfo, &allocCreateInfo, &buf, &allo
 vmaDestroyBuffer(g_Allocator, buf, alloc);
 \endcode
 
-If you need each allocation to have its own device memory block and start at offset 0, you can still do 
+If you need each allocation to have its own device memory block and start at offset 0, you can still do
 by using #VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT flag. It works also with custom pools.
 
 Alternatively, you can use convenient functions vmaCreateDedicatedBuffer(), vmaCreateDedicatedImage() that

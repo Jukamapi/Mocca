@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
-class Context;
+#include <volk.h>
 
 class RenderFeature
 {

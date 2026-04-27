@@ -8,6 +8,12 @@
 
 Instance::Instance(const std::string& appName, const std::vector<const char*>& extensions)
 {
+
+    if (volkInitialize() != VK_SUCCESS)
+    {
+        throw std::runtime_error("vulkan loader not found!");
+    }
+
     #ifdef NDEBUG
         m_enableValidationLayers = false;
     #else
@@ -23,7 +29,7 @@ Instance::Instance(const std::string& appName, const std::vector<const char*>& e
         .apiVersion = VK_API_VERSION_1_3
     };
 
-    std::vector<const char*> requiredExtensions =  getRequiredExtensions(extensions, static_cast<uint32_t>(extensions.size()));
+    std::vector<const char*> requiredExtensions =  getRequiredExtensions(extensions);
 
     VkInstanceCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -42,20 +48,17 @@ Instance::Instance(const std::string& appName, const std::vector<const char*>& e
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
-    std::vector<const char*> validationLayers{
-        "VK_LAYER_KHRONOS_validation"
-    };
 
     if(m_enableValidationLayers)
     {
 
-        if(!checkValidationLayerSupport(validationLayers))
+        if(!checkValidationLayerSupport(m_validationLayers))
         {
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+        createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
+        createInfo.ppEnabledLayerNames = m_validationLayers.data();
 
         populateDebugMessengerCreateInfo(debugCreateInfo);
 
@@ -63,6 +66,9 @@ Instance::Instance(const std::string& appName, const std::vector<const char*>& e
     }
 
     VK_CHECK(vkCreateInstance(&createInfo, nullptr, &m_instance));
+
+    volkLoadInstance(m_instance);
+
     try
     {
         setupDebugMessenger();
@@ -81,6 +87,7 @@ bool Instance::checkExtensionsSupport(const std::vector<const char*>& requiredEx
 {
     uint32_t availableExtensionsCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionsCount, nullptr);
+
     std::vector<VkExtensionProperties> availableExtensions(availableExtensionsCount);
     vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionsCount, availableExtensions.data());
 
@@ -99,11 +106,12 @@ bool Instance::checkExtensionsSupport(const std::vector<const char*>& requiredEx
 
         if(!extensionFound) return false;
     }
+
     return true;
 }
 
 
-bool Instance::checkValidationLayerSupport(const std::vector<const char*>& validationLayers) const
+bool Instance::checkValidationLayerSupport(const std::vector<const char*>& m_validationLayers) const
 {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -111,7 +119,7 @@ bool Instance::checkValidationLayerSupport(const std::vector<const char*>& valid
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    for (const char* layerName : validationLayers)
+    for (const char* layerName : m_validationLayers)
     {
         bool layerFound = false;
 
@@ -130,9 +138,9 @@ bool Instance::checkValidationLayerSupport(const std::vector<const char*>& valid
     return true;
 }
 
-std::vector<const char*> Instance::getRequiredExtensions(const std::vector<const char*>& windowExtensions, uint32_t windowExtensionsCount) const
+std::vector<const char*> Instance::getRequiredExtensions(const std::vector<const char*>& windowExtensions) const
 {
-    std::vector<const char*> extensions(windowExtensions.data(), windowExtensions.data() + windowExtensionsCount);
+    std::vector<const char*> extensions = windowExtensions;
 
     if(m_enableValidationLayers)
     {
@@ -167,39 +175,17 @@ void Instance::setupDebugMessenger()
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
 
-    VK_CHECK(createDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debugMessenger));
+    VK_CHECK(vkCreateDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debugMessenger));
 }
-
-
-VkResult Instance::createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
-{
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-
-    if (func != nullptr)
-    {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    }
-    else
-    {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-}
-
-void Instance::destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
-{
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr)
-    {
-        func(instance, debugMessenger, pAllocator);
-    }
-}
-
 
 Instance::~Instance()
 {
-    if (m_enableValidationLayers)
+    if (m_enableValidationLayers && m_debugMessenger != VK_NULL_HANDLE)
     {
-        destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
+        vkDestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
     }
-    vkDestroyInstance(m_instance, nullptr);
+    if (m_instance != VK_NULL_HANDLE)
+    {
+        vkDestroyInstance(m_instance, nullptr);
+    }
 }

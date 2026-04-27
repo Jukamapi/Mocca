@@ -17,10 +17,9 @@ Window::Window(uint32_t width, uint32_t height, const std::string title)
     {
         if (SDL_Init(SDL_INIT_VIDEO) < 0)
         {
-            throw std::runtime_error("Failed to init SDL");
+            throw std::runtime_error("failed to init SDL!");
         }
     }
-
 
     m_window = SDL_CreateWindow(
         title.c_str(),

@@ -23,9 +23,6 @@ public:
     Window(Window&&) = delete;
     Window& operator=(Window&&) = delete;
 
-    void pollEvents();
-    void queryExtensions();
-
     uint32_t getHeight() const { return m_height; }
     uint32_t getWidth() const { return m_width; }
 
@@ -38,6 +35,9 @@ public:
     std::function<void(const Event&)> onEvent;
 
 private:
+    void pollEvents();
+    void queryExtensions();
+
     const std::string m_appName;
     SDL_Window* m_window{ nullptr };
 

@@ -3,8 +3,9 @@
 #include <deque>
 #include <functional>
 
-struct DeletionQueue
+class DeletionQueue
 {
+public:
     std::deque<std::function<void()>> deletors;
 
     void pushFunction(std::function<void()>&& function)

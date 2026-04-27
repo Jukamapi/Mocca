@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <volk.h>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 
 #include <string>
 
@@ -18,24 +17,26 @@ public:
     Instance(Instance&&) = delete;
     Instance& operator=(Instance&&) = delete;
 
+    VkInstance getInstanceHandle() const { return m_instance; }
+
+private:
     bool checkExtensionsSupport(const std::vector<const char*>& requiredExtensions) const;
+
     bool checkValidationLayerSupport(const std::vector<const char*>& validationLayers) const;
-    std::vector<const char*> getRequiredExtensions(const std::vector<const char*>& windowExtensions, uint32_t windowExtensionsCount) const;
+
+    std::vector<const char*> getRequiredExtensions(const std::vector<const char*>& windowExtensions) const;
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-
-    VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-
-    void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
     void setupDebugMessenger();
 
-    VkInstance getInstanceHandle() const { return m_instance; }
 
-private:
-    VkInstance m_instance{};
-    VkDebugUtilsMessengerEXT m_debugMessenger{};
+    VkInstance m_instance{ VK_NULL_HANDLE };
+    VkDebugUtilsMessengerEXT m_debugMessenger{ VK_NULL_HANDLE };
     bool m_enableValidationLayers{ false };
+    std::vector<const char*> m_validationLayers{
+        "VK_LAYER_KHRONOS_validation"
+    };
 };

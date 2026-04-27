@@ -6,14 +6,9 @@
 
 #include <utility>
 #include <vector>
-#include <vulkan/vulkan_core.h>
+#include <volk.h>
 
-PhysicalDevice::PhysicalDevice(VkInstance instance)
-{
-    pickPhysicalDevice(instance);
-}
-
-void PhysicalDevice::pickPhysicalDevice(VkInstance instance)
+PhysicalDevice::PhysicalDevice(VkInstance instance, VkSurfaceKHR surface)
 {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
@@ -28,7 +23,7 @@ void PhysicalDevice::pickPhysicalDevice(VkInstance instance)
 
     for(const auto& device: devices)
     {
-        int score = rateDeviceSuitability(device);
+        int score = rateDeviceSuitability(device, surface);
         candidates.insert(std::make_pair(score, device));
     }
 
@@ -42,7 +37,7 @@ void PhysicalDevice::pickPhysicalDevice(VkInstance instance)
     }
 }
 
-int PhysicalDevice::rateDeviceSuitability(VkPhysicalDevice device)
+int PhysicalDevice::rateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -64,17 +59,49 @@ int PhysicalDevice::rateDeviceSuitability(VkPhysicalDevice device)
         return 0;
     }
 
-    QueueFamilyIndices indices = findQueueFamilies(device);
+    QueueFamilyIndices indices = findQueueFamilies(device, surface);
     if(!indices.isComplete())
     {
         return 0;
     }
 
+    if(!checkDeviceExtensionSupport(device))
+    {
+        return 0;
+    }
 
     return score;
 }
 
-PhysicalDevice::QueueFamilyIndices PhysicalDevice::findQueueFamilies(VkPhysicalDevice device)
+bool PhysicalDevice::checkDeviceExtensionSupport(VkPhysicalDevice device)
+{
+
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+
+    for (const char* extensionName : m_deviceExtensions)
+    {
+        bool extensionFound = false;
+
+        for (const auto& extensionProperties : availableExtensions)
+        {
+            if (strcmp(extensionName, extensionProperties.extensionName) == 0)
+            {
+                extensionFound = true;
+                break;
+            }
+        }
+
+        if (!extensionFound) return false;
+    }
+    return true;
+}
+
+PhysicalDevice::QueueFamilyIndices PhysicalDevice::findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
     QueueFamilyIndices indices;
 
@@ -83,13 +110,22 @@ PhysicalDevice::QueueFamilyIndices PhysicalDevice::findQueueFamilies(VkPhysicalD
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
+
     int i = 0;
     for(const auto& queueFamily : queueFamilies)
     {
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+        if (presentSupport)
+        {
+            indices.presentFamily = i;
+        }
+
         if(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             indices.graphicsFamily = i;
         }
+
         if(indices.isComplete())
         {
             break;

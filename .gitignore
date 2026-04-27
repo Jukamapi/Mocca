@@ -13,6 +13,8 @@ compile_commands.json
 *.vcxproj.filters
 *.vcxproj.user
 
+.clangd
+
 .vs/
 .vscode/
 *.user

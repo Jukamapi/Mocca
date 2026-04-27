@@ -1,9 +1,11 @@
 #pragma once
 
 #include "engine/vk/instance.h"
-#include <vulkan/vulkan.h>
+#include "engine/vk/surface.h"
+#include "engine/vk/physical_device.h"
+#include "engine/vk/logical_device.h"
 
-#include <vulkan/vulkan_core.h>
+#include <volk.h>
 
 class Window;
 
@@ -26,6 +28,10 @@ public:
 
 private:
     Instance m_instance;
+    Surface m_surface;
+    PhysicalDevice m_physicalDevice;
+    LogicalDevice m_logicalDevice;
+
 
     // todo: instance, device
     //VkDevice m_device{};
