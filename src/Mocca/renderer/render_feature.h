@@ -15,4 +15,5 @@ public:
 
     virtual void onDetach() {}
     virtual void onUpdate(float deltaTime) {}
+    virtual void onResize(uint32_t width, uint32_t height) {}
 };

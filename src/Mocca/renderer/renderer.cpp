@@ -10,16 +10,19 @@
 #include <stdexcept>
 
 
-Renderer::Renderer(const Context& context, Extent drawableSize)
-    : m_context(context), m_frameManager(context.getPhysicalDevice().getQueueFamilyIndices(), context.getDeviceHandle())
+Renderer::Renderer(const Context& context, ExtentProvider extentProvider)
+    : m_context(context), m_extentProvider(std::move(extentProvider)),
+      m_frameManager(context.getPhysicalDevice().getQueueFamilyIndices(), context.getDeviceHandle())
 {
+    m_currentExtent = m_extentProvider();
+
     m_swapchain = std::make_unique<Swapchain>(
         context.getPhysicalDevice()
             .querySwapChainSupport(context.getPhysicalDeviceHandle(), context.getSurfaceHandle()),
         context.getPhysicalDevice().getQueueFamilyIndices(),
         context.getDeviceHandle(),
         context.getSurfaceHandle(),
-        drawableSize
+        m_currentExtent
     );
 
     // const SwapchainSupportDetails &details, const QueueFamilyIndices &indices, VkDevice device, VkSurfaceKHR surface,
@@ -28,6 +31,21 @@ Renderer::Renderer(const Context& context, Extent drawableSize)
 
 void Renderer::drawFrame()
 {
+    // handling swapchain events
+    if(m_isSwapchainDirty)
+    {
+        Extent newExtent = m_extentProvider();
+
+        if(newExtent.width == 0 || newExtent.height == 0)
+        {
+            return;
+        }
+
+        recreateSwapchain(newExtent);
+        m_isSwapchainDirty = false;
+        return;
+    }
+
     FrameManager::FrameData& currentFrame = m_frameManager.getCurrentFrame();
 
     VK_CHECK(vkWaitForFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence, VK_TRUE, UINT64_MAX));
@@ -36,7 +54,6 @@ void Renderer::drawFrame()
 
     currentFrame.commandPool->reset();
 
-    VK_CHECK(vkResetFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence));
 
     uint32_t imageIndex;
 
@@ -52,7 +69,7 @@ void Renderer::drawFrame()
 
     if(result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        recreateSwapchain();
+        m_isSwapchainDirty = true;
         return;
     }
     else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -60,9 +77,10 @@ void Renderer::drawFrame()
         throw std::runtime_error("failed to acquire swapchain image!");
     }
 
+    VK_CHECK(vkResetFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence));
+
     // !!! TODO: Change it so we know which buffer, its hardcoded now !!!
     VkCommandBuffer commandBuffer = currentFrame.commandPool->getBuffers()[0];
-    VK_CHECK(vkResetCommandBuffer(commandBuffer, 0));
 
     VkCommandBufferBeginInfo beginInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -203,7 +221,7 @@ void Renderer::drawFrame()
         .pSignalSemaphores = &currentFrame.renderFinishedSemaphore,
     };
 
-    vkQueueSubmit(m_context.getLogicalDevice().getGraphicsQueue(), 1, &submitInfo, currentFrame.renderFence);
+    VK_CHECK(vkQueueSubmit(m_context.getLogicalDevice().getGraphicsQueue(), 1, &submitInfo, currentFrame.renderFence));
 
     VkSwapchainKHR swapchainLvalue = m_swapchain->getHandle();
     VkPresentInfoKHR presentInfo{
@@ -220,7 +238,7 @@ void Renderer::drawFrame()
 
     if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
     {
-        recreateSwapchain();
+        m_isSwapchainDirty = true;
     }
 
     m_frameManager.advance();
@@ -234,16 +252,16 @@ void Renderer::pushFeature(std::unique_ptr<RenderFeature> feature)
     m_features.push_back(std::move(feature));
 }
 
-void Renderer::recreateSwapchain()
+void Renderer::recreateSwapchain(Extent newExtent)
 {
+    m_currentExtent = newExtent;
+
     vkDeviceWaitIdle(m_context.getDeviceHandle());
 
     SwapchainSupportDetails details = m_context.getPhysicalDevice().querySwapChainSupport(
         m_context.getPhysicalDeviceHandle(),
         m_context.getSurfaceHandle()
     );
-
-    Extent newExtent{details.capabilities.currentExtent};
 
     Swapchain newSwapchain{
         details,
@@ -255,6 +273,8 @@ void Renderer::recreateSwapchain()
     };
 
     *m_swapchain = std::move(newSwapchain);
+
+    // TODO: notify features about resize?
 }
 
 Renderer::~Renderer()

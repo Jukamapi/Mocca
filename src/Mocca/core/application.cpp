@@ -13,7 +13,8 @@
 // TODO: in future implement component-based architecture
 
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
-    : m_window(width, height, title), m_context(m_window), m_renderer(m_context, m_window.getDrawableSize())
+    : m_window(width, height, title), m_context(m_window),
+      m_renderer(m_context, [this]() -> Extent { return m_window.getDrawableSize(); })
 {
     m_window.onEvent = [this](const Event& event) { m_eventQueue.push_back(event); };
 }
@@ -65,7 +66,6 @@ void Application::processEvents()
 {
     for(const Event& e : m_eventQueue)
     {
-
         switch(e.type)
         {
         case EventType::WindowClose:
@@ -74,15 +74,19 @@ void Application::processEvents()
 
         case EventType::WindowMinimize:
             m_isMinimized = true;
+            m_renderer.markSwapchainDirty();
             break;
 
         case EventType::WindowRestore:
             m_isMinimized = false;
+            m_renderer.markSwapchainDirty();
             break;
 
         case EventType::WindowResize:
-            // handle resize, prob set a flag to get resized
+        {
+            m_renderer.markSwapchainDirty();
             break;
+        }
 
         default:
             break;
