@@ -1,9 +1,7 @@
 #pragma once
 
 #include <volk.h>
-#include <string>
 #include <vector>
-
 
 
 class Pipeline
@@ -13,8 +11,8 @@ public:
         VkDevice device,
         VkFormat colorFormat,
         VkExtent2D extent,
-        const std::string& vertPathSPV,
-        const std::string& fragPathSPV
+        const std::vector<char>& vertCode,
+        const std::vector<char>& fragCode
     );
     ~Pipeline();
 

@@ -1,20 +1,22 @@
 #include "swapchain.h"
 
+#include "Mocca/vulkan/vk_check.h"
 #include "Mocca/core/types.h"
-#include "Mocca/vulkan/core/physical_device.h"
-#include "Mocca/vulkan/vulkan_utils.h"
 
 
 #include <algorithm>
 
 
-// TODO: change this to be allocated on the heap maybe as it needs to be recreated
 Swapchain::Swapchain(
-    const PhysicalDevice& physicalDevice, VkDevice device, VkSurfaceKHR surface, Extent frameBufferSize
+    const SwapchainSupportDetails& details,
+    const QueueFamilyIndices& indices,
+    VkDevice device,
+    VkSurfaceKHR surface,
+    Extent frameBufferSize,
+    VkSwapchainKHR oldSwapchain
 )
     : m_logicalDevice(device)
 {
-    auto details = physicalDevice.querySwapChainSupport(physicalDevice.getPhysicalDeviceHandle(), surface);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(details.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(details.presentModes);
@@ -39,7 +41,6 @@ Swapchain::Swapchain(
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
     };
 
-    auto indices = physicalDevice.getQueueFamilyIndices();
 
     uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
@@ -62,7 +63,7 @@ Swapchain::Swapchain(
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    createInfo.oldSwapchain = oldSwapchain;
 
     VK_CHECK(vkCreateSwapchainKHR(device, &createInfo, nullptr, &m_swapchain));
 
@@ -172,9 +173,43 @@ void Swapchain::destroyImageViews()
     }
 }
 
+Swapchain::Swapchain(Swapchain&& other) noexcept
+    : m_swapchain(other.m_swapchain), m_logicalDevice(other.m_logicalDevice),
+      m_swapChainImageFormat(other.m_swapChainImageFormat), m_swapChainExtent(other.m_swapChainExtent),
+      m_swapChainImages(std::move(other.m_swapChainImages)),
+      m_swapChainImageViews(std::move(other.m_swapChainImageViews))
+{
+    other.m_swapchain = VK_NULL_HANDLE;
+    other.m_logicalDevice = VK_NULL_HANDLE;
+}
+
+Swapchain& Swapchain::operator=(Swapchain&& other) noexcept
+{
+    if(this != &other)
+    {
+        destroyImageViews();
+
+        if(m_swapchain != VK_NULL_HANDLE)
+        {
+            vkDestroySwapchainKHR(m_logicalDevice, m_swapchain, nullptr);
+        }
+
+        m_swapchain = other.m_swapchain;
+        m_logicalDevice = other.m_logicalDevice;
+        m_swapChainImageFormat = other.m_swapChainImageFormat;
+        m_swapChainExtent = other.m_swapChainExtent;
+        m_swapChainImages = std::move(other.m_swapChainImages);
+        m_swapChainImageViews = std::move(other.m_swapChainImageViews);
+
+        other.m_swapchain = VK_NULL_HANDLE;
+        other.m_logicalDevice = VK_NULL_HANDLE;
+    }
+
+    return *this;
+}
+
 Swapchain::~Swapchain()
 {
-
     destroyImageViews();
 
     if(m_swapchain != VK_NULL_HANDLE)

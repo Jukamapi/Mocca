@@ -1,12 +1,19 @@
 #pragma once
 
-#include "Mocca/vulkan/core/physical_device.h"
 #include <volk.h>
+
+#include <vector>
+
+struct QueueFamilyIndices;
 
 class LogicalDevice
 {
 public:
-    LogicalDevice(const PhysicalDevice&);
+    LogicalDevice(
+        VkPhysicalDevice physicalDevice,
+        const QueueFamilyIndices& indices,
+        const std::vector<const char*>& deviceExtensions
+    );
     ~LogicalDevice();
     LogicalDevice(const LogicalDevice&) = delete;
     LogicalDevice& operator=(const LogicalDevice&) = delete;

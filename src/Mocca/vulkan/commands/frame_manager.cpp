@@ -1,14 +1,32 @@
 #include "frame_manager.h"
 
+#include "Mocca/vulkan/vk_check.h"
 #include "Mocca/vulkan/commands/command_pool.h"
-#include "Mocca/vulkan/core/physical_device.h"
-#include "Mocca/vulkan/vulkan_utils.h"
 
 
-FrameManager::FrameManager(const PhysicalDevice& physicalDevice, VkDevice device) : m_device(device)
+FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device) : m_device(device)
 {
+    VkSemaphoreCreateInfo semaphoreInfo{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+    };
+
+    VkFenceCreateInfo fenceInfo{
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = VK_FENCE_CREATE_SIGNALED_BIT,
+    };
+
     try
     {
+        for(int i = 0; i < 2; i++)
+        {
+            m_frames[i].commandPool = std::make_unique<CommandPool>(indices, m_device);
+
+            m_frames[i].commandPool->allocateBuffers(1);
+
+            VK_CHECK(vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_frames[i].imageAvailableSemaphore));
+            VK_CHECK(vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_frames[i].renderFinishedSemaphore));
+            VK_CHECK(vkCreateFence(m_device, &fenceInfo, nullptr, &m_frames[i].renderFence));
+        }
     }
     catch(...)
     {
@@ -30,30 +48,6 @@ FrameManager::FrameManager(const PhysicalDevice& physicalDevice, VkDevice device
 
         throw;
     }
-
-    for(int i = 0; i < 2; i++)
-    {
-        m_frames[i].commandPool = std::make_unique<CommandPool>(physicalDevice, m_device);
-
-        auto buffers = m_frames[i].commandPool->allocateBuffers(1);
-        m_frames[i].commandBuffer = buffers[0];
-
-        VkSemaphoreCreateInfo semaphoreInfo{
-            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-        };
-
-        VkFenceCreateInfo fenceInfo{
-            .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-            .flags = VK_FENCE_CREATE_SIGNALED_BIT,
-            // start signaled
-        };
-
-        VK_CHECK(vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_frames[i].imageAvailableSemaphore));
-
-        VK_CHECK(vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_frames[i].renderFinishedSemaphore));
-
-        VK_CHECK(vkCreateFence(m_device, &fenceInfo, nullptr, &m_frames[i].renderFence));
-    }
 }
 
 void FrameManager::advance()
@@ -65,6 +59,8 @@ FrameManager::~FrameManager()
 {
     for(int i = 0; i < 2; i++)
     {
+        m_frames[i].deletionQueue.flush();
+
         vkDestroySemaphore(m_device, m_frames[i].imageAvailableSemaphore, nullptr);
         vkDestroySemaphore(m_device, m_frames[i].renderFinishedSemaphore, nullptr);
         vkDestroyFence(m_device, m_frames[i].renderFence, nullptr);

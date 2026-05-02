@@ -4,7 +4,6 @@
 
 
 // TODO: Wrap everything in namespaces
-// Implement the use of the new split
 
 int main(int argc, char* argv[])
 {

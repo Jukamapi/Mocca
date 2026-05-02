@@ -6,7 +6,6 @@
 #include <stdexcept>
 
 
-
 Surface::Surface(SDL_Window* window, VkInstance instance) : m_instance(instance)
 {
     if(SDL_Vulkan_CreateSurface(window, instance, &m_surface) != SDL_TRUE)

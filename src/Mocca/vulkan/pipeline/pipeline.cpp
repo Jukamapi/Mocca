@@ -1,28 +1,25 @@
 #include "pipeline.h"
 
-#include "Mocca/resources/loader.h"
-#include "Mocca/vulkan/vulkan_utils.h"
+#include "Mocca/vulkan/vk_check.h"
+
 
 Pipeline::Pipeline(
     VkDevice device,
     VkFormat colorFormat,
     VkExtent2D extent,
-    const std::string& vertPathSPV,
-    const std::string& fragPathSPV
+    const std::vector<char>& vertCode,
+    const std::vector<char>& fragCode
 )
     : m_device(device)
 {
-    auto vertShaderCode = readFile(vertPathSPV);
-    auto fragShaderCode = readFile(fragPathSPV);
-
     // can be destroyed after pipeline creation is finished
 
     VkShaderModule vertShaderModule{VK_NULL_HANDLE};
     VkShaderModule fragShaderModule{VK_NULL_HANDLE};
     try
     {
-        vertShaderModule = createShaderModule(vertShaderCode, device);
-        fragShaderModule = createShaderModule(fragShaderCode, device);
+        vertShaderModule = createShaderModule(vertCode, device);
+        fragShaderModule = createShaderModule(fragCode, device);
     }
     catch(...)
     {
@@ -73,23 +70,6 @@ Pipeline::Pipeline(
         .primitiveRestartEnable = VK_FALSE,
     };
 
-    // viewport, for example split screen has 2 but 1 render target
-    // viewport(image) -> framebuffer
-    VkViewport viewport{
-        .x = 0.0f,
-        .y = 0.0f,
-        // use swapchains frameBuffer size
-        .width = static_cast<float>(extent.width),
-        .height = static_cast<float>(extent.height),
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f,
-    };
-
-    // scissor rectangle just cuts away what doesnt fit
-    VkRect2D scissor{
-        .offset = {0, 0},
-        .extent = extent,
-    };
 
     VkPipelineViewportStateCreateInfo viewportStateInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,

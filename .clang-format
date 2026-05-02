@@ -73,7 +73,7 @@ AlignAfterOpenBracket: BlockIndent
 IncludeCategories:
   - Regex:           '^<volk\.h>'
     Priority:        0
-  - Regex:           '^"Mocca/vulkan/vulkan_utils\.h"'
+  - Regex:           '^"Mocca/vulkan/vk_check\.h"'
     Priority:        1
   - Regex:           '^<.*\.h>'
     Priority:        2

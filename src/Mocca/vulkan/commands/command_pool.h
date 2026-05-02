@@ -5,11 +5,12 @@
 #include <vector>
 
 class PhysicalDevice;
+struct QueueFamilyIndices;
 
 class CommandPool
 {
 public:
-    CommandPool(const PhysicalDevice& physicalDevice, VkDevice device);
+    CommandPool(const QueueFamilyIndices& indices, VkDevice device);
     ~CommandPool();
 
     CommandPool(const CommandPool&) = delete;
@@ -17,11 +18,16 @@ public:
     CommandPool(CommandPool&&) = delete;
     CommandPool& operator=(CommandPool&&) = delete;
 
-    std::vector<VkCommandBuffer> allocateBuffers(uint32_t count) const;
+    std::vector<VkCommandBuffer> getBuffers() const
+    {
+        return m_buffers;
+    }
 
+    void allocateBuffers(uint32_t count);
     void reset() const;
 
 private:
-    VkCommandPool m_commandPool{VK_NULL_HANDLE};
     VkDevice m_logicalDevice{VK_NULL_HANDLE};
+    VkCommandPool m_commandPool{VK_NULL_HANDLE};
+    std::vector<VkCommandBuffer> m_buffers;
 };

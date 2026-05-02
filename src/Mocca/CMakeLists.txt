@@ -2,7 +2,7 @@ add_library(mocca STATIC)
 
 target_sources(mocca PRIVATE
     core/application.cpp
-    core/window.cpp
+    platform/window.cpp
 
     vulkan/core/context.cpp
     vulkan/core/instance.cpp
@@ -10,7 +10,7 @@ target_sources(mocca PRIVATE
     vulkan/core/logical_device.cpp
     vulkan/core/surface.cpp
 
-    vulkan/vulkan_utils.cpp
+    vulkan/vk_check.cpp
 
     vulkan/resources/swapchain.cpp
 
@@ -32,7 +32,7 @@ target_sources(mocca PUBLIC
         core/event.h
         core/input.h
         core/types.h
-        core/window.h
+        platform/window.h
 
         vulkan/core/context.h
         vulkan/core/instance.h
@@ -40,7 +40,7 @@ target_sources(mocca PUBLIC
         vulkan/core/logical_device.h
         vulkan/core/surface.h
 
-        vulkan/vulkan_utils.h
+        vulkan/vk_check.h
 
         vulkan/resources/swapchain.h
 
@@ -66,3 +66,5 @@ target_link_libraries(mocca PUBLIC
     stb
     vma
 )
+
+target_compile_definitions(mocca PRIVATE SHADER_DIR="${SPIRV_DIR}")

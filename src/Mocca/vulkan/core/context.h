@@ -29,6 +29,10 @@ public:
     {
         return m_logicalDevice.getHandle();
     }
+    VkPhysicalDevice getPhysicalDeviceHandle() const
+    {
+        return m_physicalDevice.getHandle();
+    }
     VkSurfaceKHR getSurfaceHandle() const
     {
         return m_surface.getHandle();

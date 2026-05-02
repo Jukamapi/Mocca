@@ -1,24 +1,22 @@
 #include "command_pool.h"
-#include "Mocca/vulkan/vulkan_utils.h"
+#include "Mocca/vulkan/vk_check.h"
 
-#include "Mocca/vulkan/core/physical_device.h"
+#include "Mocca/core/types.h"
 
-CommandPool::CommandPool(const PhysicalDevice& physicalDevice, VkDevice device) : m_logicalDevice(device)
+CommandPool::CommandPool(const QueueFamilyIndices& indices, VkDevice device) : m_logicalDevice(device)
 {
-    PhysicalDevice::QueueFamilyIndices queueFamilyIndices = physicalDevice.getQueueFamilyIndices();
-
     VkCommandPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        .queueFamilyIndex = queueFamilyIndices.graphicsFamily.value(),
+        .queueFamilyIndex = indices.graphicsFamily.value(),
     };
 
     VK_CHECK(vkCreateCommandPool(device, &poolInfo, nullptr, &m_commandPool));
 }
 
-std::vector<VkCommandBuffer> CommandPool::allocateBuffers(uint32_t count) const
+void CommandPool::allocateBuffers(uint32_t count)
 {
-    std::vector<VkCommandBuffer> buffers(count);
+    m_buffers.resize(m_buffers.size() + count);
 
     VkCommandBufferAllocateInfo allocInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -27,9 +25,7 @@ std::vector<VkCommandBuffer> CommandPool::allocateBuffers(uint32_t count) const
         .commandBufferCount = count,
     };
 
-    VK_CHECK(vkAllocateCommandBuffers(m_logicalDevice, &allocInfo, buffers.data()));
-
-    return buffers;
+    VK_CHECK(vkAllocateCommandBuffers(m_logicalDevice, &allocInfo, m_buffers.data()));
 }
 
 void CommandPool::reset() const

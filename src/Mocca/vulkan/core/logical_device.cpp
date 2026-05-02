@@ -1,17 +1,15 @@
 #include "logical_device.h"
 
-#include "Mocca/vulkan/core/physical_device.h"
-#include "Mocca/vulkan/vulkan_utils.h"
+#include "Mocca/vulkan/vk_check.h"
+#include "Mocca/core/types.h"
 
 #include <set>
 #include <vector>
 
-LogicalDevice::LogicalDevice(const PhysicalDevice& physicalDevice)
+LogicalDevice::LogicalDevice(
+    VkPhysicalDevice physicalDevice, const QueueFamilyIndices& indices, const std::vector<const char*>& deviceExtensions
+)
 {
-    PhysicalDevice::QueueFamilyIndices indices = physicalDevice.getQueueFamilyIndices();
-
-    std::vector<const char*> deviceExtensions = physicalDevice.getDeviceExtensions();
-
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
@@ -48,7 +46,7 @@ LogicalDevice::LogicalDevice(const PhysicalDevice& physicalDevice)
         .pEnabledFeatures = &deviceFeatures,
     };
 
-    VK_CHECK(vkCreateDevice(physicalDevice.getPhysicalDeviceHandle(), &createInfo, nullptr, &m_device));
+    VK_CHECK(vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_device));
 
     volkLoadDevice(m_device);
 

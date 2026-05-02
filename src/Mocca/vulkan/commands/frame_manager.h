@@ -7,13 +7,13 @@
 #include <array>
 #include <memory>
 
-class PhysicalDevice;
+struct QueueFamilyIndices;
 class CommandPool;
 
 class FrameManager
 {
 public:
-    FrameManager(const PhysicalDevice& physicalDevice, VkDevice device);
+    FrameManager(const QueueFamilyIndices& indices, VkDevice device);
     ~FrameManager();
     FrameManager(const FrameManager&) = delete;
     FrameManager& operator=(const FrameManager&) = delete;
@@ -24,7 +24,6 @@ public:
     struct FrameData
     {
         std::unique_ptr<CommandPool> commandPool;
-        VkCommandBuffer commandBuffer;
 
         VkSemaphore imageAvailableSemaphore;
         VkSemaphore renderFinishedSemaphore;

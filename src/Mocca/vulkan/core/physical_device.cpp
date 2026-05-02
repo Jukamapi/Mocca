@@ -5,13 +5,13 @@
 #include <stdexcept>
 
 
+#include <volk.h>
 #include <utility>
 #include <vector>
-#include <volk.h>
+
 
 PhysicalDevice::PhysicalDevice(VkInstance instance, VkSurfaceKHR surface)
 {
-    // TODO: store the indices and swapchaindetails after finding best gpu
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -75,8 +75,8 @@ int PhysicalDevice::rateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR 
         return 0;
     }
 
-    // important to check after extensions, not before
-    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device, surface);
+    // check after extensions, not before
+    SwapchainSupportDetails swapChainSupport = querySwapChainSupport(device, surface);
     if(swapChainSupport.formats.empty() || swapChainSupport.presentModes.empty())
     {
         return 0;
@@ -114,9 +114,7 @@ bool PhysicalDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) const
     return true;
 }
 
-PhysicalDevice::QueueFamilyIndices PhysicalDevice::findQueueFamilies(
-    VkPhysicalDevice device, VkSurfaceKHR surface
-) const
+QueueFamilyIndices PhysicalDevice::findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) const
 {
     QueueFamilyIndices indices;
 
@@ -151,11 +149,9 @@ PhysicalDevice::QueueFamilyIndices PhysicalDevice::findQueueFamilies(
     return indices;
 }
 
-PhysicalDevice::SwapChainSupportDetails PhysicalDevice::querySwapChainSupport(
-    VkPhysicalDevice device, VkSurfaceKHR surface
-) const
+SwapchainSupportDetails PhysicalDevice::querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) const
 {
-    PhysicalDevice::SwapChainSupportDetails details;
+    SwapchainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 

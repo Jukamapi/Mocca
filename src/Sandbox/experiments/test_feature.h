@@ -1,22 +1,21 @@
 #pragma once
 
-#include "Mocca/renderer/render_feature.h"
-#include "Mocca/vulkan/pipeline/pipeline.h"
 #include <memory>
+#include "Mocca/renderer/render_feature.h"
+#include "Mocca/resources/loader.h"
+#include "Mocca/vulkan/pipeline/pipeline.h"
 
 
-class testFeature : public RenderFeature
+
+class TestFeature : public RenderFeature
 {
 public:
     void onAttach(VkDevice device, VkFormat colorFormat, VkExtent2D extent) override
     {
-        m_pipeline = std::make_unique<Pipeline>(
-            device,
-            colorFormat,
-            extent,
-            "../build/shaders/triangle.vert.spv",
-            "../build/shaders/triangle.frag.spv"
-        );
+        auto vertCode = loadShader("shader.vert.spv");
+        auto fragCode = loadShader("shader.frag.spv");
+
+        m_pipeline = std::make_unique<Pipeline>(device, colorFormat, extent, vertCode, fragCode);
     }
     void onRender(VkCommandBuffer cmd) override
     {

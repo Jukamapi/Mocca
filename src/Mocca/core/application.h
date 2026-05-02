@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Mocca/core/event.h"
-#include "Mocca/core/window.h"
+#include "Mocca/platform/window.h"
 #include "Mocca/renderer/renderer.h"
 #include "Mocca/vulkan/core/context.h"
 

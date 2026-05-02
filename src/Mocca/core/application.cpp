@@ -1,14 +1,19 @@
 #include "application.h"
 
 #include "Mocca/core/input.h"
+#include "Sandbox/experiments/test_feature.h"
 
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <thread>
 
+// TODO: implement the vkguide newer architecture and break the methods/files better
+
+// TODO: in future implement component-based architecture
+
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
-    : m_window(width, height, title), m_context(m_window), m_renderer(m_context, m_window)
+    : m_window(width, height, title), m_context(m_window), m_renderer(m_context, m_window.getDrawableSize())
 {
     m_window.onEvent = [this](const Event& event) { m_eventQueue.push_back(event); };
 }
@@ -19,6 +24,7 @@ void Application::run()
     auto lastTime = std::chrono::high_resolution_clock::now();
 
     // onInit();
+    m_renderer.pushFeature(std::make_unique<TestFeature>());
 
     while(m_isRunning)
     {
