@@ -9,7 +9,6 @@
 // TODO: Implement AssetManager
 static std::vector<char> readFile(const std::string& fileName)
 {
-    // using ate - "at the end" to know size of file
     std::filesystem::path absolutePath = std::filesystem::absolute(fileName);
 
     if(!std::filesystem::exists(fileName))
@@ -17,6 +16,7 @@ static std::vector<char> readFile(const std::string& fileName)
         throw std::runtime_error("file does not exist: " + absolutePath.string());
     }
 
+    // using ate - "at the end" to know size of file
     std::ifstream file(fileName, std::ios::ate | std::ios::binary);
 
     if(!file.is_open())

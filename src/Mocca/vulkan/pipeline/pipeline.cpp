@@ -3,6 +3,7 @@
 #include "Mocca/vulkan/vk_check.h"
 
 
+// TODO: Utilize the deletionQueue
 Pipeline::Pipeline(
     VkDevice device,
     VkFormat colorFormat,

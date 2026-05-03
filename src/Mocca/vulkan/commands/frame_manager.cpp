@@ -4,7 +4,8 @@
 #include "Mocca/vulkan/commands/command_pool.h"
 
 
-FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device) : m_device(device)
+FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)
+    : m_device(device), m_frames{{FrameData(indices, device), FrameData(indices, device)}}
 {
     VkSemaphoreCreateInfo semaphoreInfo{
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -19,9 +20,7 @@ FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device) :
     {
         for(int i = 0; i < 2; i++)
         {
-            m_frames[i].commandPool = std::make_unique<CommandPool>(indices, m_device);
-
-            m_frames[i].commandPool->allocateBuffers(1);
+            m_frames[i].commandPool.allocateBuffers(1);
 
             VK_CHECK(vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_frames[i].imageAvailableSemaphore));
             VK_CHECK(vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_frames[i].renderFinishedSemaphore));
@@ -64,6 +63,5 @@ FrameManager::~FrameManager()
         vkDestroySemaphore(m_device, m_frames[i].imageAvailableSemaphore, nullptr);
         vkDestroySemaphore(m_device, m_frames[i].renderFinishedSemaphore, nullptr);
         vkDestroyFence(m_device, m_frames[i].renderFence, nullptr);
-        // commandPool is unique_ptr so destructor called automatically
     }
 }

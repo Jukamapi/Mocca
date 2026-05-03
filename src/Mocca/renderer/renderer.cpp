@@ -10,7 +10,7 @@
 #include <stdexcept>
 
 // TODO: in future implement RHI, wrap VkCommanBuffer etc in RenderContext class
-// It probably shouldnt call vulkan directly, isntead RHI, but right now Im only supporting vulkan
+// but right now Im only supporting vulkan
 Renderer::Renderer(const Context& context, ExtentProvider extentProvider)
     : m_context(context), m_extentProvider(std::move(extentProvider)),
       m_frameManager(context.getPhysicalDevice().getQueueFamilyIndices(), context.getDeviceHandle())
@@ -71,7 +71,7 @@ bool Renderer::acquireNextImage(uint32_t& outImageIndex)
 
     currentFrame.deletionQueue.flush();
 
-    currentFrame.commandPool->reset();
+    currentFrame.commandPool.reset();
 
     VkResult result = vkAcquireNextImageKHR(
         m_context.getDeviceHandle(),
@@ -100,7 +100,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     VK_CHECK(vkResetFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence));
 
-    VkCommandBuffer commandBuffer = currentFrame.commandPool->getNextBuffer();
+    VkCommandBuffer commandBuffer = currentFrame.commandPool.getNextBuffer();
 
     VkCommandBufferBeginInfo beginInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -109,15 +109,16 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
+    // transition to write mode
     transitionImage(
         commandBuffer,
         m_swapchain->getImages()[imageIndex],
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         0,
-        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT
     );
 
     VkClearValue clearColor = {{{0.01f, 0.01f, 0.01f, 1.0f}}};
@@ -167,15 +168,16 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     vkCmdEndRendering(commandBuffer);
 
+    // transition to present mode
     transitionImage(
         commandBuffer,
         m_swapchain->getImages()[imageIndex],
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
         0,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT
     );
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
@@ -187,20 +189,42 @@ void Renderer::submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd)
 {
     FrameManager::FrameData& currentFrame = m_frameManager.getCurrentFrame();
 
-    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-    VkSubmitInfo submitInfo{
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &currentFrame.imageAvailableSemaphore,
-        .pWaitDstStageMask = &waitStage,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &cmd,
-        .signalSemaphoreCount = 1,
-        .pSignalSemaphores = &currentFrame.renderFinishedSemaphore,
+    // wait semaphore
+    VkSemaphoreSubmitInfo waitSubmitInfo{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+        .semaphore = currentFrame.imageAvailableSemaphore,
+        .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .deviceIndex = 0,
     };
 
-    VK_CHECK(vkQueueSubmit(m_context.getLogicalDevice().getGraphicsQueue(), 1, &submitInfo, currentFrame.renderFence));
+    // signal semaphore
+    VkSemaphoreSubmitInfo signalSubmitInfo{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+        .semaphore = currentFrame.renderFinishedSemaphore,
+        .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .deviceIndex = 0,
+    };
+
+    VkCommandBufferSubmitInfo cmdSubmitInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+        .commandBuffer = cmd,
+        .deviceMask = 0,
+    };
+
+    VkSubmitInfo2 submitInfo2{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+        .waitSemaphoreInfoCount = 1,
+        .pWaitSemaphoreInfos = &waitSubmitInfo,
+        .commandBufferInfoCount = 1,
+        .pCommandBufferInfos = &cmdSubmitInfo,
+        .signalSemaphoreInfoCount = 1,
+        .pSignalSemaphoreInfos = &signalSubmitInfo,
+    };
+
+
+    VK_CHECK(
+        vkQueueSubmit2(m_context.getLogicalDevice().getGraphicsQueue(), 1, &submitInfo2, currentFrame.renderFence)
+    );
 
     VkSwapchainKHR swapchainLvalue = m_swapchain->getHandle();
     VkPresentInfoKHR presentInfo{
@@ -250,7 +274,6 @@ void Renderer::recreateSwapchain(Extent newExtent)
 
     *m_swapchain = std::move(newSwapchain);
 
-    // TODO: notify features about resize?
     for(auto& feature : m_features)
     {
         feature->onResize(m_currentExtent.width, m_currentExtent.height);
@@ -262,31 +285,44 @@ void Renderer::transitionImage(
     VkImage image,
     VkImageLayout oldLayout,
     VkImageLayout newLayout,
-    VkAccessFlags srcAccess,
-    VkAccessFlags dstAccess,
-    VkPipelineStageFlags srcStage,
-    VkPipelineStageFlags dstStage
+    VkAccessFlags2 srcAccess,
+    VkAccessFlags2 dstAccess,
+    VkPipelineStageFlags2 srcStage,
+    VkPipelineStageFlags2 dstStage
 )
 {
-    VkImageMemoryBarrier barrier{
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    VkImageAspectFlags aspectMask =
+        (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+
+    VkImageSubresourceRange range{
+        .aspectMask = aspectMask,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+    };
+
+    VkImageMemoryBarrier2 barrier{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .srcStageMask = srcStage,
         .srcAccessMask = srcAccess,
+        .dstStageMask = dstStage,
         .dstAccessMask = dstAccess,
         .oldLayout = oldLayout,
         .newLayout = newLayout,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = image,
-        .subresourceRange{
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .baseArrayLayer = 0,
-            .layerCount = 1,
-        }
+        .subresourceRange = range,
     };
 
-    vkCmdPipelineBarrier(cmd, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    VkDependencyInfo depInfo{
+        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &barrier,
+    };
+
+    vkCmdPipelineBarrier2(cmd, &depInfo);
 }
 
 Renderer::~Renderer()

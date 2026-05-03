@@ -1,11 +1,12 @@
 #pragma once
 
+#include "Mocca/vulkan/commands/command_pool.h"
 #include "Mocca/vulkan/commands/deletion_queue.h"
+
 
 #include <volk.h>
 
 #include <array>
-#include <memory>
 
 struct QueueFamilyIndices;
 class CommandPool;
@@ -23,14 +24,16 @@ public:
     // note:  if i want to multithread later i need to snapshot global data
     struct FrameData
     {
-        std::unique_ptr<CommandPool> commandPool;
+        CommandPool commandPool;
 
-        VkSemaphore imageAvailableSemaphore;
-        VkSemaphore renderFinishedSemaphore;
-        VkFence renderFence;
+        VkSemaphore imageAvailableSemaphore{VK_NULL_HANDLE};
+        VkSemaphore renderFinishedSemaphore{VK_NULL_HANDLE};
+        VkFence renderFence{VK_NULL_HANDLE};
 
         // use deletion queue for all the data in here as the  lifetime is a bit complicated
         DeletionQueue deletionQueue;
+
+        FrameData(const QueueFamilyIndices& indices, VkDevice device) : commandPool(indices, device) {}
     };
 
     FrameData& getCurrentFrame()

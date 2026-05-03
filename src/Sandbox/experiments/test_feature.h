@@ -25,6 +25,7 @@ public:
         vkCmdDraw(cmd, 3, 1, 0, 0);
     }
 
+
 private:
     std::unique_ptr<Pipeline> m_pipeline;
 };

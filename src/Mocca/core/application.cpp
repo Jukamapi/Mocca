@@ -12,6 +12,8 @@
 
 // TODO: in future implement component-based architecture
 
+// TODO: heap allocate when: need to replace, polymorphism or tied to GPU lifetime
+
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
     : m_window(width, height, title), m_context(m_window),
       m_renderer(m_context, [this]() -> Extent { return m_window.getDrawableSize(); })
@@ -46,6 +48,8 @@ void Application::run()
 
     onShutdown();
 }
+
+// TODO: maybe get the event handling into seperate file?
 
 void Application::processInputs()
 {

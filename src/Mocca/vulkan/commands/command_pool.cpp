@@ -14,6 +14,32 @@ CommandPool::CommandPool(const QueueFamilyIndices& indices, VkDevice device) : m
     VK_CHECK(vkCreateCommandPool(device, &poolInfo, nullptr, &m_commandPool));
 }
 
+CommandPool::CommandPool(CommandPool&& other) noexcept
+{
+    *this = std::move(other);
+}
+
+CommandPool& CommandPool::operator=(CommandPool&& other) noexcept
+{
+    if(this != &other)
+    {
+        if(m_commandPool != VK_NULL_HANDLE)
+        {
+            vkDestroyCommandPool(m_logicalDevice, m_commandPool, nullptr);
+        }
+
+        m_logicalDevice = other.m_logicalDevice;
+        m_commandPool = other.m_commandPool;
+        m_buffers = std::move(other.m_buffers);
+        m_usedCount = other.m_usedCount;
+
+        other.m_commandPool = VK_NULL_HANDLE;
+        other.m_logicalDevice = VK_NULL_HANDLE;
+        other.m_usedCount = 0;
+    }
+    return *this;
+}
+
 void CommandPool::allocateBuffers(uint32_t count)
 {
     uint32_t oldSize = static_cast<uint32_t>(m_buffers.size());

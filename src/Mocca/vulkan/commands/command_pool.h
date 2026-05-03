@@ -15,8 +15,9 @@ public:
 
     CommandPool(const CommandPool&) = delete;
     CommandPool& operator=(const CommandPool&) = delete;
-    CommandPool(CommandPool&&) = delete;
-    CommandPool& operator=(CommandPool&&) = delete;
+
+    CommandPool(CommandPool&&) noexcept;
+    CommandPool& operator=(CommandPool&&) noexcept;
 
     const std::vector<VkCommandBuffer>& getBuffers() const
     {
