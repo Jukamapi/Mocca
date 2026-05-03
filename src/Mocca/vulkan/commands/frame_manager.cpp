@@ -18,7 +18,7 @@ FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)
 
     try
     {
-        for(int i = 0; i < 2; i++)
+        for(int i = 0; i < FRAME_COUNT; i++)
         {
             m_frames[i].commandPool.allocateBuffers(1);
 
@@ -29,7 +29,7 @@ FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)
     }
     catch(...)
     {
-        for(int i = 0; i < 2; i++)
+        for(int i = 0; i < FRAME_COUNT; i++)
         {
             if(m_frames[i].imageAvailableSemaphore)
             {
@@ -51,12 +51,12 @@ FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)
 
 void FrameManager::advance()
 {
-    m_currentFrameIndex = (m_currentFrameIndex + 1) % 2;
+    m_currentFrameIndex = (m_currentFrameIndex + 1) % FRAME_COUNT;
 }
 
 FrameManager::~FrameManager()
 {
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < FRAME_COUNT; i++)
     {
         m_frames[i].deletionQueue.flush();
 

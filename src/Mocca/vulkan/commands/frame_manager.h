@@ -56,7 +56,8 @@ public:
     void advance();
 
 private:
-    std::array<FrameData, 2> m_frames;
+    static constexpr uint32_t FRAME_COUNT{2};
+    std::array<FrameData, FRAME_COUNT> m_frames;
     uint32_t m_currentFrameIndex{0};
 
     VkDevice m_device;
