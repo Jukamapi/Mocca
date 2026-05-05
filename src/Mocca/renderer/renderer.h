@@ -3,6 +3,8 @@
 #include "Mocca/core/types.h"
 #include "Mocca/renderer/render_feature.h"
 #include "Mocca/vulkan/commands/frame_manager.h"
+#include "Mocca/vulkan/resources/swapchain_manager.h"
+
 
 #include <functional>
 #include <memory>
@@ -10,7 +12,7 @@
 
 
 class Swapchain;
-class Context; // forward dec
+class Context;
 
 class Renderer
 {
@@ -32,11 +34,6 @@ public:
         return m_features;
     }
 
-    void markSwapchainDirty()
-    {
-        m_isSwapchainDirty = true;
-    }
-
     template <typename T> T* getFeature()
     {
         for(auto& feature : m_features)
@@ -48,23 +45,26 @@ public:
         return nullptr;
     }
 
+    void markSwapchainDirty()
+    {
+        m_swapchainManager.markDirty();
+    }
+
 private:
     const Context& m_context;
     ExtentProvider m_extentProvider;
+    SwapchainManager m_swapchainManager;
     FrameManager m_frameManager;
-    Extent m_currentExtent;
-    bool m_isSwapchainDirty{false};
     bool m_isSuspended{false};
 
     std::vector<std::unique_ptr<RenderFeature>> m_features;
-    std::unique_ptr<Swapchain> m_swapchain;
 
-    bool processResize();
     bool acquireNextImage(uint32_t& outImageIndex);
 
     VkCommandBuffer recordCommandBuffer(uint32_t imageIndex);
     void submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd);
 
+    bool processResize();
     void recreateSwapchain(Extent newExtent);
 
     void transitionImage(

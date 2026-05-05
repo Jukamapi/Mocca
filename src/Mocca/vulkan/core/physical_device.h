@@ -44,5 +44,8 @@ private:
     VkPhysicalDevice m_physicalDevice{VK_NULL_HANDLE};
     QueueFamilyIndices m_familyIndices;
 
-    const std::vector<const char*> m_deviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    const std::vector<const char*> m_deviceExtensions{
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+
+    };
 };

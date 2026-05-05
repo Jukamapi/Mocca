@@ -1,11 +1,28 @@
 #pragma once
 
+#include "Mocca/vulkan/vma_alloc.h"
+
 #include <volk.h>
 
 #include <cstdint>
 #include <optional>
 #include <vector>
 
+enum class ResizeResult
+{
+    Ready,
+    Skipped,
+    Recreated
+};
+
+struct AllocatedImage
+{
+    VkImage image{VK_NULL_HANDLE};
+    VkImageView imageView{VK_NULL_HANDLE};
+    VmaAllocation allocation{VK_NULL_HANDLE};
+    VkExtent3D imageExtent{};
+    VkFormat imageFormat{VK_FORMAT_UNDEFINED};
+};
 
 struct Extent
 {

@@ -4,6 +4,7 @@
 #include "Mocca/vulkan/core/logical_device.h"
 #include "Mocca/vulkan/core/physical_device.h"
 #include "Mocca/vulkan/core/surface.h"
+#include "Mocca/vulkan/vma_alloc.h"
 
 
 #include <volk.h>
@@ -14,7 +15,7 @@ class Context
 {
 public:
     Context(Window& window);
-    ~Context();
+    ~Context() = default;
     Context(const Context&) = delete;
     Context& operator=(const Context&) = delete;
     Context(Context&&) = delete;
@@ -51,4 +52,5 @@ private:
     Surface m_surface;
     PhysicalDevice m_physicalDevice;
     LogicalDevice m_logicalDevice;
+    VmaAlloc m_vmaAlloc;
 };

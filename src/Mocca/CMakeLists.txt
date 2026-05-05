@@ -13,6 +13,7 @@ target_sources(mocca PRIVATE
     vulkan/vk_check.cpp
 
     vulkan/resources/swapchain.cpp
+    vulkan/resources/swapchain_manager.cpp
 
     vulkan/pipeline/pipeline.cpp
 
@@ -41,8 +42,10 @@ target_sources(mocca PUBLIC
         vulkan/core/surface.h
 
         vulkan/vk_check.h
+        vulkan/vma_alloc.h
 
         vulkan/resources/swapchain.h
+        vulkan/resources/swapchain_manager.h
 
         vulkan/pipeline/pipeline.h
 

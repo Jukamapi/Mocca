@@ -1,6 +1,7 @@
 #include "renderer.h"
 
 #include "Mocca/vulkan/vk_check.h"
+#include "Mocca/core/types.h"
 #include "Mocca/vulkan/commands/command_pool.h"
 #include "Mocca/vulkan/core/context.h"
 #include "Mocca/vulkan/core/physical_device.h"
@@ -13,18 +14,9 @@
 // but right now Im only supporting vulkan
 Renderer::Renderer(const Context& context, ExtentProvider extentProvider)
     : m_context(context), m_extentProvider(std::move(extentProvider)),
+      m_swapchainManager(m_context, m_extentProvider()),
       m_frameManager(context.getPhysicalDevice().getQueueFamilyIndices(), context.getDeviceHandle())
 {
-    m_currentExtent = m_extentProvider();
-
-    m_swapchain = std::make_unique<Swapchain>(
-        context.getPhysicalDevice()
-            .querySwapChainSupport(context.getPhysicalDeviceHandle(), context.getSurfaceHandle()),
-        context.getPhysicalDevice().getQueueFamilyIndices(),
-        context.getDeviceHandle(),
-        context.getSurfaceHandle(),
-        m_currentExtent
-    );
 }
 
 void Renderer::drawFrame()
@@ -45,22 +37,18 @@ void Renderer::drawFrame()
 
 bool Renderer::processResize()
 {
-    if(m_isSwapchainDirty)
+    Extent currentExtent = m_extentProvider();
+    ResizeResult result = m_swapchainManager.handleResize(currentExtent);
+
+    if(result == ResizeResult::Recreated)
     {
-        Extent newExtent = m_extentProvider();
-
-        if(newExtent.width == 0 || newExtent.height == 0)
+        for(auto& feature : m_features)
         {
-            return false;
+            feature->onResize(currentExtent.width, currentExtent.height);
         }
-
-        recreateSwapchain(newExtent);
-        m_isSwapchainDirty = false;
-
-        return false;
     }
 
-    return true;
+    return result != ResizeResult::Skipped;
 }
 
 bool Renderer::acquireNextImage(uint32_t& outImageIndex)
@@ -75,7 +63,7 @@ bool Renderer::acquireNextImage(uint32_t& outImageIndex)
 
     VkResult result = vkAcquireNextImageKHR(
         m_context.getDeviceHandle(),
-        m_swapchain->getHandle(),
+        m_swapchainManager.getSwapchain().getHandle(),
         UINT64_MAX,
         currentFrame.imageAvailableSemaphore,
         VK_NULL_HANDLE,
@@ -83,7 +71,7 @@ bool Renderer::acquireNextImage(uint32_t& outImageIndex)
     );
     if(result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        m_isSwapchainDirty = true;
+        m_swapchainManager.markDirty();
         return false;
     }
     else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -97,6 +85,7 @@ bool Renderer::acquireNextImage(uint32_t& outImageIndex)
 VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 {
     FrameManager::FrameData& currentFrame = m_frameManager.getCurrentFrame();
+    Swapchain& swapchain = m_swapchainManager.getSwapchain();
 
     VK_CHECK(vkResetFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence));
 
@@ -112,7 +101,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     // transition to write mode
     transitionImage(
         commandBuffer,
-        m_swapchain->getImages()[imageIndex],
+        swapchain.getImages()[imageIndex],
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         0,
@@ -125,7 +114,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     VkRenderingAttachmentInfo attachmentInfo{
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .imageView = m_swapchain->getImageViews()[imageIndex],
+        .imageView = swapchain.getImageViews()[imageIndex],
         .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -136,7 +125,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
         .renderArea{
             .offset = {0, 0},
-            .extent = m_swapchain->getExtent(),
+            .extent = swapchain.getExtent(),
         },
         .layerCount = 1,
         .colorAttachmentCount = 1,
@@ -149,14 +138,14 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     VkViewport viewport{
         .x = 0.0f,
         .y = 0.0f,
-        .width = static_cast<float>(m_swapchain->getExtent().width),
-        .height = static_cast<float>(m_swapchain->getExtent().height),
+        .width = static_cast<float>(swapchain.getExtent().width),
+        .height = static_cast<float>(swapchain.getExtent().height),
         .minDepth = 0.0f,
         .maxDepth = 1.0f,
     };
 
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    VkRect2D scissor{.offset = {0, 0}, .extent = m_swapchain->getExtent()};
+    VkRect2D scissor{.offset = {0, 0}, .extent = swapchain.getExtent()};
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     // render features
@@ -171,7 +160,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     // transition to present mode
     transitionImage(
         commandBuffer,
-        m_swapchain->getImages()[imageIndex],
+        swapchain.getImages()[imageIndex],
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
@@ -226,7 +215,7 @@ void Renderer::submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd)
         vkQueueSubmit2(m_context.getLogicalDevice().getGraphicsQueue(), 1, &submitInfo2, currentFrame.renderFence)
     );
 
-    VkSwapchainKHR swapchainLvalue = m_swapchain->getHandle();
+    VkSwapchainKHR swapchainLvalue = m_swapchainManager.getSwapchain().getHandle();
     VkPresentInfoKHR presentInfo{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .waitSemaphoreCount = 1,
@@ -240,44 +229,20 @@ void Renderer::submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd)
 
     if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
     {
-        m_isSwapchainDirty = true;
+        m_swapchainManager.markDirty();
     }
 }
 
 
 void Renderer::pushFeature(std::unique_ptr<RenderFeature> feature)
 {
-    feature->onAttach(m_context.getDeviceHandle(), m_swapchain->getFormat(), m_swapchain->getExtent());
-
-    m_features.push_back(std::move(feature));
-}
-
-void Renderer::recreateSwapchain(Extent newExtent)
-{
-    m_currentExtent = newExtent;
-
-    vkDeviceWaitIdle(m_context.getDeviceHandle());
-
-    SwapchainSupportDetails details = m_context.getPhysicalDevice().querySwapChainSupport(
-        m_context.getPhysicalDeviceHandle(),
-        m_context.getSurfaceHandle()
+    feature->onAttach(
+        m_context.getDeviceHandle(),
+        m_swapchainManager.getSwapchain().getFormat(),
+        m_swapchainManager.getSwapchain().getExtent()
     );
 
-    Swapchain newSwapchain{
-        details,
-        m_context.getPhysicalDevice().getQueueFamilyIndices(),
-        m_context.getDeviceHandle(),
-        m_context.getSurfaceHandle(),
-        newExtent,
-        m_swapchain->getHandle()
-    };
-
-    *m_swapchain = std::move(newSwapchain);
-
-    for(auto& feature : m_features)
-    {
-        feature->onResize(m_currentExtent.width, m_currentExtent.height);
-    }
+    m_features.push_back(std::move(feature));
 }
 
 void Renderer::transitionImage(

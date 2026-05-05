@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Mocca/core/types.h"
 #include "Mocca/vulkan/commands/command_pool.h"
 #include "Mocca/vulkan/commands/deletion_queue.h"
 
@@ -33,8 +34,12 @@ public:
         // use deletion queue for all the data in here as the  lifetime is a bit complicated
         DeletionQueue deletionQueue;
 
+        AllocatedImage colorImage;
+        AllocatedImage depthImage;
+
         FrameData(const QueueFamilyIndices& indices, VkDevice device) : commandPool(indices, device) {}
     };
+
 
     FrameData& getCurrentFrame()
     {

@@ -58,14 +58,6 @@ private:
     std::vector<VkImage> m_swapChainImages;
     std::vector<VkImageView> m_swapChainImageViews;
 
-    /*
-     const SwapchainSupportDetails& details,
-    const QueueFamilyIndices& indices,
-    VkDevice device,
-    VkSurfaceKHR surface,
-    Extent frameBufferSize
-    */
-
     // helpers
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const;
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;

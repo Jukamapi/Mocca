@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Mocca/core/event.h"
-#include "Mocca/core/types.h"
 
 #include <cstdint>
 #include <functional>
@@ -9,6 +8,7 @@
 #include <vector>
 
 struct SDL_Window;
+struct Extent;
 
 class Window
 {

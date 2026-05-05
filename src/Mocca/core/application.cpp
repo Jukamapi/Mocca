@@ -80,10 +80,9 @@ void Application::processEvents()
             break;
 
         case EventType::WindowResize:
-        {
             m_renderer.markSwapchainDirty();
             break;
-        }
+
 
         default:
             break;

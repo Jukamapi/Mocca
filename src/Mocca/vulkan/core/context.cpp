@@ -8,8 +8,7 @@ Context::Context(Window& window)
       m_physicalDevice(m_instance.getHandle(), m_surface.getHandle()),
       m_logicalDevice(
           m_physicalDevice.getHandle(), m_physicalDevice.getQueueFamilyIndices(), m_physicalDevice.getDeviceExtensions()
-      )
+      ),
+      m_vmaAlloc(m_physicalDevice.getHandle(), m_logicalDevice.getHandle(), m_instance.getHandle())
 {
 }
-
-Context::~Context() {}

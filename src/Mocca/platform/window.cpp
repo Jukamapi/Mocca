@@ -1,6 +1,7 @@
 #include "window.h"
 #include "Mocca/core/event.h"
 #include "Mocca/core/input.h"
+#include "Mocca/core/types.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
