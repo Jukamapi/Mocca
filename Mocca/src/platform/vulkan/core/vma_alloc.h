@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mocca/vulkan/vk_check.h"
+#include "platform/vulkan/vk_check.h"
 
 #include <vma/vk_mem_alloc.h>
 

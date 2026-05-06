@@ -1,4 +1,4 @@
-add_executable(sandbox main.cpp)
+add_executable(sandbox src/main.cpp)
 
 set_target_properties(sandbox PROPERTIES WIN32_EXECUTABLE FALSE)
 target_compile_definitions(sandbox PRIVATE SDL_MAIN_HANDLED)

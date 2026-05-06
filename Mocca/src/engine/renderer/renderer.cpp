@@ -1,11 +1,11 @@
 #include "renderer.h"
 
-#include "Mocca/vulkan/vk_check.h"
-#include "Mocca/core/types.h"
-#include "Mocca/vulkan/commands/command_pool.h"
-#include "Mocca/vulkan/core/context.h"
-#include "Mocca/vulkan/core/physical_device.h"
-#include "Mocca/vulkan/resources/swapchain.h"
+#include "core/types.h"
+#include "platform/vulkan/commands/command_pool.h"
+#include "platform/vulkan/core/context.h"
+#include "platform/vulkan/core/physical_device.h"
+#include "platform/vulkan/resources/swapchain.h"
+#include "platform/vulkan/vk_check.h"
 
 
 #include <stdexcept>

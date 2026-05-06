@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Mocca/core/event.h"
-#include "Mocca/platform/window.h"
-#include "Mocca/renderer/renderer.h"
-#include "Mocca/vulkan/core/context.h"
+#include "core/event.h"
+#include "engine/renderer/renderer.h"
+#include "platform/vulkan/core/context.h"
+#include "platform/window.h"
 
 
 #include <cstdint>

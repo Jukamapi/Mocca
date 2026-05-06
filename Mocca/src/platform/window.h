@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mocca/core/event.h"
+#include "core/event.h"
 
 #include <cstdint>
 #include <functional>

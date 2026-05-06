@@ -1,8 +1,8 @@
 #include "swapchain_manager.h"
-#include "Mocca/core/types.h"
-#include "Mocca/renderer/render_feature.h"
-#include "Mocca/vulkan/core/context.h"
-#include "Mocca/vulkan/resources/swapchain.h"
+
+#include "core/types.h"
+#include "platform/vulkan/core/context.h"
+#include "platform/vulkan/resources/swapchain.h"
 
 
 SwapchainManager::SwapchainManager(const Context& context, Extent initialExtent)

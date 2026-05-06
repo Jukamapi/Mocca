@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mocca/vulkan/vma_alloc.h"
+#include "platform/vulkan/core/vma_alloc.h"
 
 #include <volk.h>
 

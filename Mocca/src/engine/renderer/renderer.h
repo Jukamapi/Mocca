@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Mocca/core/types.h"
-#include "Mocca/renderer/render_feature.h"
-#include "Mocca/vulkan/commands/frame_manager.h"
-#include "Mocca/vulkan/resources/swapchain_manager.h"
+#include "core/types.h"
+#include "engine/renderer/render_feature.h"
+#include "platform/vulkan/commands/frame_manager.h"
+#include "platform/vulkan/resources/swapchain_manager.h"
 
 
 #include <functional>

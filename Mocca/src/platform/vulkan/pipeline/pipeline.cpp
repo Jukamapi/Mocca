@@ -1,6 +1,6 @@
 #include "pipeline.h"
 
-#include "Mocca/vulkan/vk_check.h"
+#include "platform/vulkan/vk_check.h"
 
 
 // TODO: Utilize the deletionQueue

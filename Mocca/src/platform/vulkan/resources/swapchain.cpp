@@ -1,7 +1,7 @@
 #include "swapchain.h"
 
-#include "Mocca/vulkan/vk_check.h"
-#include "Mocca/core/types.h"
+#include "core/types.h"
+#include "platform/vulkan/vk_check.h"
 
 
 #include <algorithm>

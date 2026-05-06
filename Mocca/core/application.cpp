@@ -1,7 +1,7 @@
 #include "application.h"
 
-#include "core/input.h"
-#include "core/timer.h"
+#include "Mocca/core/input.h"
+#include "Mocca/core/timer.h"
 
 
 #include <chrono>

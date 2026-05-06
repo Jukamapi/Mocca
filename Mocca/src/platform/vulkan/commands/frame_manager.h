@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Mocca/core/types.h"
-#include "Mocca/vulkan/commands/command_pool.h"
-#include "Mocca/vulkan/commands/deletion_queue.h"
+#include "core/types.h"
+#include "platform/vulkan/commands/command_pool.h"
+#include "platform/vulkan/commands/deletion_queue.h"
 
 
 #include <volk.h>

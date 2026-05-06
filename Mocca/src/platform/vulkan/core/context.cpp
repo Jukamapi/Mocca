@@ -1,6 +1,6 @@
 #include "context.h"
 
-#include "Mocca/platform/window.h"
+#include "platform/window.h"
 
 Context::Context(Window& window)
     : m_instance(window.getAppName(), window.getExtensions()),

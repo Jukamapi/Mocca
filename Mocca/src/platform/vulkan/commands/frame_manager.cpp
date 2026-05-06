@@ -1,7 +1,7 @@
 #include "frame_manager.h"
 
-#include "Mocca/vulkan/vk_check.h"
-#include "Mocca/vulkan/commands/command_pool.h"
+#include "platform/vulkan/commands/command_pool.h"
+#include "platform/vulkan/vk_check.h"
 
 
 FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)

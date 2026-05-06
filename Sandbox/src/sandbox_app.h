@@ -1,9 +1,11 @@
 #pragma once
 
-#include "Mocca/core/application.h"
-#include "Mocca/core/input.h"
+#include "core/input.h"
+#include "engine/application.h"
 
-#include "Sandbox/experiments/test_feature.h"
+#include "experiments/test_feature.h"
+
+#include <print>
 
 class MyApp : public Application
 {

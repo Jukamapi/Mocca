@@ -1,16 +1,16 @@
 add_library(imgui STATIC
-    vendor/imgui/imgui.cpp
-    vendor/imgui/imgui_draw.cpp
-    vendor/imgui/imgui_tables.cpp
-    vendor/imgui/imgui_widgets.cpp
-    vendor/imgui/imgui_demo.cpp
-    vendor/imgui/backends/imgui_impl_sdl2.cpp
-    vendor/imgui/backends/imgui_impl_vulkan.cpp
+    Mocca/vendor/imgui/imgui.cpp
+    Mocca/vendor/imgui/imgui_draw.cpp
+    Mocca/vendor/imgui/imgui_tables.cpp
+    Mocca/vendor/imgui/imgui_widgets.cpp
+    Mocca/vendor/imgui/imgui_demo.cpp
+    Mocca/vendor/imgui/backends/imgui_impl_sdl2.cpp
+    Mocca/vendor/imgui/backends/imgui_impl_vulkan.cpp
 )
 
 target_include_directories(imgui PUBLIC
-    vendor/imgui
-    vendor/imgui/backends
+    Mocca/vendor/imgui
+    Mocca/vendor/imgui/backends
 )
 
 target_link_libraries(imgui PUBLIC

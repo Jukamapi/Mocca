@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Mocca/vulkan/core/instance.h"
-#include "Mocca/vulkan/core/logical_device.h"
-#include "Mocca/vulkan/core/physical_device.h"
-#include "Mocca/vulkan/core/surface.h"
-#include "Mocca/vulkan/vma_alloc.h"
+#include "platform/vulkan/core/instance.h"
+#include "platform/vulkan/core/logical_device.h"
+#include "platform/vulkan/core/physical_device.h"
+#include "platform/vulkan/core/surface.h"
+#include "platform/vulkan/core/vma_alloc.h"
 
 
 #include <volk.h>

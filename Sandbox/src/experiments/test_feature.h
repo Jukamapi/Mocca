@@ -1,9 +1,11 @@
 #pragma once
 
+#include "engine/renderer/render_feature.h"
+#include "platform/vulkan/pipeline/pipeline.h"
+#include "resource/loader.h"
+
+
 #include <memory>
-#include "Mocca/loaders/loader.h"
-#include "Mocca/renderer/render_feature.h"
-#include "Mocca/vulkan/pipeline/pipeline.h"
 
 
 // TODO: it uses too much layers: loadShader -> resource (replace by AssetManager), directly touches m_pipeline and

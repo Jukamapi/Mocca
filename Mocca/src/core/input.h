@@ -1,4 +1,5 @@
 #pragma once
+
 #include <array>
 
 enum class Key
