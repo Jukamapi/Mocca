@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/types.h"
 #include "platform/vulkan/commands/command_pool.h"
 #include "platform/vulkan/commands/deletion_queue.h"
-
+#include "platform/vulkan/resources/allocated_image.h"
+#include "platform/vulkan/vk_types.h"
 
 #include <volk.h>
 
@@ -15,6 +15,8 @@ class CommandPool;
 class FrameManager
 {
 public:
+    static constexpr uint32_t FRAME_COUNT{2};
+
     FrameManager(const QueueFamilyIndices& indices, VkDevice device);
     ~FrameManager();
     FrameManager(const FrameManager&) = delete;
@@ -31,11 +33,10 @@ public:
         VkSemaphore renderFinishedSemaphore{VK_NULL_HANDLE};
         VkFence renderFence{VK_NULL_HANDLE};
 
-        // use deletion queue for all the data in here as the  lifetime is a bit complicated
         DeletionQueue deletionQueue;
 
-        AllocatedImage colorImage;
-        AllocatedImage depthImage;
+        std::optional<AllocatedImage> colorImage;
+        std::optional<AllocatedImage> depthImage;
 
         FrameData(const QueueFamilyIndices& indices, VkDevice device) : commandPool(indices, device) {}
     };
@@ -57,11 +58,18 @@ public:
     {
         return getCurrentFrame().deletionQueue;
     }
+    const std::array<FrameData, FRAME_COUNT>& getFrames() const
+    {
+        return m_frames;
+    }
+    std::array<FrameData, FRAME_COUNT>& getFrames()
+    {
+        return m_frames;
+    }
 
     void advance();
 
 private:
-    static constexpr uint32_t FRAME_COUNT{2};
     std::array<FrameData, FRAME_COUNT> m_frames;
     uint32_t m_currentFrameIndex{0};
 

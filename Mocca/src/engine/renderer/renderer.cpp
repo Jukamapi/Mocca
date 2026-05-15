@@ -17,6 +17,9 @@ Renderer::Renderer(const Context& context, ExtentProvider extentProvider)
       m_swapchainManager(m_context, m_extentProvider()),
       m_frameManager(context.getPhysicalDevice().getQueueFamilyIndices(), context.getDeviceHandle())
 {
+    Extent extent = m_extentProvider();
+    m_renderExtent = {extent.width, extent.height};
+    createFrameImages();
 }
 
 void Renderer::drawFrame()
@@ -42,6 +45,10 @@ bool Renderer::processResize()
 
     if(result == ResizeResult::Recreated)
     {
+        m_renderExtent = {currentExtent.width, currentExtent.height};
+        destroyFrameImages();
+        createFrameImages();
+
         for(auto& feature : m_features)
         {
             feature->onResize(currentExtent.width, currentExtent.height);
@@ -87,8 +94,6 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     FrameManager::FrameData& currentFrame = m_frameManager.getCurrentFrame();
     Swapchain& swapchain = m_swapchainManager.getSwapchain();
 
-    VK_CHECK(vkResetFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence));
-
     VkCommandBuffer commandBuffer = currentFrame.commandPool.getNextBuffer();
 
     VkCommandBufferBeginInfo beginInfo{
@@ -98,39 +103,58 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
-    // transition to write mode
+    // color image to write mode
     transitionImage(
         commandBuffer,
-        swapchain.getImages()[imageIndex],
+        currentFrame.colorImage->getImage(),
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        0,
+        VK_ACCESS_2_NONE,
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_2_NONE,
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT
     );
 
-    VkClearValue clearColor = {{{0.01f, 0.01f, 0.01f, 1.0f}}};
+    // depth image to write mode
+    transitionImage(
+        commandBuffer,
+        currentFrame.depthImage->getImage(),
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+        VK_ACCESS_2_NONE,
+        VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_NONE,
+        VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT
+    );
 
-    VkRenderingAttachmentInfo attachmentInfo{
+    VkRenderingAttachmentInfo colorAttachmentInfo{
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .imageView = swapchain.getImageViews()[imageIndex],
+        .imageView = currentFrame.colorImage->getImageView(),
         .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-        .clearValue = clearColor,
+        .clearValue = {{{0.1f, 0.1f, 0.1f, 1.0f}}},
+    };
+
+    VkRenderingAttachmentInfo depthAttachmentInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .imageView = currentFrame.depthImage->getImageView(),
+        .imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .clearValue = {.depthStencil = {1.0f, 0}},
     };
 
     VkRenderingInfo renderingInfo{
         .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
         .renderArea{
             .offset = {0, 0},
-            .extent = swapchain.getExtent(),
+            .extent = m_renderExtent,
         },
         .layerCount = 1,
         .colorAttachmentCount = 1,
-        .pColorAttachments = &attachmentInfo,
-        // .pDepthAttachment = &depthAttachmentInfo
+        .pColorAttachments = &colorAttachmentInfo,
+        .pDepthAttachment = &depthAttachmentInfo
     };
 
     vkCmdBeginRendering(commandBuffer, &renderingInfo);
@@ -138,14 +162,14 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     VkViewport viewport{
         .x = 0.0f,
         .y = 0.0f,
-        .width = static_cast<float>(swapchain.getExtent().width),
-        .height = static_cast<float>(swapchain.getExtent().height),
+        .width = static_cast<float>(m_renderExtent.width),
+        .height = static_cast<float>(m_renderExtent.height),
         .minDepth = 0.0f,
         .maxDepth = 1.0f,
     };
-
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-    VkRect2D scissor{.offset = {0, 0}, .extent = swapchain.getExtent()};
+
+    VkRect2D scissor{.offset = {0, 0}, .extent = m_renderExtent};
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     // render features
@@ -157,16 +181,48 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     vkCmdEndRendering(commandBuffer);
 
-    // transition to present mode
+    // prep color image for blit
+    transitionImage(
+        commandBuffer,
+        currentFrame.colorImage->getImage(),
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_ACCESS_2_TRANSFER_READ_BIT,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_2_TRANSFER_BIT
+    );
+
+    // prep swapchain image for blit
     transitionImage(
         commandBuffer,
         swapchain.getImages()[imageIndex],
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_ACCESS_2_NONE,
+        VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_NONE,
+        VK_PIPELINE_STAGE_2_TRANSFER_BIT
+    );
+
+    blitImage(
+        commandBuffer,
+        currentFrame.colorImage->getImage(),
+        m_renderExtent,
+        swapchain.getImages()[imageIndex],
+        swapchain.getExtent()
+    );
+
+    // give image back to swapchain for present
+    transitionImage(
+        commandBuffer,
+        swapchain.getImages()[imageIndex],
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-        0,
-        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT
+        VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        VK_ACCESS_2_NONE,
+        VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_2_NONE
     );
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
@@ -182,7 +238,7 @@ void Renderer::submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd)
     VkSemaphoreSubmitInfo waitSubmitInfo{
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
         .semaphore = currentFrame.imageAvailableSemaphore,
-        .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .stageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
         .deviceIndex = 0,
     };
 
@@ -190,7 +246,7 @@ void Renderer::submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd)
     VkSemaphoreSubmitInfo signalSubmitInfo{
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
         .semaphore = currentFrame.renderFinishedSemaphore,
-        .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
         .deviceIndex = 0,
     };
 
@@ -210,6 +266,7 @@ void Renderer::submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd)
         .pSignalSemaphoreInfos = &signalSubmitInfo,
     };
 
+    VK_CHECK(vkResetFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence));
 
     VK_CHECK(
         vkQueueSubmit2(m_context.getLogicalDevice().getGraphicsQueue(), 1, &submitInfo2, currentFrame.renderFence)
@@ -238,7 +295,8 @@ void Renderer::pushFeature(std::unique_ptr<RenderFeature> feature)
 {
     feature->onAttach(
         m_context.getDeviceHandle(),
-        m_swapchainManager.getSwapchain().getFormat(),
+        VK_FORMAT_R16G16B16A16_SFLOAT, // image format not swapchain
+        VK_FORMAT_D32_SFLOAT,
         m_swapchainManager.getSwapchain().getExtent()
     );
 
@@ -257,7 +315,9 @@ void Renderer::transitionImage(
 )
 {
     VkImageAspectFlags aspectMask =
-        (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL || oldLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL)
+            ? VK_IMAGE_ASPECT_DEPTH_BIT
+            : VK_IMAGE_ASPECT_COLOR_BIT;
 
     VkImageSubresourceRange range{
         .aspectMask = aspectMask,
@@ -290,8 +350,66 @@ void Renderer::transitionImage(
     vkCmdPipelineBarrier2(cmd, &depInfo);
 }
 
+void Renderer::blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, VkImage dst, VkExtent2D dstExtent)
+{
+    VkImageBlit2 blitRegion{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2,
+        .srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+        .srcOffsets = {{0, 0, 0}, {(int32_t)srcExtent.width, (int32_t)srcExtent.height, 1}},
+        .dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+        .dstOffsets = {{0, 0, 0}, {(int32_t)dstExtent.width, (int32_t)dstExtent.height, 1}},
+    };
+    VkBlitImageInfo2 blitInfo{
+        .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2,
+        .srcImage = src,
+        .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        .dstImage = dst,
+        .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .regionCount = 1,
+        .pRegions = &blitRegion,
+        .filter = VK_FILTER_LINEAR,
+    };
+    vkCmdBlitImage2(cmd, &blitInfo);
+}
+
+void Renderer::createFrameImages()
+{
+    VkExtent3D extent3D = {m_renderExtent.width, m_renderExtent.height, 1};
+
+    for(auto& frame : m_frameManager.getFrames())
+    {
+        frame.colorImage.emplace(
+            m_context.getDeviceHandle(),
+            m_context.getVmaAllocator(),
+            extent3D,
+            VK_FORMAT_R16G16B16A16_SFLOAT,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_IMAGE_ASPECT_COLOR_BIT
+        );
+
+        frame.depthImage.emplace(
+            m_context.getDeviceHandle(),
+            m_context.getVmaAllocator(),
+            extent3D,
+            VK_FORMAT_D32_SFLOAT,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            VK_IMAGE_ASPECT_DEPTH_BIT
+        );
+    }
+}
+
+void Renderer::destroyFrameImages()
+{
+    for(auto& frame : m_frameManager.getFrames())
+    {
+        frame.colorImage.reset();
+        frame.depthImage.reset();
+    }
+}
+
 Renderer::~Renderer()
 {
     vkDeviceWaitIdle(m_context.getDeviceHandle());
     m_features.clear();
+    destroyFrameImages();
 }

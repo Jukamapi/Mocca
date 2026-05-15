@@ -54,6 +54,7 @@ void FrameManager::advance()
     m_currentFrameIndex = (m_currentFrameIndex + 1) % FRAME_COUNT;
 }
 
+
 FrameManager::~FrameManager()
 {
     for(int i = 0; i < FRAME_COUNT; i++)

@@ -53,6 +53,7 @@ public:
 private:
     const Context& m_context;
     ExtentProvider m_extentProvider;
+    VkExtent2D m_renderExtent;
     SwapchainManager m_swapchainManager;
     FrameManager m_frameManager;
     bool m_isSuspended{false};
@@ -77,4 +78,9 @@ private:
         VkPipelineStageFlags2 srcStage,
         VkPipelineStageFlags2 dstStage
     );
+
+    void blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, VkImage dst, VkExtent2D dstExtent);
+
+    void createFrameImages();
+    void destroyFrameImages();
 };

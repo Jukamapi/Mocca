@@ -1,7 +1,8 @@
 #include "command_pool.h"
 
-#include "core/types.h"
 #include "platform/vulkan/vk_check.h"
+#include "platform/vulkan/vk_types.h"
+
 
 
 CommandPool::CommandPool(const QueueFamilyIndices& indices, VkDevice device) : m_logicalDevice(device)

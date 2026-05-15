@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <thread>
 
-// TODO: implement the vkguide newer architecture and break the methods/files better
 
 // TODO: in future implement component-based architecture
 

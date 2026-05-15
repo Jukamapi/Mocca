@@ -39,9 +39,11 @@ target_sources(mocca PRIVATE
     src/platform/vulkan/core/physical_device.cpp
     src/platform/vulkan/core/logical_device.cpp
     src/platform/vulkan/core/surface.cpp
+    src/platform/vulkan/core/vma_alloc.cpp
     src/platform/vulkan/vk_check.cpp
     src/platform/vulkan/resources/swapchain.cpp
     src/platform/vulkan/resources/swapchain_manager.cpp
+    src/platform/vulkan/resources/allocated_image.cpp
     src/platform/vulkan/pipeline/pipeline.cpp
     src/platform/vulkan/commands/command_pool.cpp
     src/platform/vulkan/commands/frame_manager.cpp
@@ -75,10 +77,12 @@ target_sources(mocca PUBLIC
         src/platform/vulkan/core/physical_device.h
         src/platform/vulkan/core/logical_device.h
         src/platform/vulkan/core/surface.h
-        src/platform/vulkan/vk_check.h
         src/platform/vulkan/core/vma_alloc.h
+        src/platform/vulkan/vk_check.h
+        src/platform/vulkan/vk_types.h
         src/platform/vulkan/resources/swapchain.h
         src/platform/vulkan/resources/swapchain_manager.h
+        src/platform/vulkan/resources/allocated_image.h
         src/platform/vulkan/pipeline/pipeline.h
         src/platform/vulkan/commands/command_pool.h
         src/platform/vulkan/commands/frame_manager.h

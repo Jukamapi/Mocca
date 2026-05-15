@@ -10,6 +10,7 @@ public:
     Pipeline(
         VkDevice device,
         VkFormat colorFormat,
+        VkFormat depthFormat,
         VkExtent2D extent,
         const std::vector<char>& vertCode,
         const std::vector<char>& fragCode

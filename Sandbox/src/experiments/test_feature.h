@@ -13,12 +13,12 @@
 class TestFeature : public RenderFeature
 {
 public:
-    void onAttach(VkDevice device, VkFormat colorFormat, VkExtent2D extent) override
+    void onAttach(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkExtent2D extent) override
     {
         auto vertCode = loadShader("shader.vert.spv");
         auto fragCode = loadShader("shader.frag.spv");
 
-        m_pipeline = std::make_unique<Pipeline>(device, colorFormat, extent, vertCode, fragCode);
+        m_pipeline = std::make_unique<Pipeline>(device, colorFormat, depthFormat, extent, vertCode, fragCode);
     }
     void onRender(VkCommandBuffer cmd) override
     {

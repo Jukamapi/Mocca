@@ -2,7 +2,7 @@
 
 #include "core/types.h"
 #include "platform/vulkan/vk_check.h"
-
+#include "platform/vulkan/vk_types.h"
 
 #include <algorithm>
 
@@ -38,7 +38,7 @@ Swapchain::Swapchain(
         .imageExtent = extent,
         .imageArrayLayers = 1,
         // if i want to render to a different target for post processing i need to change this
-        .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
     };
 
 
@@ -93,7 +93,7 @@ VkSurfaceFormatKHR Swapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfac
 {
     for(const auto& availableFormat : availableFormats)
     {
-        if(availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+        if(availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
            availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
         {
             return availableFormat;

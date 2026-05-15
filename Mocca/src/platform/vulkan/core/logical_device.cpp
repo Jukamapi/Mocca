@@ -1,7 +1,7 @@
 #include "logical_device.h"
 
-#include "core/types.h"
 #include "platform/vulkan/vk_check.h"
+#include "platform/vulkan/vk_types.h"
 
 #include <set>
 #include <vector>
@@ -31,8 +31,14 @@ LogicalDevice::LogicalDevice(
 
     };
 
+    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeature{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+        .bufferDeviceAddress = VK_TRUE
+    };
+
     VkPhysicalDeviceVulkan13Features features13{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .pNext = &bufferDeviceAddressFeature,
         .synchronization2 = VK_TRUE,
         .dynamicRendering = VK_TRUE,
     };

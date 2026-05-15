@@ -14,10 +14,9 @@ class RenderFeature
 public:
     virtual ~RenderFeature() = default;
 
-    virtual void onAttach(VkDevice device, VkFormat colorFormat, VkExtent2D extent) = 0;
+    virtual void onAttach(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkExtent2D extent) = 0;
     virtual void onRender(VkCommandBuffer cmd) = 0;
 
-    // pass VkFormat colorFormat, DeletionQueue& dq?
     virtual void onResize(uint32_t width, uint32_t height) {};
     virtual void onDetach() {}
     virtual void onUpdate(float deltaTime) {}

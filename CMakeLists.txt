@@ -4,6 +4,7 @@ project(Mocca LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
 
 find_package(Vulkan REQUIRED)
 
@@ -14,3 +15,5 @@ include(shaders)
 
 add_subdirectory(Mocca)
 add_subdirectory(Sandbox)
+
+add_compile_options(-ftime-trace)

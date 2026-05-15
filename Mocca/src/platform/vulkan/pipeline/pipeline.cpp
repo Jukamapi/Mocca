@@ -7,6 +7,7 @@
 Pipeline::Pipeline(
     VkDevice device,
     VkFormat colorFormat,
+    VkFormat depthFormat,
     VkExtent2D extent,
     const std::vector<char>& vertCode,
     const std::vector<char>& fragCode
@@ -142,13 +143,27 @@ Pipeline::Pipeline(
         .pPushConstantRanges = nullptr,
     };
 
-    VkFormat format = colorFormat;
+    VkFormat cFormat = colorFormat;
     VkPipelineRenderingCreateInfo renderingInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
         .pNext = nullptr,
         .colorAttachmentCount = 1,
-        .pColorAttachmentFormats = &format,
-        // TODO: add .depthAttachmentFormat
+        .pColorAttachmentFormats = &cFormat,
+        .depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
+    };
+
+    VkPipelineDepthStencilStateCreateInfo depthStencilInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .depthTestEnable = VK_TRUE,
+        .depthWriteEnable = VK_TRUE,
+        .depthCompareOp = VK_COMPARE_OP_LESS,
+        .depthBoundsTestEnable = VK_FALSE,
+        .stencilTestEnable = VK_FALSE,
+        .front = {},
+        .back = {},
+        .minDepthBounds = 0.0f,
+        .maxDepthBounds = 1.0f,
     };
 
     VkGraphicsPipelineCreateInfo pipelineInfo{
@@ -161,7 +176,7 @@ Pipeline::Pipeline(
         .pViewportState = &viewportStateInfo,
         .pRasterizationState = &rasterizerInfo,
         .pMultisampleState = &multisamplingInfo,
-        .pDepthStencilState = nullptr,
+        .pDepthStencilState = &depthStencilInfo,
         .pColorBlendState = &colorBlendingInfo,
         .pDynamicState = &dynamicStateInfo,
         .renderPass = VK_NULL_HANDLE,

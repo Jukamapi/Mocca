@@ -46,6 +46,10 @@ public:
     {
         return m_logicalDevice;
     }
+    const VmaAllocator& getVmaAllocator() const
+    {
+        return m_vmaAlloc.getVmaAllocator();
+    }
 
 private:
     Instance m_instance;
