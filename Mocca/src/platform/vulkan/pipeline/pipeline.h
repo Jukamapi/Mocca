@@ -1,7 +1,9 @@
 #pragma once
 
 #include <volk.h>
+#include <array>
 #include <vector>
+
 
 
 class Pipeline
@@ -19,8 +21,8 @@ public:
 
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
-    Pipeline(Pipeline&&) = delete;
-    Pipeline& operator=(Pipeline&&) = delete;
+    Pipeline(Pipeline&&) noexcept;
+    Pipeline& operator=(Pipeline&&) noexcept;
 
     VkPipeline getHandle() const
     {
@@ -32,7 +34,7 @@ private:
     VkPipeline m_pipeline{VK_NULL_HANDLE};
     VkDevice m_device{VK_NULL_HANDLE};
 
-    std::vector<VkDynamicState> m_dynamicStates{
+    static constexpr std::array<VkDynamicState, 2> m_dynamicStates{
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
     };

@@ -149,7 +149,7 @@ Pipeline::Pipeline(
         .pNext = nullptr,
         .colorAttachmentCount = 1,
         .pColorAttachmentFormats = &cFormat,
-        .depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
+        .depthAttachmentFormat = depthFormat,
     };
 
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo{
@@ -230,6 +230,30 @@ VkShaderModule Pipeline::createShaderModule(const std::vector<char>& code, VkDev
     VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule));
 
     return shaderModule;
+}
+
+Pipeline::Pipeline(Pipeline&& other) noexcept
+    : m_pipelineLayout(other.m_pipelineLayout), m_pipeline(other.m_pipeline), m_device(other.m_device)
+{
+    other.m_device = VK_NULL_HANDLE;
+    other.m_pipeline = VK_NULL_HANDLE;
+    other.m_pipelineLayout = VK_NULL_HANDLE;
+}
+
+Pipeline& Pipeline::operator=(Pipeline&& other) noexcept
+{
+    if(this != &other)
+    {
+        if(m_pipeline != VK_NULL_HANDLE)
+            vkDestroyPipeline(m_device, m_pipeline, nullptr);
+        if(m_pipelineLayout != VK_NULL_HANDLE)
+            vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+
+        m_device = other.m_device;
+        m_pipeline = other.m_pipeline;
+        m_pipelineLayout = other.m_pipelineLayout;
+    }
+    return *this;
 }
 
 Pipeline::~Pipeline()
