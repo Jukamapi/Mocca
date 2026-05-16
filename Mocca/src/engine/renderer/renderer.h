@@ -76,11 +76,15 @@ private:
         VkAccessFlags2 srcAccess,
         VkAccessFlags2 dstAccess,
         VkPipelineStageFlags2 srcStage,
-        VkPipelineStageFlags2 dstStage
+        VkPipelineStageFlags2 dstStage,
+        VkImageAspectFlags aspectMask
     );
 
     void blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, VkImage dst, VkExtent2D dstExtent);
 
     void createFrameImages();
     void destroyFrameImages();
+
+    static constexpr VkFormat DRAW_FORMAT{VK_FORMAT_R16G16B16A16_SFLOAT};
+    static constexpr VkFormat DEPTH_FORMAT{VK_FORMAT_D32_SFLOAT};
 };

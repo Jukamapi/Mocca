@@ -112,7 +112,8 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         VK_ACCESS_2_NONE,
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
         VK_PIPELINE_STAGE_2_NONE,
-        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_IMAGE_ASPECT_COLOR_BIT
     );
 
     // depth image to write mode
@@ -124,7 +125,8 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         VK_ACCESS_2_NONE,
         VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
         VK_PIPELINE_STAGE_2_NONE,
-        VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT
+        VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+        VK_IMAGE_ASPECT_DEPTH_BIT
     );
 
     VkRenderingAttachmentInfo colorAttachmentInfo{
@@ -190,7 +192,8 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
         VK_ACCESS_2_TRANSFER_READ_BIT,
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_2_TRANSFER_BIT
+        VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        VK_IMAGE_ASPECT_COLOR_BIT
     );
 
     // prep swapchain image for blit
@@ -202,7 +205,8 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         VK_ACCESS_2_NONE,
         VK_ACCESS_2_TRANSFER_WRITE_BIT,
         VK_PIPELINE_STAGE_2_NONE,
-        VK_PIPELINE_STAGE_2_TRANSFER_BIT
+        VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        VK_IMAGE_ASPECT_COLOR_BIT
     );
 
     blitImage(
@@ -222,7 +226,8 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         VK_ACCESS_2_TRANSFER_WRITE_BIT,
         VK_ACCESS_2_NONE,
         VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_PIPELINE_STAGE_2_NONE
+        VK_PIPELINE_STAGE_2_NONE,
+        VK_IMAGE_ASPECT_COLOR_BIT
     );
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
@@ -295,8 +300,8 @@ void Renderer::pushFeature(std::unique_ptr<RenderFeature> feature)
 {
     feature->onAttach(
         m_context.getDeviceHandle(),
-        VK_FORMAT_R16G16B16A16_SFLOAT, // image format not swapchain
-        VK_FORMAT_D32_SFLOAT,
+        DRAW_FORMAT, // image format not swapchain
+        DEPTH_FORMAT,
         m_swapchainManager.getSwapchain().getExtent()
     );
 
@@ -311,13 +316,10 @@ void Renderer::transitionImage(
     VkAccessFlags2 srcAccess,
     VkAccessFlags2 dstAccess,
     VkPipelineStageFlags2 srcStage,
-    VkPipelineStageFlags2 dstStage
+    VkPipelineStageFlags2 dstStage,
+    VkImageAspectFlags aspectMask
 )
 {
-    VkImageAspectFlags aspectMask =
-        (newLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL || oldLayout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL)
-            ? VK_IMAGE_ASPECT_DEPTH_BIT
-            : VK_IMAGE_ASPECT_COLOR_BIT;
 
     VkImageSubresourceRange range{
         .aspectMask = aspectMask,
@@ -382,8 +384,9 @@ void Renderer::createFrameImages()
             m_context.getDeviceHandle(),
             m_context.getVmaAllocator(),
             extent3D,
-            VK_FORMAT_R16G16B16A16_SFLOAT,
-            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            DRAW_FORMAT,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT,
             VK_IMAGE_ASPECT_COLOR_BIT
         );
 
@@ -391,7 +394,7 @@ void Renderer::createFrameImages()
             m_context.getDeviceHandle(),
             m_context.getVmaAllocator(),
             extent3D,
-            VK_FORMAT_D32_SFLOAT,
+            DEPTH_FORMAT,
             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
             VK_IMAGE_ASPECT_DEPTH_BIT
         );
@@ -409,7 +412,6 @@ void Renderer::destroyFrameImages()
 
 Renderer::~Renderer()
 {
-    vkDeviceWaitIdle(m_context.getDeviceHandle());
     m_features.clear();
     destroyFrameImages();
 }
