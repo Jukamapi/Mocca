@@ -4,16 +4,17 @@
 #include <array>
 #include <vector>
 
-
+class DescriptorLayout;
 
 class Pipeline
 {
 public:
+    Pipeline() = default;
     Pipeline(
         VkDevice device,
         VkFormat colorFormat,
         VkFormat depthFormat,
-        VkExtent2D extent,
+        const DescriptorLayout& descriptorLayout,
         const std::vector<char>& vertCode,
         const std::vector<char>& fragCode
     );

@@ -1,5 +1,6 @@
 #include "pipeline.h"
 
+#include "platform/vulkan/resources/descriptor_layout.h"
 #include "platform/vulkan/vk_check.h"
 
 
@@ -8,7 +9,7 @@ Pipeline::Pipeline(
     VkDevice device,
     VkFormat colorFormat,
     VkFormat depthFormat,
-    VkExtent2D extent,
+    const DescriptorLayout& descriptorLayout,
     const std::vector<char>& vertCode,
     const std::vector<char>& fragCode
 )
@@ -252,6 +253,10 @@ Pipeline& Pipeline::operator=(Pipeline&& other) noexcept
         m_device = other.m_device;
         m_pipeline = other.m_pipeline;
         m_pipelineLayout = other.m_pipelineLayout;
+
+        other.m_device = VK_NULL_HANDLE;
+        other.m_pipeline = VK_NULL_HANDLE;
+        other.m_pipelineLayout = VK_NULL_HANDLE;
     }
     return *this;
 }

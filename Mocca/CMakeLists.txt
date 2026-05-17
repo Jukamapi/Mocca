@@ -44,6 +44,8 @@ target_sources(mocca PRIVATE
     src/platform/vulkan/resources/swapchain.cpp
     src/platform/vulkan/resources/swapchain_manager.cpp
     src/platform/vulkan/resources/allocated_image.cpp
+    src/platform/vulkan/resources/descriptor_allocator.cpp
+    src/platform/vulkan/resources/descriptor_layout.cpp
     src/platform/vulkan/pipeline/pipeline.cpp
     src/platform/vulkan/commands/command_pool.cpp
     src/platform/vulkan/commands/frame_manager.cpp
@@ -83,6 +85,8 @@ target_sources(mocca PUBLIC
         src/platform/vulkan/resources/swapchain.h
         src/platform/vulkan/resources/swapchain_manager.h
         src/platform/vulkan/resources/allocated_image.h
+        src/platform/vulkan/resources/descriptor_allocator.h
+        src/platform/vulkan/resources/descriptor_layout.h
         src/platform/vulkan/pipeline/pipeline.h
         src/platform/vulkan/commands/command_pool.h
         src/platform/vulkan/commands/frame_manager.h
