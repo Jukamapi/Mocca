@@ -1,4 +1,4 @@
-#include "platform/vulkan/resources/allocated_image.h"
+#include "allocated_image.h"
 
 #include "platform/vulkan/vk_check.h"
 

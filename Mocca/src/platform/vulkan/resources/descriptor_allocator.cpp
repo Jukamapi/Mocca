@@ -1,10 +1,13 @@
-#include "platform/vulkan/resources/descriptor_allocator.h"
+#include "descriptor_allocator.h"
+
 #include "platform/vulkan/vk_check.h"
 
 #include <vector>
 
 DescriptorAllocator::DescriptorAllocator(VkDevice device, uint32_t maxSets, std::span<const PoolSizeRatio> poolRatios)
 {
+    m_device = device;
+
     std::vector<VkDescriptorPoolSize> poolSizes;
     for(PoolSizeRatio ratio : poolRatios)
     {
