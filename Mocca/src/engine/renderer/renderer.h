@@ -3,6 +3,7 @@
 #include "core/types.h"
 #include "engine/renderer/render_feature.h"
 #include "platform/vulkan/commands/frame_manager.h"
+#include "platform/vulkan/core/context.h"
 #include "platform/vulkan/resources/swapchain_manager.h"
 
 
@@ -12,14 +13,13 @@
 
 
 class Swapchain;
-class Context;
 
 class Renderer
 {
 public:
     using ExtentProvider = std::function<Extent()>;
 
-    Renderer(const Context& context, ExtentProvider extentProvider);
+    Renderer(const Window& window, ExtentProvider extentProvider);
     ~Renderer();
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
@@ -32,6 +32,11 @@ public:
     const std::vector<std::unique_ptr<RenderFeature>>& getFeatures() const
     {
         return m_features;
+    }
+
+    const Context& getContext() const
+    {
+        return m_context;
     }
 
     template <typename T> T* getFeature()
@@ -50,18 +55,18 @@ public:
         m_swapchainManager.markDirty();
     }
 
+
 private:
-    const Context& m_context;
+    Context m_context;
     ExtentProvider m_extentProvider;
     VkExtent2D m_renderExtent;
     SwapchainManager m_swapchainManager;
     FrameManager m_frameManager;
-    bool m_isSuspended{false};
-
     std::vector<std::unique_ptr<RenderFeature>> m_features;
 
-    bool acquireNextImage(uint32_t& outImageIndex);
+    bool m_isSuspended{false};
 
+    bool acquireNextImage(uint32_t& outImageIndex);
     VkCommandBuffer recordCommandBuffer(uint32_t imageIndex);
     void submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd);
 

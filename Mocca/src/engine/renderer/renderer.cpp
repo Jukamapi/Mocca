@@ -12,13 +12,12 @@
 
 // TODO: in future implement RHI, wrap VkCommanBuffer etc in RenderContext class
 // but right now Im only supporting vulkan
-Renderer::Renderer(const Context& context, ExtentProvider extentProvider)
-    : m_context(context), m_extentProvider(std::move(extentProvider)),
+Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
+    : m_context(window), m_extentProvider(std::move(extentProvider)),
+      m_renderExtent(m_extentProvider().width, m_extentProvider().height),
       m_swapchainManager(m_context, m_extentProvider()),
-      m_frameManager(context.getPhysicalDevice().getQueueFamilyIndices(), context.getDeviceHandle())
+      m_frameManager(m_context.getPhysicalDevice().getQueueFamilyIndices(), m_context.getDeviceHandle())
 {
-    Extent extent = m_extentProvider();
-    m_renderExtent = {extent.width, extent.height};
     createFrameImages();
 }
 
@@ -106,8 +105,9 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     // color image to write mode
     transitionImage(
         commandBuffer,
-        currentFrame.colorImage->getImage(),
+        currentFrame.colorImage.getImage(),
         VK_IMAGE_LAYOUT_UNDEFINED,
+        // TODO: Have to change this when changing to compute
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_ACCESS_2_NONE,
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
@@ -119,7 +119,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     // depth image to write mode
     transitionImage(
         commandBuffer,
-        currentFrame.depthImage->getImage(),
+        currentFrame.depthImage.getImage(),
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
         VK_ACCESS_2_NONE,
@@ -131,7 +131,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     VkRenderingAttachmentInfo colorAttachmentInfo{
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .imageView = currentFrame.colorImage->getImageView(),
+        .imageView = currentFrame.colorImage.getImageView(),
         .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -140,7 +140,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     VkRenderingAttachmentInfo depthAttachmentInfo{
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .imageView = currentFrame.depthImage->getImageView(),
+        .imageView = currentFrame.depthImage.getImageView(),
         .imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -178,7 +178,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     for(auto& feature : m_features)
     {
         if(feature->isEnabled())
-            feature->onRender(commandBuffer);
+            feature->onRender(commandBuffer, currentFrame.colorImage.getImageView(), imageIndex);
     }
 
     vkCmdEndRendering(commandBuffer);
@@ -186,7 +186,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     // prep color image for blit
     transitionImage(
         commandBuffer,
-        currentFrame.colorImage->getImage(),
+        currentFrame.colorImage.getImage(),
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
@@ -211,7 +211,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     blitImage(
         commandBuffer,
-        currentFrame.colorImage->getImage(),
+        currentFrame.colorImage.getImage(),
         m_renderExtent,
         swapchain.getImages()[imageIndex],
         swapchain.getExtent()
@@ -298,13 +298,6 @@ void Renderer::submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd)
 
 void Renderer::pushFeature(std::unique_ptr<RenderFeature> feature)
 {
-    feature->onAttach(
-        m_context.getDeviceHandle(),
-        DRAW_FORMAT, // image format not swapchain
-        DEPTH_FORMAT,
-        m_swapchainManager.getSwapchain().getExtent()
-    );
-
     m_features.push_back(std::move(feature));
 }
 
@@ -380,7 +373,7 @@ void Renderer::createFrameImages()
 
     for(auto& frame : m_frameManager.getFrames())
     {
-        frame.colorImage.emplace(
+        frame.colorImage = AllocatedImage(
             m_context.getDeviceHandle(),
             m_context.getVmaAllocator(),
             extent3D,
@@ -390,7 +383,7 @@ void Renderer::createFrameImages()
             VK_IMAGE_ASPECT_COLOR_BIT
         );
 
-        frame.depthImage.emplace(
+        frame.depthImage = AllocatedImage(
             m_context.getDeviceHandle(),
             m_context.getVmaAllocator(),
             extent3D,
@@ -405,13 +398,14 @@ void Renderer::destroyFrameImages()
 {
     for(auto& frame : m_frameManager.getFrames())
     {
-        frame.colorImage.reset();
-        frame.depthImage.reset();
+        frame.colorImage.destroy();
+        frame.depthImage.destroy();
     }
 }
 
 Renderer::~Renderer()
 {
+    vkDeviceWaitIdle(m_context.getDeviceHandle());
     m_features.clear();
     destroyFrameImages();
 }
