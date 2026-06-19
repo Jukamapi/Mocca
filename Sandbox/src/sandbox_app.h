@@ -14,7 +14,7 @@ public:
 
     void onInit() override
     {
-        m_renderer.pushFeature(std::make_unique<TestFeature>());
+        m_renderer.pushFeature(std::make_unique<TestFeature>(m_renderer));
     }
 
     void onUpdate(float deltaTime) override
