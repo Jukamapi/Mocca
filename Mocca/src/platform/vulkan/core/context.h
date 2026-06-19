@@ -14,7 +14,7 @@ class Window;
 class Context
 {
 public:
-    Context(Window& window);
+    Context(const Window& window);
     ~Context() = default;
     Context(const Context&) = delete;
     Context& operator=(const Context&) = delete;

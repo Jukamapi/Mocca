@@ -2,7 +2,7 @@
 
 #include "platform/window.h"
 
-Context::Context(Window& window)
+Context::Context(const Window& window)
     : m_instance(window.getAppName(), window.getExtensions()),
       m_surface(window.getNativeWindow(), m_instance.getHandle()),
       m_physicalDevice(m_instance.getHandle(), m_surface.getHandle()),

@@ -9,10 +9,12 @@ class Surface
 public:
     Surface(SDL_Window* window, VkInstance instance);
     ~Surface();
+
     Surface(const Surface&) = delete;
     Surface& operator=(const Surface&) = delete;
-    Surface(Surface&&) = delete;
-    Surface& operator=(Surface&&) = delete;
+
+    Surface(Surface&&) noexcept;
+    Surface& operator=(Surface&&) noexcept;
 
     VkSurfaceKHR getHandle() const
     {
