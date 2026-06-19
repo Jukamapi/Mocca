@@ -1,6 +1,7 @@
 #pragma once
 #include <vma/vk_mem_alloc.h>
 
+// this class handles the creation of VmaAllocator and integrating volk into it
 class VmaAlloc
 {
 public:

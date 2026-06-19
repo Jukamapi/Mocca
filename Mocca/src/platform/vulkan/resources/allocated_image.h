@@ -7,6 +7,7 @@
 class AllocatedImage
 {
 public:
+    AllocatedImage() = default;
     AllocatedImage(
         VkDevice device,
         VmaAllocator allocator,
@@ -20,6 +21,8 @@ public:
     AllocatedImage& operator=(const AllocatedImage&) = delete;
     AllocatedImage(AllocatedImage&&) noexcept;
     AllocatedImage& operator=(AllocatedImage&&) noexcept;
+
+    void destroy();
 
     VkImage getImage() const
     {
@@ -49,5 +52,4 @@ private:
     VmaAllocator m_allocator{nullptr};
 
     void createImageView(VkImageAspectFlags aspect);
-    void destroy();
 };

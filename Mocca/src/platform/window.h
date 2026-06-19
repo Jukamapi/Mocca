@@ -10,11 +10,11 @@
 struct SDL_Window;
 struct Extent;
 
+// this class handles all the sdl logic,
+// might have to split this
 class Window
 {
 public:
-    using EventCallbackFn = std::function<void(Event&)>;
-
     Window(uint32_t width, uint32_t height, const std::string title);
     ~Window();
     Window(const Window&) = delete;
@@ -22,6 +22,7 @@ public:
     Window(Window&&) = delete;
     Window& operator=(Window&&) = delete;
 
+    // this utilizes the callback to handle window generated events
     void pollEvents();
 
     Extent getDrawableSize() const;
@@ -67,5 +68,6 @@ private:
     uint32_t m_sdlExtensionCount{0};
     std::vector<const char*> m_sdlExtensions{};
 
+    // in case there are multiple windows, this is necessary
     static int s_windowCount;
 };

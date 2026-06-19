@@ -8,6 +8,8 @@
 
 class Context;
 
+// TODO: split into 2 separate classes?
+// handles instance creation and debugger creation
 class Instance
 {
 public:
@@ -28,8 +30,10 @@ private:
 
     bool checkValidationLayerSupport(const std::vector<const char*>& validationLayers) const;
 
+    // returns vector of extensions required by the windowing API
     std::vector<const char*> getRequiredExtensions(const std::vector<const char*>& windowExtensions) const;
 
+    // debug config
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -38,9 +42,7 @@ private:
     );
 
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) const;
-
     void setupDebugMessenger();
-
 
     VkInstance m_instance{VK_NULL_HANDLE};
     VkDebugUtilsMessengerEXT m_debugMessenger{VK_NULL_HANDLE};

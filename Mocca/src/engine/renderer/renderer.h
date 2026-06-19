@@ -6,14 +6,13 @@
 #include "platform/vulkan/core/context.h"
 #include "platform/vulkan/resources/swapchain_manager.h"
 
-
 #include <functional>
 #include <memory>
 #include <vector>
 
-
 class Swapchain;
 
+// class handling main rendering logic
 class Renderer
 {
 public:
@@ -39,6 +38,7 @@ public:
         return m_context;
     }
 
+    // tries to cast RenderFeature into specific derived type
     template <typename T> T* getFeature()
     {
         for(auto& feature : m_features)
@@ -50,6 +50,7 @@ public:
         return nullptr;
     }
 
+    // informs swapchain that it needs to be recreated
     void markSwapchainDirty()
     {
         m_swapchainManager.markDirty();
@@ -57,22 +58,14 @@ public:
 
 
 private:
-    Context m_context;
-    ExtentProvider m_extentProvider;
-    VkExtent2D m_renderExtent;
-    SwapchainManager m_swapchainManager;
-    FrameManager m_frameManager;
-    std::vector<std::unique_ptr<RenderFeature>> m_features;
-
-    bool m_isSuspended{false};
-
     bool acquireNextImage(uint32_t& outImageIndex);
     VkCommandBuffer recordCommandBuffer(uint32_t imageIndex);
     void submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd);
 
+    // swapchain handling
     bool processResize();
-    void recreateSwapchain(Extent newExtent);
 
+    // helper method for changing images
     void transitionImage(
         VkCommandBuffer cmd,
         VkImage image,
@@ -85,11 +78,23 @@ private:
         VkImageAspectFlags aspectMask
     );
 
+    // copies an image from one place to another
+    // handles scaling, format conversion between high precision to standard
     void blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, VkImage dst, VkExtent2D dstExtent);
 
+    // allocates and deallocates color and depth images
     void createFrameImages();
     void destroyFrameImages();
 
+    // constants
     static constexpr VkFormat DRAW_FORMAT{VK_FORMAT_R16G16B16A16_SFLOAT};
     static constexpr VkFormat DEPTH_FORMAT{VK_FORMAT_D32_SFLOAT};
+
+    Context m_context;
+    ExtentProvider m_extentProvider;
+    VkExtent2D m_renderExtent;
+    SwapchainManager m_swapchainManager;
+    FrameManager m_frameManager;
+    std::vector<std::unique_ptr<RenderFeature>> m_features;
+    bool m_isSuspended{false};
 };

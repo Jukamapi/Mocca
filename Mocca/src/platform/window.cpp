@@ -57,7 +57,7 @@ Window::~Window()
     }
 }
 
-// helper
+// helper for key presses
 Key translateSdlKey(SDL_Scancode code)
 {
     switch(code)

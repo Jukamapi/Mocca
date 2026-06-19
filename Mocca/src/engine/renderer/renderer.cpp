@@ -10,13 +10,17 @@
 
 #include <stdexcept>
 
-// TODO: in future implement RHI, wrap VkCommanBuffer etc in RenderContext class
-// but right now Im only supporting vulkan
 Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
-    : m_context(window), m_extentProvider(std::move(extentProvider)),
+    : m_context(window),
+      m_extentProvider(std::move(extentProvider)),
       m_renderExtent(m_extentProvider().width, m_extentProvider().height),
-      m_swapchainManager(m_context, m_extentProvider()),
-      m_frameManager(m_context.getPhysicalDevice().getQueueFamilyIndices(), m_context.getDeviceHandle())
+      m_swapchainManager(
+          m_context.getPhysicalDevice(),
+          m_context.getLogicalDevice().getHandle(),
+          m_context.getSurface().getHandle(),
+          m_extentProvider()
+      ),
+      m_frameManager(m_context.getPhysicalDevice().getQueueFamilyIndices(), m_context.getLogicalDevice().getHandle())
 {
     createFrameImages();
 }
@@ -61,14 +65,16 @@ bool Renderer::acquireNextImage(uint32_t& outImageIndex)
 {
     FrameManager::FrameData& currentFrame = m_frameManager.getCurrentFrame();
 
-    VK_CHECK(vkWaitForFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence, VK_TRUE, UINT64_MAX));
+    VK_CHECK(
+        vkWaitForFences(m_context.getLogicalDevice().getHandle(), 1, &currentFrame.renderFence, VK_TRUE, UINT64_MAX)
+    );
 
     currentFrame.deletionQueue.flush();
 
     currentFrame.commandPool.reset();
 
     VkResult result = vkAcquireNextImageKHR(
-        m_context.getDeviceHandle(),
+        m_context.getLogicalDevice().getHandle(),
         m_swapchainManager.getSwapchain().getHandle(),
         UINT64_MAX,
         currentFrame.imageAvailableSemaphore,
@@ -271,7 +277,7 @@ void Renderer::submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd)
         .pSignalSemaphoreInfos = &signalSubmitInfo,
     };
 
-    VK_CHECK(vkResetFences(m_context.getDeviceHandle(), 1, &currentFrame.renderFence));
+    VK_CHECK(vkResetFences(m_context.getLogicalDevice().getHandle(), 1, &currentFrame.renderFence));
 
     VK_CHECK(
         vkQueueSubmit2(m_context.getLogicalDevice().getGraphicsQueue(), 1, &submitInfo2, currentFrame.renderFence)
@@ -374,8 +380,8 @@ void Renderer::createFrameImages()
     for(auto& frame : m_frameManager.getFrames())
     {
         frame.colorImage = AllocatedImage(
-            m_context.getDeviceHandle(),
-            m_context.getVmaAllocator(),
+            m_context.getLogicalDevice().getHandle(),
+            m_context.getVmaAlloc().getVmaAllocator(),
             extent3D,
             DRAW_FORMAT,
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
@@ -384,8 +390,8 @@ void Renderer::createFrameImages()
         );
 
         frame.depthImage = AllocatedImage(
-            m_context.getDeviceHandle(),
-            m_context.getVmaAllocator(),
+            m_context.getLogicalDevice().getHandle(),
+            m_context.getVmaAlloc().getVmaAllocator(),
             extent3D,
             DEPTH_FORMAT,
             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -405,7 +411,7 @@ void Renderer::destroyFrameImages()
 
 Renderer::~Renderer()
 {
-    vkDeviceWaitIdle(m_context.getDeviceHandle());
+    vkDeviceWaitIdle(m_context.getLogicalDevice().getHandle());
     m_features.clear();
     destroyFrameImages();
 }

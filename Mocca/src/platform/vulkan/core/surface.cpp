@@ -1,5 +1,6 @@
 #include "surface.h"
 
+// TODO: figure out exactly why this is giving the linter error
 #include <SDL_vulkan.h>
 #include <stdexcept>
 

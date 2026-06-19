@@ -4,6 +4,7 @@
 
 struct SDL_Window;
 
+// bridge class between vulkan and window api
 class Surface
 {
 public:

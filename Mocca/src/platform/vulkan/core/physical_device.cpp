@@ -3,12 +3,10 @@
 #include <cstdint>
 #include <map>
 #include <stdexcept>
-
-
-#include <volk.h>
 #include <utility>
 #include <vector>
 
+#include <volk.h>
 
 PhysicalDevice::PhysicalDevice(VkInstance instance, VkSurfaceKHR surface)
 {
@@ -23,6 +21,7 @@ PhysicalDevice::PhysicalDevice(VkInstance instance, VkSurfaceKHR surface)
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
+    // sorted key-valueSet
     std::multimap<int, VkPhysicalDevice> candidates;
 
     for(const auto& device : devices)
@@ -31,6 +30,7 @@ PhysicalDevice::PhysicalDevice(VkInstance instance, VkSurfaceKHR surface)
         candidates.insert(std::make_pair(score, device));
     }
 
+    // chooses the best GPU
     if(candidates.rbegin()->first > 0)
     {
         m_physicalDevice = candidates.rbegin()->second;
@@ -87,13 +87,11 @@ int PhysicalDevice::rateDeviceSuitability(VkPhysicalDevice device, VkSurfaceKHR 
 
 bool PhysicalDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) const
 {
-
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
 
     for(const char* extensionName : m_deviceExtensions)
     {
@@ -122,7 +120,6 @@ QueueFamilyIndices PhysicalDevice::findQueueFamilies(VkPhysicalDevice device, Vk
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
 
     int i = 0;
     for(const auto& queueFamily : queueFamilies)

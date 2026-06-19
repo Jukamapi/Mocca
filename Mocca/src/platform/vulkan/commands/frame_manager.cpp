@@ -44,7 +44,6 @@ FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)
                 vkDestroyFence(m_device, m_frames[i].renderFence, nullptr);
             }
         }
-
         throw;
     }
 }

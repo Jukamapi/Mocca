@@ -48,6 +48,8 @@ DerivePointerAlignment: false
 # --- Constructor Initializers ---
 BreakConstructorInitializers: BeforeColon
 ConstructorInitializerIndentWidth: 4
+PackConstructorInitializers: Never
+
 
 # --- Inheritance ---
 BreakInheritanceList: BeforeColon

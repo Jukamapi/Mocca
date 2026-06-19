@@ -10,7 +10,6 @@
 
 Instance::Instance(const std::string& appName, const std::vector<const char*>& extensions)
 {
-
     if(volkInitialize() != VK_SUCCESS)
     {
         throw std::runtime_error("vulkan loader not found!");
@@ -41,19 +40,15 @@ Instance::Instance(const std::string& appName, const std::vector<const char*>& e
         .ppEnabledExtensionNames = requiredExtensions.data()
     };
 
-
     if(!checkExtensionsSupport(requiredExtensions))
     {
         throw std::runtime_error("extension requested, but not available!");
     }
 
-
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-
 
     if(m_enableValidationLayers)
     {
-
         if(!checkValidationLayerSupport(m_validationLayers))
         {
             throw std::runtime_error("validation layers requested, but not available!");
@@ -62,13 +57,14 @@ Instance::Instance(const std::string& appName, const std::vector<const char*>& e
         createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
         createInfo.ppEnabledLayerNames = m_validationLayers.data();
 
+        // first I populate the create info, so I can utilise it during the instance creation
         populateDebugMessengerCreateInfo(debugCreateInfo);
-
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
     }
 
     VK_CHECK(vkCreateInstance(&createInfo, nullptr, &m_instance));
 
+    // needed for volk to work
     volkLoadInstance(m_instance);
 
     try

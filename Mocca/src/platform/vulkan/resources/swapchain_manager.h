@@ -2,20 +2,21 @@
 
 #include "core/types.h"
 
-#include <functional>
 #include <memory>
 
-struct Extent;
-class Context;
+#include <volk.h>
+
 class Swapchain;
-enum class ResizeResult;
+class PhysicalDevice;
+class LogicalDevice;
+class Surface;
 
 class SwapchainManager
 {
 public:
-    using ExtentProvider = std::function<Extent()>;
-
-    SwapchainManager(const Context& context, Extent initialExtent);
+    SwapchainManager(
+        const PhysicalDevice& physicalDevice, VkDevice logicalDevice, VkSurfaceKHR surface, Extent initialExtent
+    );
 
     ResizeResult handleResize(Extent newExtent);
     void recreate(Extent newExtent);
@@ -37,7 +38,10 @@ public:
 
 
 private:
-    const Context& m_context;
+    const PhysicalDevice& m_physicalDevice;
+    VkDevice m_logicalDevice;
+    VkSurfaceKHR m_surface;
+
     Extent m_currentExtent;
     std::unique_ptr<Swapchain> m_swapchain;
     bool m_isDirty{false};

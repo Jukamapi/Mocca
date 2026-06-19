@@ -6,11 +6,11 @@
 #include "platform/vulkan/core/surface.h"
 #include "platform/vulkan/core/vma_alloc.h"
 
-
 #include <volk.h>
 
 class Window;
 
+// class holding static lifetime data required by vulkan
 class Context
 {
 public:
@@ -21,22 +21,9 @@ public:
     Context(Context&&) = delete;
     Context& operator=(Context&&) = delete;
 
-
-    VkInstance getInstanceHandle() const
+    const Surface& getSurface() const
     {
-        return m_instance.getHandle();
-    }
-    VkDevice getDeviceHandle() const
-    {
-        return m_logicalDevice.getHandle();
-    }
-    VkPhysicalDevice getPhysicalDeviceHandle() const
-    {
-        return m_physicalDevice.getHandle();
-    }
-    VkSurfaceKHR getSurfaceHandle() const
-    {
-        return m_surface.getHandle();
+        return m_surface;
     }
     const PhysicalDevice& getPhysicalDevice() const
     {
@@ -46,9 +33,9 @@ public:
     {
         return m_logicalDevice;
     }
-    const VmaAllocator& getVmaAllocator() const
+    const VmaAlloc& getVmaAlloc() const
     {
-        return m_vmaAlloc.getVmaAllocator();
+        return m_vmaAlloc;
     }
 
 private:

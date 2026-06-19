@@ -46,25 +46,32 @@ public:
     {
         return m_frames[m_currentFrameIndex];
     }
-    DeletionQueue& getCurrentDeletionQueue()
-    {
-        return getCurrentFrame().deletionQueue;
-    }
     const FrameData& getCurrentFrame() const
     {
         return m_frames[m_currentFrameIndex];
+    }
+
+    DeletionQueue& getCurrentDeletionQueue()
+    {
+        return getCurrentFrame().deletionQueue;
     }
     const DeletionQueue& getCurrentDeletionQueue() const
     {
         return getCurrentFrame().deletionQueue;
     }
+
+    std::array<FrameData, FRAME_COUNT>& getFrames()
+    {
+        return m_frames;
+    }
     const std::array<FrameData, FRAME_COUNT>& getFrames() const
     {
         return m_frames;
     }
-    std::array<FrameData, FRAME_COUNT>& getFrames()
+
+    uint32_t getCurrentFrameIndex() const
     {
-        return m_frames;
+        return m_currentFrameIndex;
     }
 
     void advance();

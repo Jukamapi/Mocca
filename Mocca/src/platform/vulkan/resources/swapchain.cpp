@@ -86,6 +86,7 @@ Swapchain::Swapchain(
         {
             vkDestroySwapchainKHR(m_logicalDevice, m_swapchain, nullptr);
         }
+        throw;
     }
 }
 

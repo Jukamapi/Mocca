@@ -56,6 +56,7 @@ LogicalDevice::LogicalDevice(
 
     VK_CHECK(vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_device));
 
+    // another thing volk needs to work
     volkLoadDevice(m_device);
 
     vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
