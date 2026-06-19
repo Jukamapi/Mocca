@@ -60,9 +60,11 @@ FrameManager::~FrameManager()
     for(int i = 0; i < FRAME_COUNT; i++)
     {
         m_frames[i].deletionQueue.flush();
-
-        vkDestroySemaphore(m_device, m_frames[i].imageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(m_device, m_frames[i].renderFinishedSemaphore, nullptr);
-        vkDestroyFence(m_device, m_frames[i].renderFence, nullptr);
+        if(m_frames[i].imageAvailableSemaphore)
+            vkDestroySemaphore(m_device, m_frames[i].imageAvailableSemaphore, nullptr);
+        if(m_frames[i].renderFinishedSemaphore)
+            vkDestroySemaphore(m_device, m_frames[i].renderFinishedSemaphore, nullptr);
+        if(m_frames[i].renderFence)
+            vkDestroyFence(m_device, m_frames[i].renderFence, nullptr);
     }
 }

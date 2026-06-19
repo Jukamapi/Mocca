@@ -35,8 +35,8 @@ public:
 
         DeletionQueue deletionQueue;
 
-        std::optional<AllocatedImage> colorImage;
-        std::optional<AllocatedImage> depthImage;
+        AllocatedImage colorImage;
+        AllocatedImage depthImage;
 
         FrameData(const QueueFamilyIndices& indices, VkDevice device) : commandPool(indices, device) {}
     };
