@@ -5,7 +5,8 @@
 #include <stdexcept>
 
 
-Surface::Surface(SDL_Window* window, VkInstance instance) : m_instance(instance)
+Surface::Surface(SDL_Window* window, VkInstance instance)
+    : m_instance(instance)
 {
     if(SDL_Vulkan_CreateSurface(window, instance, &m_surface) != SDL_TRUE)
     {
@@ -13,7 +14,9 @@ Surface::Surface(SDL_Window* window, VkInstance instance) : m_instance(instance)
     }
 }
 
-Surface::Surface(Surface&& other) noexcept : m_surface(other.m_surface), m_instance(other.m_instance)
+Surface::Surface(Surface&& other) noexcept
+    : m_surface(other.m_surface),
+      m_instance(other.m_instance)
 {
     other.m_surface = VK_NULL_HANDLE;
     other.m_instance = VK_NULL_HANDLE;

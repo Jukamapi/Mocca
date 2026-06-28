@@ -16,7 +16,7 @@ static std::vector<char> readFile(const std::string& fileName)
         throw std::runtime_error("file does not exist: " + absolutePath.string());
     }
 
-    // using ate - "at the end" to know size of file
+    // ate - "at the end" to know size of file
     std::ifstream file(fileName, std::ios::ate | std::ios::binary);
 
     if(!file.is_open())
@@ -37,11 +37,11 @@ static std::vector<char> readFile(const std::string& fileName)
 static std::vector<char> loadShader(const std::string& shaderName)
 {
 #ifdef SHADER_DIR
-    // Cmake path + filename
+    // cmake path + filename
     std::filesystem::path shaderPath = std::filesystem::path(SHADER_DIR) / shaderName;
     return readFile(shaderPath.string());
 #else
-    // Fallback
+    // fallback
     return readFile("shaders/" + shaderName);
 #endif
 }

@@ -5,7 +5,8 @@
 
 
 FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)
-    : m_device(device), m_frames{{FrameData(indices, device), FrameData(indices, device)}}
+    : m_device(device),
+      m_frames{{FrameData(indices, device), FrameData(indices, device)}}
 {
     VkSemaphoreCreateInfo semaphoreInfo{
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,

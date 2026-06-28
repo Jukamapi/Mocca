@@ -37,7 +37,8 @@ DescriptorLayout::DescriptorLayout(
 }
 
 DescriptorLayout::DescriptorLayout(DescriptorLayout&& other) noexcept
-    : m_device(other.m_device), m_layout(other.m_layout)
+    : m_device(other.m_device),
+      m_layout(other.m_layout)
 {
     other.m_device = VK_NULL_HANDLE;
     other.m_layout = VK_NULL_HANDLE;

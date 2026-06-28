@@ -38,7 +38,10 @@ public:
         AllocatedImage colorImage;
         AllocatedImage depthImage;
 
-        FrameData(const QueueFamilyIndices& indices, VkDevice device) : commandPool(indices, device) {}
+        FrameData(const QueueFamilyIndices& indices, VkDevice device)
+            : commandPool(indices, device)
+        {
+        }
     };
 
 

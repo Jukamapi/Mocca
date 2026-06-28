@@ -7,7 +7,9 @@
 SwapchainManager::SwapchainManager(
     const PhysicalDevice& physicalDevice, VkDevice logicalDevice, VkSurfaceKHR surface, Extent initialExtent
 )
-    : m_physicalDevice(physicalDevice), m_logicalDevice(logicalDevice), m_surface(surface)
+    : m_physicalDevice(physicalDevice),
+      m_logicalDevice(logicalDevice),
+      m_surface(surface)
 {
     m_swapchain = std::make_unique<Swapchain>(
         m_physicalDevice.querySwapChainSupport(m_physicalDevice.getHandle(), m_surface),

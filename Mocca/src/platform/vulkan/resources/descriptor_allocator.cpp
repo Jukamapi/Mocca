@@ -61,7 +61,8 @@ DescriptorAllocator& DescriptorAllocator::operator=(DescriptorAllocator&& other)
 }
 
 DescriptorAllocator::DescriptorAllocator(DescriptorAllocator&& other) noexcept
-    : m_device(other.m_device), m_pool(other.m_pool)
+    : m_device(other.m_device),
+      m_pool(other.m_pool)
 {
     other.m_device = VK_NULL_HANDLE;
     other.m_pool = VK_NULL_HANDLE;

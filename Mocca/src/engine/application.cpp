@@ -14,7 +14,8 @@
 // this utilizes extent provider to somewhat respect the boundaries of architecture
 // and so it doesn't have to include sdl as much since it's a big file
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
-    : m_window(width, height, title), m_renderer(m_window, [this]() -> Extent { return m_window.getDrawableSize(); })
+    : m_window(width, height, title),
+      m_renderer(m_window, [this]() -> Extent { return m_window.getDrawableSize(); })
 {
     // event callback
     m_window.onEvent = [this](const Event& event) { m_eventQueue.push_back(event); };

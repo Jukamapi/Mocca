@@ -175,8 +175,10 @@ void Swapchain::destroyImageViews()
 }
 
 Swapchain::Swapchain(Swapchain&& other) noexcept
-    : m_swapchain(other.m_swapchain), m_logicalDevice(other.m_logicalDevice),
-      m_swapChainImageFormat(other.m_swapChainImageFormat), m_swapChainExtent(other.m_swapChainExtent),
+    : m_swapchain(other.m_swapchain),
+      m_logicalDevice(other.m_logicalDevice),
+      m_swapChainImageFormat(other.m_swapChainImageFormat),
+      m_swapChainExtent(other.m_swapChainExtent),
       m_swapChainImages(std::move(other.m_swapChainImages)),
       m_swapChainImageViews(std::move(other.m_swapChainImageViews))
 {

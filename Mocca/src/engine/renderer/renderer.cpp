@@ -307,6 +307,23 @@ void Renderer::pushFeature(std::unique_ptr<RenderFeature> feature)
     m_features.push_back(std::move(feature));
 }
 
+/*
+TODO: 8 parameters is a bit too much and a bit too error prone in my taste
+maybe create a struct that would then be taken in here?
+
+struct ImageTransition
+{
+    VkImageLayout oldLayout;
+    VkImageLayout newLayout;
+    VkAccessFlags2 srcAccess;
+    VkAccessFlags2 dstAccess;
+    VkPipelineStageFlags2 srcStage;
+    VkPipelineStageFlags2 dstStage;
+    VkImageAspectFlags aspectMask;
+};
+
+other option is to create specializations if i use specific args many times
+*/
 void Renderer::transitionImage(
     VkCommandBuffer cmd,
     VkImage image,

@@ -26,6 +26,7 @@ public:
         return *m_swapchain;
     }
 
+    // if swapchain is marked dirty it means it's scheduled for recreating
     void markDirty()
     {
         m_isDirty = true;

@@ -4,8 +4,8 @@
 #include "platform/vulkan/vk_types.h"
 
 
-
-CommandPool::CommandPool(const QueueFamilyIndices& indices, VkDevice device) : m_logicalDevice(device)
+CommandPool::CommandPool(const QueueFamilyIndices& indices, VkDevice device)
+    : m_logicalDevice(device)
 {
     VkCommandPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -69,7 +69,7 @@ VkCommandBuffer CommandPool::getNextBuffer()
 
 void CommandPool::reset()
 {
-    // we can do this as we set the bit in info
+    // can do this as the bit is set in info
     m_usedCount = 0;
     vkResetCommandPool(m_logicalDevice, m_commandPool, 0);
 }

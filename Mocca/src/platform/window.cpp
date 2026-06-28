@@ -14,7 +14,9 @@
 int Window::s_windowCount = 0;
 
 Window::Window(uint32_t width, uint32_t height, const std::string title)
-    : m_appName(title), m_width(width), m_height(height)
+    : m_appName(title),
+      m_width(width),
+      m_height(height)
 {
     if(s_windowCount == 0)
     {

@@ -5,6 +5,7 @@
 class DescriptorLayout
 {
 public:
+    // needed for vulkan
     static VkDescriptorSetLayoutBinding binding(
         uint32_t binding, VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t count = 1
     );

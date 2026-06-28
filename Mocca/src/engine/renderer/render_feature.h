@@ -2,7 +2,8 @@
 
 #include <volk.h>
 
-// TODO: in children feature should request pipeline instead of owning new one, will help later
+// TODO: children features should request pipeline instead of creating new one
+// implement this when 2 renderFeatures would utilize exactly the same pipelines
 
 // render features is the modular system this app uses that allows for "plug & run" methods
 class RenderFeature

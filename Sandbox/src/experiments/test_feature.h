@@ -13,7 +13,8 @@
 class TestFeature : public RenderFeature
 {
 public:
-    TestFeature(const Renderer& renderer) : m_device(renderer.getContext().getDeviceHandle())
+    TestFeature(const Renderer& renderer)
+        : m_device(renderer.getContext().getLogicalDevice().getHandle())
     {
 
         auto binding0 = DescriptorLayout::binding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT);
@@ -49,6 +50,7 @@ public:
             .pImageInfo = &imgInfo,
         };
 
+        // TODO: bindless approach or descriptor set per frame
         vkUpdateDescriptorSets(m_device, 1, &drawImageWrite, 0, nullptr);
 
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.getHandle());

@@ -5,6 +5,9 @@
 
 // TODO: Wrap everything in namespaces
 
+// TODO: IMPORTANT, DECIDE ON DESCRIPTORS: PER-FEATURE VS BINDLESS
+// THREADING MODEL: MUTITHREADING POOL-PER-THREAD VS POOL-PER-FRAME
+
 int main(int argc, char* argv[])
 {
 

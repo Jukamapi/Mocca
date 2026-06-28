@@ -10,7 +10,10 @@ AllocatedImage::AllocatedImage(
     VkImageUsageFlags usage,
     VkImageAspectFlags aspect
 )
-    : m_extent(extent), m_format(format), m_device(device), m_allocator(allocator)
+    : m_extent(extent),
+      m_format(format),
+      m_device(device),
+      m_allocator(allocator)
 {
     VkImageCreateInfo imageInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -76,8 +79,13 @@ void AllocatedImage::destroy()
 }
 
 AllocatedImage::AllocatedImage(AllocatedImage&& other) noexcept
-    : m_image(other.m_image), m_imageView(other.m_imageView), m_allocation(other.m_allocation),
-      m_extent(other.m_extent), m_format(other.m_format), m_device(other.m_device), m_allocator(other.m_allocator)
+    : m_image(other.m_image),
+      m_imageView(other.m_imageView),
+      m_allocation(other.m_allocation),
+      m_extent(other.m_extent),
+      m_format(other.m_format),
+      m_device(other.m_device),
+      m_allocator(other.m_allocator)
 {
     other.m_image = VK_NULL_HANDLE;
     other.m_imageView = VK_NULL_HANDLE;

@@ -218,7 +218,8 @@ GraphicsPipeline::GraphicsPipeline(
 }
 
 
-GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) noexcept : Pipeline(std::move(other))
+GraphicsPipeline::GraphicsPipeline(GraphicsPipeline&& other) noexcept
+    : Pipeline(std::move(other))
 {
     // logic if i add more data to move thatn base class
 }
