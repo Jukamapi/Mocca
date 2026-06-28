@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/event.h"
-#include "engine/renderer/renderer.h"
+#include "engine/renderer.h"
 #include "platform/window.h"
 
 

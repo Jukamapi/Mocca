@@ -53,7 +53,7 @@ target_sources(mocca PRIVATE
     src/platform/vulkan/commands/frame_manager.cpp
 
     # renderer
-    src/engine/renderer/renderer.cpp
+    src/engine/renderer.cpp
 
     # vendor init
     ${MOCCA_VENDOR}/vendor_init.cpp
@@ -71,8 +71,8 @@ target_sources(mocca PUBLIC
 
         # engine
         src/engine/application.h
-        src/engine/renderer/renderer.h
-        src/engine/renderer/render_feature.h
+        src/engine/renderer.h
+        src/engine/render_feature.h
 
         # platform
         src/platform/window.h

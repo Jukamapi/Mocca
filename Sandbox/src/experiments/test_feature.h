@@ -1,7 +1,7 @@
 #pragma once
 
-#include "engine/renderer/render_feature.h"
-#include "engine/renderer/renderer.h"
+#include "engine/render_feature.h"
+#include "engine/renderer.h"
 #include "platform/vulkan/pipeline/graphics_pipeline.h"
 #include "platform/vulkan/resources/descriptor_allocator.h"
 #include "platform/vulkan/resources/descriptor_layout.h"
