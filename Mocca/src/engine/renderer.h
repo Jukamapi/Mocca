@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/types.h"
-#include "engine/renderer/render_feature.h"
+#include "engine/render_feature.h"
 #include "platform/vulkan/commands/frame_manager.h"
 #include "platform/vulkan/core/context.h"
 #include "platform/vulkan/resources/swapchain_manager.h"
