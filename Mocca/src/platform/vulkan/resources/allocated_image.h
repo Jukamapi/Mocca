@@ -2,7 +2,7 @@
 
 #include <volk.h>
 
-#include "platform/vulkan/core/vma_alloc.h"
+#include "platform/vulkan/core/gpu_alloc.h"
 
 class AllocatedImage
 {

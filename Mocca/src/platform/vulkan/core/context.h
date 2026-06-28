@@ -1,10 +1,11 @@
 #pragma once
 
+#include "platform/vulkan/core/gpu_alloc.h"
 #include "platform/vulkan/core/instance.h"
 #include "platform/vulkan/core/logical_device.h"
 #include "platform/vulkan/core/physical_device.h"
 #include "platform/vulkan/core/surface.h"
-#include "platform/vulkan/core/vma_alloc.h"
+
 
 #include <volk.h>
 
@@ -33,7 +34,7 @@ public:
     {
         return m_logicalDevice;
     }
-    const VmaAlloc& getVmaAlloc() const
+    const GpuAlloc& getVmaAlloc() const
     {
         return m_vmaAlloc;
     }
@@ -43,5 +44,5 @@ private:
     Surface m_surface;
     PhysicalDevice m_physicalDevice;
     LogicalDevice m_logicalDevice;
-    VmaAlloc m_vmaAlloc;
+    GpuAlloc m_vmaAlloc;
 };

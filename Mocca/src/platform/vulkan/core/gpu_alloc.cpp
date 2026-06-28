@@ -1,9 +1,9 @@
-#include "vma_alloc.h"
+#include "gpu_alloc.h"
 
-#include "platform/vulkan/vk_check.h"
+#include "platform/vulkan/utils/vk_check.h"
 
 
-VmaAlloc::VmaAlloc(VkPhysicalDevice physicalDevice, VkDevice device, VkInstance instance)
+GpuAlloc::GpuAlloc(VkPhysicalDevice physicalDevice, VkDevice device, VkInstance instance)
 {
 
     VmaVulkanFunctions vulkanFunctions{};
@@ -23,7 +23,7 @@ VmaAlloc::VmaAlloc(VkPhysicalDevice physicalDevice, VkDevice device, VkInstance 
     VK_CHECK(vmaCreateAllocator(&allocatorInfo, &m_allocator));
 }
 
-VmaAlloc::~VmaAlloc()
+GpuAlloc::~GpuAlloc()
 {
     vmaDestroyAllocator(m_allocator);
 }

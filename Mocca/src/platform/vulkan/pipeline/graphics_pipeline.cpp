@@ -1,7 +1,7 @@
 #include "graphics_pipeline.h"
 
 #include "platform/vulkan/resources/descriptor_layout.h"
-#include "platform/vulkan/vk_check.h"
+#include "platform/vulkan/utils/vk_check.h"
 
 
 // TODO: Utilize the deletionQueue

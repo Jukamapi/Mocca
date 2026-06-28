@@ -3,6 +3,8 @@
 #include <volk.h>
 #include <vector>
 
+
+// TODO: this is where i ended off at, trying to make compute and graphics pipelines
 class Pipeline
 {
 public:

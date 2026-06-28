@@ -39,8 +39,8 @@ target_sources(mocca PRIVATE
     src/platform/vulkan/core/physical_device.cpp
     src/platform/vulkan/core/logical_device.cpp
     src/platform/vulkan/core/surface.cpp
-    src/platform/vulkan/core/vma_alloc.cpp
-    src/platform/vulkan/vk_check.cpp
+    src/platform/vulkan/core/gpu_alloc.cpp
+    src/platform/vulkan/utils/vk_check.cpp
     src/platform/vulkan/resources/swapchain.cpp
     src/platform/vulkan/resources/swapchain_manager.cpp
     src/platform/vulkan/resources/allocated_image.cpp
@@ -81,9 +81,9 @@ target_sources(mocca PUBLIC
         src/platform/vulkan/core/physical_device.h
         src/platform/vulkan/core/logical_device.h
         src/platform/vulkan/core/surface.h
-        src/platform/vulkan/core/vma_alloc.h
-        src/platform/vulkan/vk_check.h
-        src/platform/vulkan/vk_types.h
+        src/platform/vulkan/core/gpu_alloc.h
+        src/platform/vulkan/utils/vk_check.h
+        src/platform/vulkan/utils/vk_types.h
         src/platform/vulkan/resources/swapchain.h
         src/platform/vulkan/resources/swapchain_manager.h
         src/platform/vulkan/resources/allocated_image.h
@@ -94,7 +94,7 @@ target_sources(mocca PUBLIC
         src/platform/vulkan/pipeline/compute_pipeline.h
         src/platform/vulkan/commands/command_pool.h
         src/platform/vulkan/commands/frame_manager.h
-        src/platform/vulkan/commands/deletion_queue.h
+        src/platform/vulkan/resources/deletion_queue.h
 
         # resource
         src/resource/loader.h

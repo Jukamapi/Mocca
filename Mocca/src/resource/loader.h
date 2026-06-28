@@ -7,7 +7,7 @@
 
 
 // TODO: Implement AssetManager
-static std::vector<char> readFile(const std::string& fileName)
+inline std::vector<char> readFile(const std::string& fileName)
 {
     std::filesystem::path absolutePath = std::filesystem::absolute(fileName);
 
@@ -34,7 +34,7 @@ static std::vector<char> readFile(const std::string& fileName)
     return buffer;
 }
 
-static std::vector<char> loadShader(const std::string& shaderName)
+inline std::vector<char> loadShader(const std::string& shaderName)
 {
 #ifdef SHADER_DIR
     // cmake path + filename

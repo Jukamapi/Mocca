@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform/vulkan/vk_types.h"
+#include "platform/vulkan/utils/vk_types.h"
 
 #include <vector>
 

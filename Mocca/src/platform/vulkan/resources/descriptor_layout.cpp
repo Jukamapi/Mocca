@@ -1,6 +1,6 @@
 #include "descriptor_layout.h"
 
-#include "platform/vulkan/vk_check.h"
+#include "platform/vulkan/utils/vk_check.h"
 
 VkDescriptorSetLayoutBinding DescriptorLayout::binding(
     uint32_t binding, VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t count
