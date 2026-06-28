@@ -9,10 +9,10 @@ DescriptorAllocator::DescriptorAllocator(VkDevice device, uint32_t maxSets, std:
     m_device = device;
 
     std::vector<VkDescriptorPoolSize> poolSizes;
-    for(PoolSizeRatio ratio : poolRatios)
+    for(PoolSizeRatio poolRatio : poolRatios)
     {
         poolSizes.push_back(
-            VkDescriptorPoolSize{.type = ratio.type, .descriptorCount = uint32_t(ratio.ratio * maxSets)}
+            VkDescriptorPoolSize{.type = poolRatio.type, .descriptorCount = uint32_t(poolRatio.ratio * maxSets)}
         );
     }
 
