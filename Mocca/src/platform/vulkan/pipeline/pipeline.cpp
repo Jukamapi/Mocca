@@ -2,7 +2,10 @@
 
 #include "platform/vulkan/utils/vk_check.h"
 
-Pipeline::Pipeline(VkDevice device) {}
+Pipeline::Pipeline(VkDevice device)
+    : m_device(device)
+{
+}
 
 Pipeline::Pipeline(Pipeline&& other) noexcept
     : m_pipelineLayout(other.m_pipelineLayout),

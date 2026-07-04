@@ -20,7 +20,7 @@ public:
         m_renderer.pushFeature(std::make_unique<TestFeature>(m_renderer));
     }
 
-    void onUpdate(float deltaTime) override
+    void onTick(float deltaTime) override
     {
         static bool wasPressed = false;
         bool isPressed = Input::isKeyDown(Key::Space);

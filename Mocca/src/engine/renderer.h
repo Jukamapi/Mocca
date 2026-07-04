@@ -66,17 +66,7 @@ private:
     bool processResize();
 
     // helper method for changing images
-    void transitionImage(
-        VkCommandBuffer cmd,
-        VkImage image,
-        VkImageLayout oldLayout,
-        VkImageLayout newLayout,
-        VkAccessFlags2 srcAccess,
-        VkAccessFlags2 dstAccess,
-        VkPipelineStageFlags2 srcStage,
-        VkPipelineStageFlags2 dstStage,
-        VkImageAspectFlags aspectMask
-    );
+    void transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 
     // copies an image from one place to another
     // handles scaling, format conversion between high precision to standard

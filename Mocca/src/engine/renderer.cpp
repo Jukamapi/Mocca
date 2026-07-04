@@ -7,8 +7,9 @@
 #include "platform/vulkan/resources/swapchain.h"
 #include "platform/vulkan/utils/vk_check.h"
 
-
+#include <cassert>
 #include <stdexcept>
+
 
 Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     : m_context(window),
@@ -114,12 +115,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         currentFrame.colorImage.getImage(),
         VK_IMAGE_LAYOUT_UNDEFINED,
         // TODO: Have to change this when changing to compute
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        VK_ACCESS_2_NONE,
-        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-        VK_PIPELINE_STAGE_2_NONE,
-        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_IMAGE_ASPECT_COLOR_BIT
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
     );
 
     // depth image to write mode
@@ -127,12 +123,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         commandBuffer,
         currentFrame.depthImage.getImage(),
         VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-        VK_ACCESS_2_NONE,
-        VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-        VK_PIPELINE_STAGE_2_NONE,
-        VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-        VK_IMAGE_ASPECT_DEPTH_BIT
+        VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
     );
 
     VkRenderingAttachmentInfo colorAttachmentInfo{
@@ -194,12 +185,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         commandBuffer,
         currentFrame.colorImage.getImage(),
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-        VK_ACCESS_2_TRANSFER_READ_BIT,
-        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_IMAGE_ASPECT_COLOR_BIT
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
     );
 
     // prep swapchain image for blit
@@ -207,12 +193,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         commandBuffer,
         swapchain.getImages()[imageIndex],
         VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_ACCESS_2_NONE,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        VK_PIPELINE_STAGE_2_NONE,
-        VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_IMAGE_ASPECT_COLOR_BIT
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
     );
 
     blitImage(
@@ -228,12 +209,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         commandBuffer,
         swapchain.getImages()[imageIndex],
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        VK_ACCESS_2_NONE,
-        VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_PIPELINE_STAGE_2_NONE,
-        VK_IMAGE_ASPECT_COLOR_BIT
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
     );
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
@@ -324,6 +300,106 @@ struct ImageTransition
 
 other option is to create specializations if i use specific args many times
 */
+void Renderer::transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
+{
+    VkAccessFlags2 srcAccess{};
+    VkAccessFlags2 dstAccess{};
+    VkPipelineStageFlags2 srcStage{};
+    VkPipelineStageFlags2 dstStage{};
+    VkImageAspectFlags aspectMask{};
+
+    switch(oldLayout)
+    {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        srcAccess = VK_ACCESS_2_NONE;
+        srcStage = VK_PIPELINE_STAGE_2_NONE;
+        break;
+
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        srcAccess = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        srcStage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        srcAccess = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        srcStage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        break;
+
+    default:
+        assert(false && "Old layout type is not supported!");
+        break;
+    }
+
+    switch(newLayout)
+    {
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        dstAccess = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        dstStage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+        dstAccess = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dstStage = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        dstAccess = VK_ACCESS_2_TRANSFER_READ_BIT;
+        dstStage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        dstAccess = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        dstStage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+        dstAccess = VK_ACCESS_2_NONE;
+        dstStage = VK_PIPELINE_STAGE_2_NONE;
+        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        break;
+
+    default:
+        assert(false && "New layout type is not supported!");
+        break;
+    }
+
+
+    VkImageSubresourceRange range{
+        .aspectMask = aspectMask,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+    };
+
+    VkImageMemoryBarrier2 barrier{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .srcStageMask = srcStage,
+        .srcAccessMask = srcAccess,
+        .dstStageMask = dstStage,
+        .dstAccessMask = dstAccess,
+        .oldLayout = oldLayout,
+        .newLayout = newLayout,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = image,
+        .subresourceRange = range,
+    };
+
+    VkDependencyInfo depInfo{
+        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &barrier,
+    };
+
+    vkCmdPipelineBarrier2(cmd, &depInfo);
+}
+
+/*
 void Renderer::transitionImage(
     VkCommandBuffer cmd,
     VkImage image,
@@ -367,6 +443,7 @@ void Renderer::transitionImage(
 
     vkCmdPipelineBarrier2(cmd, &depInfo);
 }
+*/
 
 void Renderer::blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, VkImage dst, VkExtent2D dstExtent)
 {

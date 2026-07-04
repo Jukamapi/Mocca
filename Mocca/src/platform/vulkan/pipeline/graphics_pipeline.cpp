@@ -4,7 +4,6 @@
 #include "platform/vulkan/utils/vk_check.h"
 
 
-// TODO: Utilize the deletionQueue
 GraphicsPipeline::GraphicsPipeline(
     VkDevice device,
     VkFormat colorFormat,
@@ -15,7 +14,7 @@ GraphicsPipeline::GraphicsPipeline(
 )
     : Pipeline(device)
 {
-    // can be destroyed after pipeline creation is finished
+    // can be destroyed after pipeline creation
     VkShaderModule vertShaderModule{VK_NULL_HANDLE};
     VkShaderModule fragShaderModule{VK_NULL_HANDLE};
     try

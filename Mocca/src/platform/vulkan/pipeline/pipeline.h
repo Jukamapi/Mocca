@@ -16,12 +16,12 @@ public:
     Pipeline(Pipeline&&) noexcept;
     Pipeline& operator=(Pipeline&&) noexcept;
 
-    VkPipeline getHandle() const
+    virtual VkPipeline getHandle() const
     {
         return m_pipeline;
     }
 
-    VkPipelineLayout getLayout() const
+    virtual VkPipelineLayout getLayout() const
     {
         return m_pipelineLayout;
     }

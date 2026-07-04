@@ -9,8 +9,6 @@
 #include <thread>
 
 
-// TODO: in future implement component-based architecture
-
 // this utilizes extent provider to somewhat respect the boundaries of architecture
 // and so it doesn't have to include sdl as much since it's a big file
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
@@ -48,8 +46,6 @@ void Application::run()
 
     onShutdown();
 }
-
-// TODO: maybe get the event handling into seperate file?
 
 void Application::processInputs()
 {
@@ -98,7 +94,7 @@ void Application::tickLogic(float dt)
     processInputs();
 
     // sandbox logic
-    onUpdate(dt);
+    onTick(dt);
 
     // feature logic
     for(auto& feature : m_renderer.getFeatures())

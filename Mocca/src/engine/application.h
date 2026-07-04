@@ -30,9 +30,7 @@ protected:
     // render features have their own onRender
     virtual void onInit() {}
 
-    // TODO: rename so it doesnt clash with render_features logic
-    // right now it handles pressing
-    virtual void onUpdate(float deltaTime) {}
+    virtual void onTick(float deltaTime) {}
     virtual void onImgui() {}
     virtual void onShutdown() {}
 
