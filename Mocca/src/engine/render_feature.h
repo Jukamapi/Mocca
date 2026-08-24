@@ -5,7 +5,7 @@
 // TODO: children features should request pipeline instead of creating new one
 // probably implement this when 2 renderFeatures utilize exactly the same pipelines
 
-// render features is the system that allows for "plug & run"
+// render features allows for "plug & run"
 class RenderFeature
 {
 public:

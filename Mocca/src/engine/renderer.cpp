@@ -10,6 +10,7 @@
 #include <cassert>
 #include <stdexcept>
 
+// TODO: A lot is set up for graphics pipeline already, will have to come back as right now im working with compute
 
 Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     : m_context(window),
@@ -115,7 +116,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         currentFrame.colorImage.getImage(),
         VK_IMAGE_LAYOUT_UNDEFINED,
         // TODO: Have to change this when changing to compute
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        VK_IMAGE_LAYOUT_GENERAL
     );
 
     // depth image to write mode
@@ -156,7 +157,8 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         .pDepthAttachment = &depthAttachmentInfo
     };
 
-    vkCmdBeginRendering(commandBuffer, &renderingInfo);
+    // TODO:
+    // vkCmdBeginRendering(commandBuffer, &renderingInfo);
 
     VkViewport viewport{
         .x = 0.0f,
@@ -178,13 +180,14 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
             feature->onRender(commandBuffer, currentFrame.colorImage.getImageView(), imageIndex);
     }
 
-    vkCmdEndRendering(commandBuffer);
+    // TODO:
+    // vkCmdEndRendering(commandBuffer);
 
     // prep color image for blit
     transitionImage(
         commandBuffer,
         currentFrame.colorImage.getImage(),
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_GENERAL,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
     );
 
@@ -283,23 +286,6 @@ void Renderer::pushFeature(std::unique_ptr<RenderFeature> feature)
     m_features.push_back(std::move(feature));
 }
 
-/*
-TODO: 8 parameters is a bit too much and a bit too error prone in my taste
-maybe create a struct that would then be taken in here?
-
-struct ImageTransition
-{
-    VkImageLayout oldLayout;
-    VkImageLayout newLayout;
-    VkAccessFlags2 srcAccess;
-    VkAccessFlags2 dstAccess;
-    VkPipelineStageFlags2 srcStage;
-    VkPipelineStageFlags2 dstStage;
-    VkImageAspectFlags aspectMask;
-};
-
-other option is to create specializations if i use specific args many times
-*/
 void Renderer::transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
     VkAccessFlags2 srcAccess{};
@@ -323,6 +309,11 @@ void Renderer::transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
         srcAccess = VK_ACCESS_2_TRANSFER_WRITE_BIT;
         srcStage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_GENERAL:
+        srcAccess = VK_ACCESS_2_SHADER_WRITE_BIT;
+        srcStage = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
         break;
 
     default:
@@ -362,6 +353,14 @@ void Renderer::transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout
         aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         break;
 
+    case VK_IMAGE_LAYOUT_GENERAL:
+        // dstAccess = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        dstAccess = VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT;
+        dstStage = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        break;
+
+
     default:
         assert(false && "New layout type is not supported!");
         break;
@@ -399,51 +398,6 @@ void Renderer::transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout
     vkCmdPipelineBarrier2(cmd, &depInfo);
 }
 
-/*
-void Renderer::transitionImage(
-    VkCommandBuffer cmd,
-    VkImage image,
-    VkImageLayout oldLayout,
-    VkImageLayout newLayout,
-    VkAccessFlags2 srcAccess,
-    VkAccessFlags2 dstAccess,
-    VkPipelineStageFlags2 srcStage,
-    VkPipelineStageFlags2 dstStage,
-    VkImageAspectFlags aspectMask
-)
-{
-
-    VkImageSubresourceRange range{
-        .aspectMask = aspectMask,
-        .baseMipLevel = 0,
-        .levelCount = 1,
-        .baseArrayLayer = 0,
-        .layerCount = 1,
-    };
-
-    VkImageMemoryBarrier2 barrier{
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-        .srcStageMask = srcStage,
-        .srcAccessMask = srcAccess,
-        .dstStageMask = dstStage,
-        .dstAccessMask = dstAccess,
-        .oldLayout = oldLayout,
-        .newLayout = newLayout,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = image,
-        .subresourceRange = range,
-    };
-
-    VkDependencyInfo depInfo{
-        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-        .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &barrier,
-    };
-
-    vkCmdPipelineBarrier2(cmd, &depInfo);
-}
-*/
 
 void Renderer::blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, VkImage dst, VkExtent2D dstExtent)
 {

@@ -6,7 +6,6 @@
 #include <vector>
 
 
-// TODO: Implement AssetManager
 inline std::vector<char> readFile(const std::string& fileName)
 {
     std::filesystem::path absolutePath = std::filesystem::absolute(fileName);

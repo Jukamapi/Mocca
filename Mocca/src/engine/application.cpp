@@ -10,7 +10,7 @@
 
 
 // this utilizes extent provider to somewhat respect the boundaries of architecture
-// and so it doesn't have to include sdl as much since it's a big file
+// and so it doesn't have to include sdl as much since it's big
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
     : m_window(width, height, title),
       m_renderer(m_window, [this]() -> Extent { return m_window.getDrawableSize(); })

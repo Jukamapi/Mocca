@@ -8,8 +8,7 @@
 
 class Context;
 
-// TODO: split into 2 separate classes?
-// handles instance creation and debugger creation
+
 class Instance
 {
 public:

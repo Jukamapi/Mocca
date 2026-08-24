@@ -56,6 +56,10 @@ public:
         m_swapchainManager.markDirty();
     }
 
+    const VkExtent2D getExtent() const
+    {
+        return {m_extentProvider().width, m_extentProvider().height};
+    }
 
 private:
     bool acquireNextImage(uint32_t& outImageIndex);
