@@ -48,6 +48,7 @@ target_sources(mocca PRIVATE
     src/platform/vulkan/resources/descriptor_allocator.cpp
     src/platform/vulkan/resources/descriptor_layout.cpp
     src/platform/vulkan/pipeline/pipeline.cpp
+    src/platform/vulkan/pipeline/pipeline_manager.cpp
     src/platform/vulkan/pipeline/graphics_pipeline.cpp
     src/platform/vulkan/pipeline/compute_pipeline.cpp
     src/platform/vulkan/commands/command_pool.cpp
@@ -92,6 +93,7 @@ target_sources(mocca PUBLIC
         src/platform/vulkan/resources/descriptor_allocator.h
         src/platform/vulkan/resources/descriptor_layout.h
         src/platform/vulkan/pipeline/pipeline.h
+        src/platform/vulkan/pipeline/pipeline_manager.h
         src/platform/vulkan/pipeline/graphics_pipeline.h
         src/platform/vulkan/pipeline/compute_pipeline.h
         src/platform/vulkan/commands/command_pool.h

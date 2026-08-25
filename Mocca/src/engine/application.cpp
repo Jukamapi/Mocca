@@ -99,16 +99,28 @@ void Application::tickLogic(float dt)
     // feature logic
     for(auto& feature : m_renderer.getFeatures())
     {
-        feature->onUpdate(dt);
+        if(feature->isEnabled())
+            feature->onUpdate(dt);
     }
 }
 
 void Application::tickRender(float dt)
 {
+    m_renderer.beginUiFrame();
+
+    // TODO: for global UI, might change name for clarity
+    onImgui();
+
+    for(auto& feature : m_renderer.getFeatures())
+    {
+        if(feature->isEnabled())
+            feature->onImgui();
+    }
+
+    m_renderer.endUiFrame();
+
     // calls each features' onRender
     m_renderer.drawFrame();
-
-    onImgui();
 }
 
 Application::~Application() {}

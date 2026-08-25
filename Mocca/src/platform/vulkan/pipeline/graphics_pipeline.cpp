@@ -5,6 +5,7 @@
 
 
 GraphicsPipeline::GraphicsPipeline(
+    const std::string& name,
     VkDevice device,
     VkFormat colorFormat,
     VkFormat depthFormat,
@@ -12,7 +13,7 @@ GraphicsPipeline::GraphicsPipeline(
     const std::vector<char>& vertCode,
     const std::vector<char>& fragCode
 )
-    : Pipeline(device)
+    : Pipeline(name, device)
 {
     // can be destroyed after pipeline creation
     VkShaderModule vertShaderModule{VK_NULL_HANDLE};

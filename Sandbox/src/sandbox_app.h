@@ -3,7 +3,10 @@
 #include "core/input.h"
 #include "engine/application.h"
 
+#include "experiments/imgui_feature.h"
 #include "experiments/test_feature.h"
+
+
 
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
@@ -22,6 +25,8 @@ public:
     void onInit() override
     {
         m_renderer.pushFeature(std::make_unique<TestFeature>(m_renderer));
+
+        m_renderer.pushFeature(std::make_unique<ImguiFeature>(m_renderer));
     }
 
     void onTick(float deltaTime) override
@@ -42,7 +47,12 @@ public:
         wasPressed = isPressed;
     }
 
-    void onImgui() override {}
+    void onImgui() override
+    {
+        ImGui::Begin("Global");
+        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+        ImGui::End();
+    }
 
 private:
 };

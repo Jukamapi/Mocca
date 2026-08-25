@@ -5,6 +5,7 @@
 #include <volk.h>
 
 #include <array>
+#include <string>
 #include <vector>
 
 class DescriptorLayout;
@@ -14,6 +15,7 @@ class GraphicsPipeline : public Pipeline
 public:
     GraphicsPipeline() = default;
     GraphicsPipeline(
+        const std::string& name,
         VkDevice device,
         VkFormat colorFormat,
         VkFormat depthFormat,
@@ -30,7 +32,7 @@ public:
     ~GraphicsPipeline() override = default;
 
 private:
-    static constexpr std::array<VkDynamicState, 2> m_dynamicStates{
+    inline static constexpr std::array<VkDynamicState, 2> m_dynamicStates{
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
     };

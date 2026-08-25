@@ -64,7 +64,8 @@ ImGuiManager::ImGuiManager(const Context& context, const Window& window, const S
 
     ImGui_ImplSDL2_InitForVulkan(window.getNativeWindow());
 
-    VkFormat lFormat = swapchain.getFormat();
+    // VkFormat lFormat = swapchain.getFormat();
+    VkFormat lFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
     ImGui_ImplVulkan_InitInfo initInfo{
         .Instance = context.getInstance().getHandle(),
         .PhysicalDevice = context.getPhysicalDevice().getHandle(),
@@ -114,64 +115,18 @@ void ImGuiManager::submit(std::function<void(VkCommandBuffer cmd)>&& function)
     VK_CHECK(vkWaitForFences(m_device, 1, &m_fence, true, 9999999999));
 }
 
-void ImGuiManager::perFrame()
+void ImGuiManager::beginFrame()
 {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame();
+
     ImGui::NewFrame();
+}
 
-    ImGui::ShowDemoWindow();
-
+void ImGuiManager::endFrame()
+{
     ImGui::Render();
 }
-
-void ImGuiManager::drawImGui(VkCommandBuffer cmd, VkImageView targetImageView, VkExtent2D extent)
-{
-    VkRenderingAttachmentInfo colorAttachment{
-        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .imageView = targetImageView,
-        .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    };
-
-
-    VkRenderingInfo renderInfo{
-        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-        .renderArea{
-            .offset = {0, 0},
-            .extent = extent,
-        },
-        .layerCount = 1,
-        .colorAttachmentCount = 1,
-        .pColorAttachments = &colorAttachment,
-    };
-
-    vkCmdBeginRendering(cmd, &renderInfo);
-
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
-
-    vkCmdEndRendering(cmd);
-}
-
-
-VkRenderingAttachmentInfo ImGuiManager::attachmentInfo(VkImageView view, VkClearValue* clear, VkImageLayout layout)
-{
-    VkRenderingAttachmentInfo colorAttachment{
-        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-        .pNext = nullptr,
-        .imageView = view,
-        .imageLayout = layout,
-        .loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
-        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-    };
-
-    if(clear)
-    {
-        colorAttachment.clearValue = *clear;
-    }
-
-    return colorAttachment;
-}
-
 
 ImGuiManager::~ImGuiManager()
 {
@@ -180,6 +135,8 @@ ImGuiManager::~ImGuiManager()
         vkDestroyFence(m_device, m_fence, nullptr);
     }
     ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
     if(m_descriptorPool != VK_NULL_HANDLE)
     {
         vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);

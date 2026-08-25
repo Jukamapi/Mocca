@@ -17,6 +17,7 @@ public:
     // optional overrides
     virtual void onResize(uint32_t width, uint32_t height) {};
     virtual void onUpdate(float deltaTime) {}
+    virtual void onImgui() {}
 
     void setEnabled(bool state)
     {

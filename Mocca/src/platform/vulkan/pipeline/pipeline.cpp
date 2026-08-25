@@ -2,15 +2,17 @@
 
 #include "platform/vulkan/utils/vk_check.h"
 
-Pipeline::Pipeline(VkDevice device)
-    : m_device(device)
+Pipeline::Pipeline(const std::string& name, VkDevice device)
+    : m_name(name),
+      m_device(device)
 {
 }
 
 Pipeline::Pipeline(Pipeline&& other) noexcept
     : m_pipelineLayout(other.m_pipelineLayout),
       m_pipeline(other.m_pipeline),
-      m_device(other.m_device)
+      m_device(other.m_device),
+      m_name(other.m_name)
 {
     other.m_device = VK_NULL_HANDLE;
     other.m_pipeline = VK_NULL_HANDLE;
@@ -26,6 +28,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) noexcept
         if(m_pipelineLayout != VK_NULL_HANDLE)
             vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 
+        // TODO: check if here adding "name" doesnt break stuff
         m_device = other.m_device;
         m_pipeline = other.m_pipeline;
         m_pipelineLayout = other.m_pipelineLayout;

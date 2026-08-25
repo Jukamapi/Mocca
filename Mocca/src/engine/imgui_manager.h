@@ -24,8 +24,13 @@ public:
     ImGuiManager& operator=(ImGuiManager&&) = delete;
 
     void submit(std::function<void(VkCommandBuffer cmd)>&& function);
-    void drawImGui(VkCommandBuffer cmd, VkImageView targetImageView, VkExtent2D extent);
-    void perFrame();
+
+    // void drawImGui(VkCommandBuffer cmd, VkImageView targetImageView, VkExtent2D extent);
+
+    // void perFrame();
+
+    void beginFrame();
+    void endFrame();
 
 private:
     VkRenderingAttachmentInfo attachmentInfo(VkImageView view, VkClearValue* clear, VkImageLayout layout);

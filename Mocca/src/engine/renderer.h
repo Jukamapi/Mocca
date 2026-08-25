@@ -29,10 +29,21 @@ public:
     void pushFeature(std::unique_ptr<RenderFeature> feature);
     void drawFrame();
 
+    void beginUiFrame()
+    {
+        m_imGuiManager.beginFrame();
+    }
+
+    void endUiFrame()
+    {
+        m_imGuiManager.endFrame();
+    }
+
     const std::vector<std::unique_ptr<RenderFeature>>& getFeatures() const
     {
         return m_features;
     }
+
 
     const Context& getContext() const
     {

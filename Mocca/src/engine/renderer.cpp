@@ -37,7 +37,6 @@ void Renderer::drawFrame()
     if(!acquireNextImage(imageIndex))
         return;
 
-    m_imGuiManager.perFrame();
     VkCommandBuffer cmd = recordCommandBuffer(imageIndex);
 
     submitAndPresent(imageIndex, cmd);
@@ -214,15 +213,6 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         commandBuffer,
         swapchain.getImages()[imageIndex],
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    );
-
-    m_imGuiManager.drawImGui(commandBuffer, swapchain.getImageViews()[imageIndex], m_renderExtent);
-
-    transitionImage(
-        commandBuffer,
-        swapchain.getImages()[imageIndex],
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
     );
 

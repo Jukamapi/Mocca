@@ -3,13 +3,20 @@
 #include "pipeline.h"
 #include "platform/vulkan/resources/descriptor_layout.h"
 
+#include <string>
 #include <vector>
+
 
 class ComputePipeline : public Pipeline
 {
 public:
     ComputePipeline() = default;
-    ComputePipeline(VkDevice device, const DescriptorLayout& descriptorLayout, const std::vector<char>& computeCode);
+    ComputePipeline(
+        const std::string& name,
+        VkDevice device,
+        const DescriptorLayout& descriptorLayout,
+        const std::vector<char>& computeCode
+    );
 
     ~ComputePipeline() override = default;
 

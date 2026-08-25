@@ -4,9 +4,13 @@
 #include "engine/renderer.h"
 #include "platform/vulkan/pipeline/compute_pipeline.h"
 #include "platform/vulkan/pipeline/graphics_pipeline.h"
+#include "platform/vulkan/pipeline/pipeline_manager.h"
 #include "platform/vulkan/resources/descriptor_allocator.h"
 #include "platform/vulkan/resources/descriptor_layout.h"
+#include "platform/vulkan/utils/vk_types.h"
 #include "resource/loader.h"
+
+#include <imgui.h>
 
 
 // TODO: it uses too much layers: loadShader -> resource (replace by AssetManager), directly touches m_pipeline and
@@ -18,7 +22,8 @@ class TestFeature : public RenderFeature
 public:
     TestFeature(const Renderer& renderer)
         : m_device(renderer.getContext().getLogicalDevice().getHandle()),
-          m_drawExtent(renderer.getExtent())
+          m_drawExtent(renderer.getExtent()),
+          m_pipelineManager(m_device)
     {
 
         auto binding0 = DescriptorLayout::binding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT);
@@ -31,9 +36,32 @@ public:
         int numSets{10};
         m_descriptorAllocator = DescriptorAllocator(m_device, numSets, ratios);
 
-        auto compCode = loadShader("shader.comp.spv");
+        auto skyShader = loadShader("sky.comp.spv");
+        auto gradientShader = loadShader("gradient_color.comp.spv");
 
-        m_pipeline = ComputePipeline{m_device, m_descriptorLayout, compCode};
+        m_skyPipeline = &m_pipelineManager.createComputePipeline("sky", m_descriptorLayout, skyShader);
+        m_gradientPipeline = &m_pipelineManager.createComputePipeline("gradient", m_descriptorLayout, gradientShader);
+
+        // gradient first --------------------------------------------
+        ComputeEffect gradient;
+        gradient.layout = m_pipelineManager.getPipeline("gradient")->getLayout();
+        gradient.name = "gradient";
+        gradient.data = {};
+
+        gradient.data.data1 = glm::vec4(1, 0, 0, 1);
+        gradient.data.data2 = glm::vec4(0, 0, 1, 1);
+
+        m_backgroundEffects.push_back(gradient);
+
+        // sky ------------------------------------------------
+        ComputeEffect sky;
+        sky.layout = m_pipelineManager.getPipeline("sky")->getLayout();
+        sky.name = "sky";
+        sky.data = {};
+
+        sky.data.data1 = glm::vec4(0.1, 0.2, 0.4, 0.97);
+
+        m_backgroundEffects.push_back(sky);
     }
 
     void onRender(VkCommandBuffer cmd, VkImageView drawImageView, uint32_t frameIndex) override
@@ -70,31 +98,76 @@ public:
         // TODO: bindless approach or descriptor set per frame
         vkUpdateDescriptorSets(m_device, 1, &drawImageWrite, 0, nullptr);
 
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline.getHandle());
+        for(const auto& effect : m_backgroundEffects)
+        {
+            vkCmdBindPipeline(
+                cmd,
+                VK_PIPELINE_BIND_POINT_COMPUTE,
+                m_pipelineManager.getPipeline(effect.name)->getHandle()
+            );
 
-        vkCmdBindDescriptorSets(
-            cmd,
-            VK_PIPELINE_BIND_POINT_COMPUTE,
-            m_pipeline.getLayout(),
-            0,
-            1,
-            &currentSet,
-            0,
-            nullptr
-        );
+            vkCmdBindDescriptorSets(
+                cmd,
+                VK_PIPELINE_BIND_POINT_COMPUTE,
+                m_pipelineManager.getPipeline(effect.name)->getLayout(),
+                0,
+                1,
+                &currentSet,
+                0,
+                nullptr
+            );
 
-        vkCmdDispatch(cmd, std::ceil(m_drawExtent.width / 16.0), std::ceil(m_drawExtent.height / 16.0), 1);
+            vkCmdPushConstants(
+                cmd,
+                m_pipelineManager.getPipeline(effect.name)->getLayout(),
+                VK_SHADER_STAGE_COMPUTE_BIT,
+                0,
+                sizeof(ComputePushConstants),
+                &effect
+            );
+
+            vkCmdDispatch(cmd, std::ceil(m_drawExtent.width / 16.0), std::ceil(m_drawExtent.height / 16.0), 1);
+        }
 
         // vkCmdDraw(cmd, 3, 1, 0, 0);
     }
 
+    void onImgui() override
+    {
+        // ImGui::Begin("Compute Shader Tweaks");
+
+        // if(m_backgroundEffects.size() > 0)
+        // {
+        //     ImGui::Text("Gradient Shader Colors:");
+        //     ImGui::ColorEdit4("Color Start", &m_backgroundEffects[0].data.data1.x);
+        //     ImGui::ColorEdit4("Color End", &m_backgroundEffects[0].data.data2.x);
+        // }
+
+        // if(m_backgroundEffects.size() > 1)
+        // {
+        //     ImGui::Separator();
+        //     ImGui::Text("Sky Shader Color:");
+        //     ImGui::ColorEdit4("Sky", &m_backgroundEffects[1].data.data1.x);
+        // }
+
+        // ImGui::End();
+    }
 
 private:
     VkDevice m_device{VK_NULL_HANDLE};
     VkImageView m_drawImageView{VK_NULL_HANDLE};
-    ComputePipeline m_pipeline;
+
+    // doing it this way so they are non-owning
+    PipelineManager m_pipelineManager;
+
+    ComputePipeline* m_gradientPipeline;
+    ComputePipeline* m_skyPipeline;
+
     DescriptorLayout m_descriptorLayout;
     DescriptorAllocator m_descriptorAllocator;
     std::vector<VkDescriptorSet> m_descriptorSets;
     VkExtent2D m_drawExtent{};
+
+    std::vector<ComputeEffect> m_backgroundEffects;
+    int m_currentBackgroundEffect{0};
 };
