@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/types.h"
+#include "engine/imgui_manager.h"
 #include "engine/render_feature.h"
 #include "platform/vulkan/commands/frame_manager.h"
 #include "platform/vulkan/core/context.h"
@@ -91,5 +92,6 @@ private:
     SwapchainManager m_swapchainManager;
     FrameManager m_frameManager;
     std::vector<std::unique_ptr<RenderFeature>> m_features;
+    ImGuiManager m_imGuiManager;
     bool m_isSuspended{false};
 };

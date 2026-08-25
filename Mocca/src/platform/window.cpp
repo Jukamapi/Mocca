@@ -7,6 +7,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 
+#include <imgui_impl_sdl2.h>
+
 #include <cassert>
 #include <stdexcept>
 
@@ -131,6 +133,8 @@ void Window::pollEvents()
             Input::mouseY = event.motion.y;
             break;
         }
+
+        ImGui_ImplSDL2_ProcessEvent(&event);
     }
 }
 

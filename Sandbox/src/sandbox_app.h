@@ -5,6 +5,10 @@
 
 #include "experiments/test_feature.h"
 
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_vulkan.h>
+
 #include <print>
 
 class MyApp : public Application
@@ -37,6 +41,8 @@ public:
         }
         wasPressed = isPressed;
     }
+
+    void onImgui() override {}
 
 private:
 };

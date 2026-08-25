@@ -6,13 +6,10 @@
 #include "platform/vulkan/resources/swapchain.h"
 #include "platform/window.h"
 
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_vulkan.h>
 
-#include "imgui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_vulkan.h"
-
-
-// TODO: add this code to run() function in rendering loop
 ImGuiManager::ImGuiManager(const Context& context, const Window& window, const Swapchain& swapchain)
     : m_device(context.getLogicalDevice().getHandle()),
       m_graphicsQueue(context.getLogicalDevice().getGraphicsQueue()),
@@ -56,12 +53,12 @@ ImGuiManager::ImGuiManager(const Context& context, const Window& window, const S
         .pPoolSizes = pool_sizes
     };
 
-    VkDescriptorPool imguiPool;
-    VK_CHECK(vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &imguiPool));
+    VK_CHECK(vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &m_descriptorPool));
 
     // beginning of imgui initialization
     ImGui::CreateContext();
 
+    // TODO: not sure if this will work
     ImGuiIO& io = ImGui::GetIO();
     io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
@@ -73,7 +70,7 @@ ImGuiManager::ImGuiManager(const Context& context, const Window& window, const S
         .PhysicalDevice = context.getPhysicalDevice().getHandle(),
         .Device = m_device,
         .Queue = m_graphicsQueue,
-        .DescriptorPool = imguiPool,
+        .DescriptorPool = m_descriptorPool,
         .MinImageCount = 3,
         .ImageCount = 3,
         .UseDynamicRendering = true,
@@ -116,6 +113,65 @@ void ImGuiManager::submit(std::function<void(VkCommandBuffer cmd)>&& function)
     VK_CHECK(vkQueueSubmit2(m_graphicsQueue, 1, &submit, m_fence));
     VK_CHECK(vkWaitForFences(m_device, 1, &m_fence, true, 9999999999));
 }
+
+void ImGuiManager::perFrame()
+{
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::ShowDemoWindow();
+
+    ImGui::Render();
+}
+
+void ImGuiManager::drawImGui(VkCommandBuffer cmd, VkImageView targetImageView, VkExtent2D extent)
+{
+    VkRenderingAttachmentInfo colorAttachment{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .imageView = targetImageView,
+        .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    };
+
+
+    VkRenderingInfo renderInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+        .renderArea{
+            .offset = {0, 0},
+            .extent = extent,
+        },
+        .layerCount = 1,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &colorAttachment,
+    };
+
+    vkCmdBeginRendering(cmd, &renderInfo);
+
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+
+    vkCmdEndRendering(cmd);
+}
+
+
+VkRenderingAttachmentInfo ImGuiManager::attachmentInfo(VkImageView view, VkClearValue* clear, VkImageLayout layout)
+{
+    VkRenderingAttachmentInfo colorAttachment{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .pNext = nullptr,
+        .imageView = view,
+        .imageLayout = layout,
+        .loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+    };
+
+    if(clear)
+    {
+        colorAttachment.clearValue = *clear;
+    }
+
+    return colorAttachment;
+}
+
 
 ImGuiManager::~ImGuiManager()
 {
