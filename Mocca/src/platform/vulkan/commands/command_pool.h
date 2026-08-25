@@ -4,7 +4,6 @@
 
 #include <vector>
 
-class PhysicalDevice;
 struct QueueFamilyIndices;
 
 class CommandPool
@@ -22,6 +21,11 @@ public:
     const std::vector<VkCommandBuffer>& getBuffers() const
     {
         return m_buffers;
+    }
+
+    const int getBuffersCount() const
+    {
+        return m_buffers.size();
     }
 
     VkCommandBuffer getNextBuffer();

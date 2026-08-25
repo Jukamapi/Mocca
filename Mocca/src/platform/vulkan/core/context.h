@@ -22,6 +22,10 @@ public:
     Context(Context&&) = delete;
     Context& operator=(Context&&) = delete;
 
+    const Instance& getInstance() const
+    {
+        return m_instance;
+    }
     const Surface& getSurface() const
     {
         return m_surface;

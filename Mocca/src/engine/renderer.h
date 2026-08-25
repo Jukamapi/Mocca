@@ -43,6 +43,7 @@ public:
     {
         for(auto& feature : m_features)
         {
+            // tries to cast into type T, if not its nullptr
             T* casted = dynamic_cast<T*>(feature.get());
             if(casted)
                 return casted;

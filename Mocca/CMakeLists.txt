@@ -29,6 +29,7 @@ add_library(mocca STATIC)
 target_sources(mocca PRIVATE
     # engine
     src/engine/application.cpp
+    src/engine/imgui_manager.cpp
 
     # platform
     src/platform/window.cpp
@@ -73,6 +74,7 @@ target_sources(mocca PUBLIC
         src/engine/application.h
         src/engine/renderer.h
         src/engine/render_feature.h
+        src/engine/imgui_manager.h
 
         # platform
         src/platform/window.h
