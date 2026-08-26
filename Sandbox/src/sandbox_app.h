@@ -33,12 +33,12 @@ public:
 
         if(isPressed && !wasPressed)
         {
-            auto* triangle = m_renderer.getFeature<TestFeature>();
-            if(triangle)
+            auto* imguiFeature = m_renderer.getFeature<ImguiFeature>();
+            if(imguiFeature)
             {
-                bool currentState = triangle->isEnabled();
-                triangle->setEnabled(!currentState);
-                std::println("Triangle is now: {}", !currentState ? "OFF" : "ON");
+                bool currentState = imguiFeature->isEnabled();
+                imguiFeature->setEnabled(!currentState);
+                std::println("ImGui is now: {}", !currentState ? "OFF" : "ON");
             }
         }
         wasPressed = isPressed;

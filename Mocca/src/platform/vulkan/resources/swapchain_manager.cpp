@@ -23,8 +23,6 @@ SwapchainManager::SwapchainManager(
 
 bool SwapchainManager::recreate(Extent newExtent)
 {
-    if(newExtent.width == 0 || newExtent.height == 0)
-        return false;
 
     SwapchainSupportDetails details = m_physicalDevice.querySwapChainSupport(m_physicalDevice.getHandle(), m_surface);
 

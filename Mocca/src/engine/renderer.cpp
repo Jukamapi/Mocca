@@ -208,21 +208,12 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         swapchain.getExtent()
     );
 
-    // section for imgui
     transitionImage(
         commandBuffer,
         swapchain.getImages()[imageIndex],
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
     );
-
-    // give image back to swapchain for present
-    // transitionImage(
-    //     commandBuffer,
-    //     swapchain.getImages()[imageIndex],
-    //     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    //     VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-    // );
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
 
