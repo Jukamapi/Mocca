@@ -48,6 +48,11 @@ public:
         vkCmdEndRendering(cmd);
     }
 
+    void onResize(uint32_t width, uint32_t height) override
+    {
+        m_drawExtent = {width, height};
+    }
+
 private:
-    VkExtent2D m_drawExtent{};
+    VkExtent2D m_drawExtent;
 };

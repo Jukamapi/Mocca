@@ -9,7 +9,8 @@ SwapchainManager::SwapchainManager(
 )
     : m_physicalDevice(physicalDevice),
       m_logicalDevice(logicalDevice),
-      m_surface(surface)
+      m_surface(surface),
+      m_currentExtent(initialExtent)
 {
     m_swapchain = std::make_unique<Swapchain>(
         m_physicalDevice.querySwapChainSupport(m_physicalDevice.getHandle(), m_surface),
@@ -20,24 +21,33 @@ SwapchainManager::SwapchainManager(
     );
 }
 
-void SwapchainManager::recreate(Extent newExtent)
+bool SwapchainManager::recreate(Extent newExtent)
 {
-    m_currentExtent = newExtent;
-
-    vkDeviceWaitIdle(m_logicalDevice);
+    if(newExtent.width == 0 || newExtent.height == 0)
+        return false;
 
     SwapchainSupportDetails details = m_physicalDevice.querySwapChainSupport(m_physicalDevice.getHandle(), m_surface);
+
+    VkExtent2D resolvedExtent = Swapchain::chooseSwapExtent(details.capabilities, newExtent.width, newExtent.height);
+
+    if(resolvedExtent.width == 0 || resolvedExtent.height == 0)
+        return false;
+
+    m_currentExtent = {resolvedExtent.width, resolvedExtent.height};
+
+    vkDeviceWaitIdle(m_logicalDevice);
 
     Swapchain newSwapchain{
         details,
         m_physicalDevice.getQueueFamilyIndices(),
         m_logicalDevice,
         m_surface,
-        newExtent,
+        m_currentExtent,
         m_swapchain->getHandle()
     };
 
     *m_swapchain = std::move(newSwapchain);
+    return true;
 }
 
 ResizeResult SwapchainManager::handleResize(Extent newExtent)
@@ -48,7 +58,11 @@ ResizeResult SwapchainManager::handleResize(Extent newExtent)
     if(newExtent.width == 0 || newExtent.height == 0)
         return ResizeResult::Skipped;
 
-    recreate(newExtent);
-    m_isDirty = false;
-    return ResizeResult::Recreated;
+    if(recreate(newExtent))
+    {
+        m_isDirty = false;
+        return ResizeResult::Recreated;
+    }
+
+    return ResizeResult::Skipped;
 }

@@ -26,3 +26,5 @@ shaders/*.spv
 *.dll
 *.lib
 *.pdb
+
+imgui.ini

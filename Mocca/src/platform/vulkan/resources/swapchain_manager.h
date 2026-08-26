@@ -21,7 +21,7 @@ public:
     );
 
     ResizeResult handleResize(Extent newExtent);
-    void recreate(Extent newExtent);
+    bool recreate(Extent newExtent);
 
     Swapchain& getSwapchain()
     {

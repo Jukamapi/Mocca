@@ -51,6 +51,10 @@ public:
         return m_swapChainImageViews;
     }
 
+    static VkExtent2D chooseSwapExtent(
+        const VkSurfaceCapabilitiesKHR& capabilities, uint32_t windowWidth, uint32_t windowHeight
+    );
+
 private:
     VkSwapchainKHR m_swapchain{VK_NULL_HANDLE};
     VkDevice m_logicalDevice{VK_NULL_HANDLE};
@@ -62,9 +66,6 @@ private:
     // helpers
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) const;
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
-    VkExtent2D chooseSwapExtent(
-        const VkSurfaceCapabilitiesKHR& capabilities, uint32_t windowWidth, uint32_t windowHeight
-    ) const;
 
     void createImageViews();
     void destroyImageViews();

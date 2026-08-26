@@ -119,9 +119,10 @@ VkPresentModeKHR Swapchain::chooseSwapPresentMode(const std::vector<VkPresentMod
 
 VkExtent2D Swapchain::chooseSwapExtent(
     const VkSurfaceCapabilitiesKHR& capabilities, uint32_t windowWidth, uint32_t windowHeight
-) const
+)
 {
-    if(capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+    if(capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max() &&
+       capabilities.currentExtent.width > 0 && capabilities.currentExtent.height > 0)
     {
         return capabilities.currentExtent;
     }

@@ -36,8 +36,9 @@ public:
         int numSets{10};
         m_descriptorAllocator = DescriptorAllocator(m_device, numSets, ratios);
 
-        auto skyShader = loadShader("sky.comp.spv");
         auto gradientShader = loadShader("gradient_color.comp.spv");
+        auto skyShader = loadShader("sky.comp.spv");
+
 
         m_skyPipeline = &m_pipelineManager.createComputePipeline("sky", m_descriptorLayout, skyShader);
         m_gradientPipeline = &m_pipelineManager.createComputePipeline("gradient", m_descriptorLayout, gradientShader);
@@ -52,6 +53,7 @@ public:
         gradient.data.data2 = glm::vec4(0, 0, 1, 1);
 
         m_backgroundEffects.push_back(gradient);
+
 
         // sky ------------------------------------------------
         ComputeEffect sky;
@@ -98,59 +100,58 @@ public:
         // TODO: bindless approach or descriptor set per frame
         vkUpdateDescriptorSets(m_device, 1, &drawImageWrite, 0, nullptr);
 
-        for(const auto& effect : m_backgroundEffects)
-        {
-            vkCmdBindPipeline(
-                cmd,
-                VK_PIPELINE_BIND_POINT_COMPUTE,
-                m_pipelineManager.getPipeline(effect.name)->getHandle()
-            );
 
-            vkCmdBindDescriptorSets(
-                cmd,
-                VK_PIPELINE_BIND_POINT_COMPUTE,
-                m_pipelineManager.getPipeline(effect.name)->getLayout(),
-                0,
-                1,
-                &currentSet,
-                0,
-                nullptr
-            );
+        vkCmdBindPipeline(
+            cmd,
+            VK_PIPELINE_BIND_POINT_COMPUTE,
+            m_pipelineManager.getPipeline(m_backgroundEffects[m_currentBackgroundEffect].name)->getHandle()
+        );
 
-            vkCmdPushConstants(
-                cmd,
-                m_pipelineManager.getPipeline(effect.name)->getLayout(),
-                VK_SHADER_STAGE_COMPUTE_BIT,
-                0,
-                sizeof(ComputePushConstants),
-                &effect
-            );
+        vkCmdBindDescriptorSets(
+            cmd,
+            VK_PIPELINE_BIND_POINT_COMPUTE,
+            m_pipelineManager.getPipeline(m_backgroundEffects[m_currentBackgroundEffect].name)->getLayout(),
+            0,
+            1,
+            &currentSet,
+            0,
+            nullptr
+        );
 
-            vkCmdDispatch(cmd, std::ceil(m_drawExtent.width / 16.0), std::ceil(m_drawExtent.height / 16.0), 1);
-        }
+        vkCmdPushConstants(
+            cmd,
+            m_pipelineManager.getPipeline(m_backgroundEffects[m_currentBackgroundEffect].name)->getLayout(),
+            VK_SHADER_STAGE_COMPUTE_BIT,
+            0,
+            sizeof(ComputePushConstants),
+            &m_backgroundEffects[m_currentBackgroundEffect].data
+        );
 
-        // vkCmdDraw(cmd, 3, 1, 0, 0);
+        vkCmdDispatch(cmd, std::ceil(m_drawExtent.width / 16.0), std::ceil(m_drawExtent.height / 16.0), 1);
     }
 
     void onImgui() override
     {
-        // ImGui::Begin("Compute Shader Tweaks");
+        if(ImGui::Begin("background"))
+        {
 
-        // if(m_backgroundEffects.size() > 0)
-        // {
-        //     ImGui::Text("Gradient Shader Colors:");
-        //     ImGui::ColorEdit4("Color Start", &m_backgroundEffects[0].data.data1.x);
-        //     ImGui::ColorEdit4("Color End", &m_backgroundEffects[0].data.data2.x);
-        // }
+            ComputeEffect& selected = m_backgroundEffects[m_currentBackgroundEffect];
 
-        // if(m_backgroundEffects.size() > 1)
-        // {
-        //     ImGui::Separator();
-        //     ImGui::Text("Sky Shader Color:");
-        //     ImGui::ColorEdit4("Sky", &m_backgroundEffects[1].data.data1.x);
-        // }
+            ImGui::Text("Selected effect: ", selected.name);
 
-        // ImGui::End();
+            ImGui::SliderInt("Effect Index", &m_currentBackgroundEffect, 0, m_backgroundEffects.size() - 1);
+
+            ImGui::InputFloat4("data1", (float*)&selected.data.data1);
+            ImGui::InputFloat4("data2", (float*)&selected.data.data2);
+            ImGui::InputFloat4("data3", (float*)&selected.data.data3);
+            ImGui::InputFloat4("data4", (float*)&selected.data.data4);
+        }
+        ImGui::End();
+    }
+
+    void onResize(uint32_t width, uint32_t height) override
+    {
+        m_drawExtent = {width, height};
     }
 
 private:

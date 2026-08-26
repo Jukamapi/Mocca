@@ -74,6 +74,11 @@ public:
         return {m_extentProvider().width, m_extentProvider().height};
     }
 
+    const ExtentProvider& getExtentProvider() const
+    {
+        return m_extentProvider;
+    }
+
 private:
     bool acquireNextImage(uint32_t& outImageIndex);
     VkCommandBuffer recordCommandBuffer(uint32_t imageIndex);
