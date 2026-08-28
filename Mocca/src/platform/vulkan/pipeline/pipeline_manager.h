@@ -30,7 +30,6 @@ public:
         const std::string& name,
         VkFormat colorFormat,
         VkFormat depthFormat,
-        const DescriptorLayout& descriptorLayout,
         const std::vector<char>& vertCode,
         const std::vector<char>& fragCode
     );

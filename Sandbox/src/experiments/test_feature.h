@@ -3,7 +3,6 @@
 #include "engine/render_feature.h"
 #include "engine/renderer.h"
 #include "platform/vulkan/pipeline/compute_pipeline.h"
-#include "platform/vulkan/pipeline/graphics_pipeline.h"
 #include "platform/vulkan/pipeline/pipeline_manager.h"
 #include "platform/vulkan/resources/descriptor_allocator.h"
 #include "platform/vulkan/resources/descriptor_layout.h"
@@ -13,9 +12,6 @@
 #include <imgui.h>
 
 
-// TODO: it uses too much layers: loadShader -> resource (replace by AssetManager), directly touches m_pipeline and
-// vulkan
-// TODO: add descriptorWriter class that simplifies descriptors writing
 class TestFeature : public RenderFeature
 {
 public:

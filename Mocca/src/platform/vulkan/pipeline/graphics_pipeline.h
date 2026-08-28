@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-class DescriptorLayout;
-
 class GraphicsPipeline : public Pipeline
 {
 public:
@@ -19,7 +17,6 @@ public:
         VkDevice device,
         VkFormat colorFormat,
         VkFormat depthFormat,
-        const DescriptorLayout& descriptorLayout,
         const std::vector<char>& vertCode,
         const std::vector<char>& fragCode
     );

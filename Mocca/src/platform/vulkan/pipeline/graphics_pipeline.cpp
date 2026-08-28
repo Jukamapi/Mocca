@@ -1,6 +1,5 @@
 #include "graphics_pipeline.h"
 
-#include "platform/vulkan/resources/descriptor_layout.h"
 #include "platform/vulkan/utils/vk_check.h"
 
 
@@ -9,7 +8,6 @@ GraphicsPipeline::GraphicsPipeline(
     VkDevice device,
     VkFormat colorFormat,
     VkFormat depthFormat,
-    const DescriptorLayout& descriptorLayout,
     const std::vector<char>& vertCode,
     const std::vector<char>& fragCode
 )

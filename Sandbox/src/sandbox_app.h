@@ -4,6 +4,8 @@
 #include "engine/application.h"
 #include "experiments/imgui_feature.h"
 #include "experiments/test_feature.h"
+#include "experiments/triangle_feature.h"
+
 
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
@@ -23,6 +25,8 @@ public:
     {
         m_renderer.pushFeature(std::make_unique<TestFeature>(m_renderer));
 
+        m_renderer.pushFeature(std::make_unique<TriangleFeature>(m_renderer));
+
         m_renderer.pushFeature(std::make_unique<ImguiFeature>());
     }
 
@@ -33,13 +37,12 @@ public:
 
         if(isPressed && !wasPressed)
         {
-            auto* imguiFeature = m_renderer.getFeature<ImguiFeature>();
-            if(imguiFeature)
+            auto* triangleFeature = m_renderer.getFeature<TriangleFeature>();
+            if(triangleFeature)
             {
-                // TODO: disables rendering of ImGui but can still interact
-                bool currentState = imguiFeature->isEnabled();
-                imguiFeature->setEnabled(!currentState);
-                std::println("ImGui is now: {}", !currentState ? "ON" : "OFF");
+                bool currentState = triangleFeature->isEnabled();
+                triangleFeature->setEnabled(!currentState);
+                std::println("Triangle is now: {}", !currentState ? "ON" : "OFF");
             }
         }
         wasPressed = isPressed;

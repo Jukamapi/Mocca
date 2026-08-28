@@ -42,7 +42,6 @@ GraphicsPipeline& PipelineManager::createGraphicsPipeline(
     const std::string& name,
     VkFormat colorFormat,
     VkFormat depthFormat,
-    const DescriptorLayout& descriptorLayout,
     const std::vector<char>& vertCode,
     const std::vector<char>& fragCode
 )
@@ -59,8 +58,7 @@ GraphicsPipeline& PipelineManager::createGraphicsPipeline(
         return *ptr;
     }
 
-    auto pipeline = std::make_unique<
-        GraphicsPipeline>(name, m_device, colorFormat, depthFormat, descriptorLayout, vertCode, fragCode);
+    auto pipeline = std::make_unique<GraphicsPipeline>(name, m_device, colorFormat, depthFormat, vertCode, fragCode);
 
     GraphicsPipeline& ref = *pipeline;
     m_pipelines[name] = std::move(pipeline);

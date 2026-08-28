@@ -100,6 +100,16 @@ public:
         return m_pipelineManager;
     }
 
+    const VkFormat& getDrawFormat() const
+    {
+        return DRAW_FORMAT;
+    }
+
+    const VkFormat& getDepthFormat() const
+    {
+        return DEPTH_FORMAT;
+    }
+
 private:
     bool acquireNextImage(uint32_t& outImageIndex);
     VkCommandBuffer recordCommandBuffer(uint32_t imageIndex);
