@@ -22,3 +22,9 @@ struct Extent
 
     uint32_t width, height;
 };
+
+enum class RenderPassType
+{
+    Compute,
+    Graphics
+};

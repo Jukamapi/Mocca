@@ -28,7 +28,6 @@ Pipeline& Pipeline::operator=(Pipeline&& other) noexcept
         if(m_pipelineLayout != VK_NULL_HANDLE)
             vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 
-        // TODO: check if here adding "name" doesnt break stuff
         m_device = other.m_device;
         m_pipeline = other.m_pipeline;
         m_pipelineLayout = other.m_pipelineLayout;

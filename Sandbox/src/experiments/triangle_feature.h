@@ -126,25 +126,6 @@ public:
         vkCmdDispatch(cmd, std::ceil(m_drawExtent.width / 16.0), std::ceil(m_drawExtent.height / 16.0), 1);
     }
 
-    void onImgui() override
-    {
-        if(ImGui::Begin("background"))
-        {
-
-            ComputeEffect& selected = m_backgroundEffects[m_currentBackgroundEffect];
-
-            ImGui::Text("Selected effect: %s", selected.name);
-
-            ImGui::SliderInt("Effect Index", &m_currentBackgroundEffect, 0, m_backgroundEffects.size() - 1);
-
-            ImGui::InputFloat4("data1", (float*)&selected.data.data1);
-            ImGui::InputFloat4("data2", (float*)&selected.data.data2);
-            ImGui::InputFloat4("data3", (float*)&selected.data.data3);
-            ImGui::InputFloat4("data4", (float*)&selected.data.data4);
-        }
-        ImGui::End();
-    }
-
     void onResize(uint32_t width, uint32_t height) override
     {
         m_drawExtent = {width, height};
@@ -157,6 +138,7 @@ public:
 
 private:
     VkDevice m_device{VK_NULL_HANDLE};
+    VkImageView m_drawImageView{VK_NULL_HANDLE};
 
     // doing it this way so they are non-owning
     ComputePipeline* m_gradientPipeline;

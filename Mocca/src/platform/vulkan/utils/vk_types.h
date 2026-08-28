@@ -1,5 +1,7 @@
 #pragma once
 
+#include "platform/vulkan/pipeline/compute_pipeline.h"
+
 #include <volk.h>
 
 #include <optional>
@@ -35,10 +37,9 @@ struct QueueFamilyIndices
 
 struct ComputeEffect
 {
-    const char* name;
-
-    VkPipeline pipeline;
-    VkPipelineLayout layout;
-
     ComputePushConstants data;
+
+    ComputePipeline* pipeline;
+
+    const char* name;
 };

@@ -14,7 +14,13 @@ class Swapchain;
 class ImGuiManager
 {
 public:
-    ImGuiManager(const Context& context, const Window& window, const Swapchain& swapchain);
+    ImGuiManager(
+        const Context& context,
+        const Window& window,
+        const Swapchain& swapchain,
+        VkFormat colorFormat,
+        VkFormat depthFormat
+    );
     ~ImGuiManager();
 
     ImGuiManager(const ImGuiManager&) = delete;
@@ -24,10 +30,6 @@ public:
     ImGuiManager& operator=(ImGuiManager&&) = delete;
 
     void submit(std::function<void(VkCommandBuffer cmd)>&& function);
-
-    // void drawImGui(VkCommandBuffer cmd, VkImageView targetImageView, VkExtent2D extent);
-
-    // void perFrame();
 
     void beginFrame();
     void endFrame();

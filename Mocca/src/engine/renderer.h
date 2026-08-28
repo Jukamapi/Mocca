@@ -5,13 +5,19 @@
 #include "engine/render_feature.h"
 #include "platform/vulkan/commands/frame_manager.h"
 #include "platform/vulkan/core/context.h"
+#include "platform/vulkan/pipeline/pipeline_manager.h"
 #include "platform/vulkan/resources/swapchain_manager.h"
+
 
 #include <functional>
 #include <memory>
 #include <vector>
 
 class Swapchain;
+
+// TODO: IMPORTANT - features shouldnt own pipelineManagers and descriptorAllocators, they should be owned by Renderer.
+
+// TODO: IMPORTANT - renderer needs 2 phase structure to be able to utilize both compute shaders and graphics pipelines
 
 // class handling main rendering logic
 class Renderer
@@ -79,6 +85,21 @@ public:
         return m_extentProvider;
     }
 
+    const SwapchainManager& getSwapchainManager() const
+    {
+        return m_swapchainManager;
+    }
+
+    const PipelineManager& getPipelineManager() const
+    {
+        return m_pipelineManager;
+    }
+
+    PipelineManager& getPipelineManager()
+    {
+        return m_pipelineManager;
+    }
+
 private:
     bool acquireNextImage(uint32_t& outImageIndex);
     VkCommandBuffer recordCommandBuffer(uint32_t imageIndex);
@@ -98,10 +119,6 @@ private:
     void createFrameImages();
     void destroyFrameImages();
 
-    // constants
-    static constexpr VkFormat DRAW_FORMAT{VK_FORMAT_R16G16B16A16_SFLOAT};
-    static constexpr VkFormat DEPTH_FORMAT{VK_FORMAT_D32_SFLOAT};
-
     Context m_context;
     ExtentProvider m_extentProvider;
     VkExtent2D m_renderExtent;
@@ -109,5 +126,9 @@ private:
     FrameManager m_frameManager;
     std::vector<std::unique_ptr<RenderFeature>> m_features;
     ImGuiManager m_imGuiManager;
+    PipelineManager m_pipelineManager;
     bool m_isSuspended{false};
+
+    inline static constexpr VkFormat DRAW_FORMAT{VK_FORMAT_R16G16B16A16_SFLOAT};
+    inline static constexpr VkFormat DEPTH_FORMAT{VK_FORMAT_D32_SFLOAT};
 };

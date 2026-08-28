@@ -1,11 +1,9 @@
 #pragma once
 
 #include <volk.h>
+#include "core/types.h"
 
-// TODO: children features should request pipeline instead of creating new one
-// probably implement this when 2 renderFeatures utilize exactly the same pipelines
-
-// render features allows for "plug & run"
+// allows for "plug and run"
 class RenderFeature
 {
 public:
@@ -27,6 +25,8 @@ public:
     {
         return m_isEnabled;
     }
+
+    virtual RenderPassType getType() const = 0;
 
 private:
     bool m_isEnabled = true;

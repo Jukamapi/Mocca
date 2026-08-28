@@ -22,7 +22,6 @@ public:
     PipelineManager(PipelineManager&&) = delete;
     PipelineManager& operator=(PipelineManager&&) = delete;
 
-    // TODO: switch to std::span<const char> instead of vector
     ComputePipeline& createComputePipeline(
         const std::string& name, const DescriptorLayout& layout, std::vector<char> computeCode
     );

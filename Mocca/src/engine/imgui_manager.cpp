@@ -10,7 +10,9 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_vulkan.h>
 
-ImGuiManager::ImGuiManager(const Context& context, const Window& window, const Swapchain& swapchain)
+ImGuiManager::ImGuiManager(
+    const Context& context, const Window& window, const Swapchain& swapchain, VkFormat colorFormat, VkFormat depthFormat
+)
     : m_device(context.getLogicalDevice().getHandle()),
       m_graphicsQueue(context.getLogicalDevice().getGraphicsQueue()),
       m_commandPool(context.getPhysicalDevice().getQueueFamilyIndices(), m_device)
@@ -58,14 +60,11 @@ ImGuiManager::ImGuiManager(const Context& context, const Window& window, const S
     // beginning of imgui initialization
     ImGui::CreateContext();
 
-    // TODO: not sure if this will work
     ImGuiIO& io = ImGui::GetIO();
     io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
     ImGui_ImplSDL2_InitForVulkan(window.getNativeWindow());
 
-    // VkFormat lFormat = swapchain.getFormat();
-    VkFormat lFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
     ImGui_ImplVulkan_InitInfo initInfo{
         .Instance = context.getInstance().getHandle(),
         .PhysicalDevice = context.getPhysicalDevice().getHandle(),
@@ -74,15 +73,19 @@ ImGuiManager::ImGuiManager(const Context& context, const Window& window, const S
         .DescriptorPool = m_descriptorPool,
         .MinImageCount = 3,
         .ImageCount = 3,
+        .PipelineInfoMain =
+            {
+                .MSAASamples = VK_SAMPLE_COUNT_1_BIT,
+
+                .PipelineRenderingCreateInfo =
+                    {.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
+                     .colorAttachmentCount = 1,
+                     .pColorAttachmentFormats = &colorFormat,
+                     .depthAttachmentFormat = depthFormat},
+            },
         .UseDynamicRendering = true,
+
     };
-    // wouldve used nested designators, but it's C exclusive?
-    initInfo.PipelineInfoMain.PipelineRenderingCreateInfo = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
-        .colorAttachmentCount = 1,
-        .pColorAttachmentFormats = &lFormat,
-    };
-    initInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
     ImGui_ImplVulkan_Init(&initInfo);
 }

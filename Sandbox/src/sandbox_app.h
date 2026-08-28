@@ -23,7 +23,7 @@ public:
     {
         m_renderer.pushFeature(std::make_unique<TestFeature>(m_renderer));
 
-        m_renderer.pushFeature(std::make_unique<ImguiFeature>(m_renderer));
+        m_renderer.pushFeature(std::make_unique<ImguiFeature>());
     }
 
     void onTick(float deltaTime) override
@@ -36,9 +36,10 @@ public:
             auto* imguiFeature = m_renderer.getFeature<ImguiFeature>();
             if(imguiFeature)
             {
+                // TODO: disables rendering of ImGui but can still interact
                 bool currentState = imguiFeature->isEnabled();
                 imguiFeature->setEnabled(!currentState);
-                std::println("ImGui is now: {}", !currentState ? "OFF" : "ON");
+                std::println("ImGui is now: {}", !currentState ? "ON" : "OFF");
             }
         }
         wasPressed = isPressed;

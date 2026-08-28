@@ -10,7 +10,7 @@
 #include <cassert>
 #include <stdexcept>
 
-// TODO: A lot is set up for graphics pipeline already, will have to come back as right now im working with compute
+// TODO: IMPORTANT - remember the 2 phase to change the transition functions
 
 Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     : m_context(window),
@@ -23,7 +23,8 @@ Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
           m_extentProvider()
       ),
       m_frameManager(m_context.getPhysicalDevice().getQueueFamilyIndices(), m_context.getLogicalDevice().getHandle()),
-      m_imGuiManager(m_context, window, m_swapchainManager.getSwapchain())
+      m_imGuiManager(m_context, window, m_swapchainManager.getSwapchain(), DRAW_FORMAT, DEPTH_FORMAT),
+      m_pipelineManager(m_context.getLogicalDevice().getHandle())
 {
     createFrameImages();
 }
@@ -111,16 +112,33 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
-    // color image to write mode
+    // ---------- compute ----------
+
     transitionImage(
         commandBuffer,
         currentFrame.colorImage.getImage(),
         VK_IMAGE_LAYOUT_UNDEFINED,
-        // TODO: Have to change this when changing to compute
-        VK_IMAGE_LAYOUT_GENERAL
+        // TODO: IMPORTANT Have to change this when changing to compute
+        VK_IMAGE_LAYOUT_GENERAL // <- back to VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL?
     );
 
-    // depth image to write mode
+    for(auto& feature : m_features)
+    {
+        if(feature->isEnabled() && feature->getType() == RenderPassType::Compute)
+        {
+            feature->onRender(commandBuffer, currentFrame.colorImage.getImageView(), imageIndex);
+        }
+    }
+
+    // ---------- graphics ----------
+
+    transitionImage(
+        commandBuffer,
+        currentFrame.colorImage.getImage(),
+        VK_IMAGE_LAYOUT_GENERAL,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    );
+
     transitionImage(
         commandBuffer,
         currentFrame.depthImage.getImage(),
@@ -132,7 +150,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
         .imageView = currentFrame.colorImage.getImageView(),
         .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD, // set to load so i dont delete the stuff from compute pass
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
         .clearValue = {{{0.1f, 0.1f, 0.1f, 1.0f}}},
     };
@@ -141,7 +159,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
         .imageView = currentFrame.depthImage.getImageView(),
         .imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
-        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, // compute doesnt touch this
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
         .clearValue = {.depthStencil = {1.0f, 0}},
     };
@@ -158,8 +176,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         .pDepthAttachment = &depthAttachmentInfo
     };
 
-    // TODO:
-    // vkCmdBeginRendering(commandBuffer, &renderingInfo);
+    vkCmdBeginRendering(commandBuffer, &renderingInfo);
 
     VkViewport viewport{
         .x = 0.0f,
@@ -174,21 +191,21 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     VkRect2D scissor{.offset = {0, 0}, .extent = m_renderExtent};
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    // render features
     for(auto& feature : m_features)
     {
-        if(feature->isEnabled())
+        if(feature->isEnabled() && feature->getType() == RenderPassType::Graphics)
+        {
             feature->onRender(commandBuffer, currentFrame.colorImage.getImageView(), imageIndex);
+        }
     }
 
-    // TODO:
-    // vkCmdEndRendering(commandBuffer);
+    vkCmdEndRendering(commandBuffer);
 
     // prep color image for blit
     transitionImage(
         commandBuffer,
         currentFrame.colorImage.getImage(),
-        VK_IMAGE_LAYOUT_GENERAL,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
     );
 
