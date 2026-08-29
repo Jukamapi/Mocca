@@ -24,10 +24,12 @@ public:
 
         m_trianglePipeline = &pipelineManager.createGraphicsPipeline(
             "triangle",
-            renderer.getDrawFormat(),
-            renderer.getDepthFormat(),
-            vertShader,
-            fragShader
+            {
+                renderer.getDrawFormat(),
+                renderer.getDepthFormat(),
+                vertShader,
+                fragShader,
+            }
         );
     }
 

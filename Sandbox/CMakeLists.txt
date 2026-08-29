@@ -4,6 +4,7 @@ add_executable(sandbox
     src/experiments/imgui_feature.h
     src/experiments/test_feature.h
     src/experiments/triangle_feature.h
+    src/experiments/mesh_feature.h
 )
 target_include_directories(sandbox PRIVATE src)
 

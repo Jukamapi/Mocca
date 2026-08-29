@@ -26,13 +26,7 @@ public:
         const std::string& name, const DescriptorLayout& layout, std::vector<char> computeCode
     );
 
-    GraphicsPipeline& createGraphicsPipeline(
-        const std::string& name,
-        VkFormat colorFormat,
-        VkFormat depthFormat,
-        const std::vector<char>& vertCode,
-        const std::vector<char>& fragCode
-    );
+    GraphicsPipeline& createGraphicsPipeline(const std::string& name, const GraphicsPipelineConfig& config);
 
     Pipeline* getPipeline(const std::string& name) const;
 

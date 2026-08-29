@@ -8,18 +8,30 @@
 #include <string>
 #include <vector>
 
+struct GraphicsPipelineConfig
+{
+    VkFormat colorFormat{VK_FORMAT_UNDEFINED};
+    VkFormat depthFormat{VK_FORMAT_UNDEFINED};
+    std::vector<char> vertCode;
+    std::vector<char> fragCode;
+
+    // layout config
+    std::vector<VkDescriptorSetLayout> descriptorLayouts{};
+    std::vector<VkPushConstantRange> pushConstants{};
+
+    // fixed states
+    VkCullModeFlags cullMode{VK_CULL_MODE_BACK_BIT};
+    VkFrontFace frontFace{VK_FRONT_FACE_CLOCKWISE};
+    bool enableDepthTest{true};
+    bool enableDepthWrite{true};
+    bool enableBlending{false};
+};
+
 class GraphicsPipeline : public Pipeline
 {
 public:
     GraphicsPipeline() = default;
-    GraphicsPipeline(
-        const std::string& name,
-        VkDevice device,
-        VkFormat colorFormat,
-        VkFormat depthFormat,
-        const std::vector<char>& vertCode,
-        const std::vector<char>& fragCode
-    );
+    GraphicsPipeline(const std::string& name, VkDevice device, const GraphicsPipelineConfig& config);
 
     GraphicsPipeline(const GraphicsPipeline&) = delete;
     GraphicsPipeline& operator=(const GraphicsPipeline&) = delete;

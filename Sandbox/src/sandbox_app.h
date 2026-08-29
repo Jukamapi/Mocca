@@ -3,6 +3,7 @@
 #include "core/input.h"
 #include "engine/application.h"
 #include "experiments/imgui_feature.h"
+#include "experiments/mesh_feature.h"
 #include "experiments/test_feature.h"
 #include "experiments/triangle_feature.h"
 
@@ -25,7 +26,9 @@ public:
     {
         m_renderer.pushFeature(std::make_unique<TestFeature>(m_renderer));
 
-        m_renderer.pushFeature(std::make_unique<TriangleFeature>(m_renderer));
+        // m_renderer.pushFeature(std::make_unique<TriangleFeature>(m_renderer));
+
+        m_renderer.pushFeature(std::make_unique<MeshFeature>(m_renderer));
 
         m_renderer.pushFeature(std::make_unique<ImguiFeature>());
     }

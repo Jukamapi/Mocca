@@ -3,14 +3,7 @@
 #include "platform/vulkan/utils/vk_check.h"
 
 
-GraphicsPipeline::GraphicsPipeline(
-    const std::string& name,
-    VkDevice device,
-    VkFormat colorFormat,
-    VkFormat depthFormat,
-    const std::vector<char>& vertCode,
-    const std::vector<char>& fragCode
-)
+GraphicsPipeline::GraphicsPipeline(const std::string& name, VkDevice device, const GraphicsPipelineConfig& config)
     : Pipeline(name, device)
 {
     // can be destroyed after pipeline creation
@@ -18,8 +11,8 @@ GraphicsPipeline::GraphicsPipeline(
     VkShaderModule fragShaderModule{VK_NULL_HANDLE};
     try
     {
-        vertShaderModule = createShaderModule(vertCode, device);
-        fragShaderModule = createShaderModule(fragCode, device);
+        vertShaderModule = createShaderModule(config.vertCode, device);
+        fragShaderModule = createShaderModule(config.fragCode, device);
     }
     catch(...)
     {
@@ -82,9 +75,9 @@ GraphicsPipeline::GraphicsPipeline(
         .depthClampEnable = VK_FALSE,
         .rasterizerDiscardEnable = VK_FALSE,
         .polygonMode = VK_POLYGON_MODE_FILL, // for wireframe enable gpu feature
-        .cullMode = VK_CULL_MODE_BACK_BIT,
-        .frontFace = VK_FRONT_FACE_CLOCKWISE, // what vertex order is frontface
-        .depthBiasEnable = VK_FALSE,          // rasterizer can change depth values
+        .cullMode = config.cullMode,
+        .frontFace = config.frontFace, // what vertex order is frontface
+        .depthBiasEnable = VK_FALSE,   // rasterizer can change depth values
         .depthBiasConstantFactor = 0.0f,
         .depthBiasClamp = 0.0f,
         .depthBiasSlopeFactor = 0.0f,
@@ -107,7 +100,7 @@ GraphicsPipeline::GraphicsPipeline(
     // per framebuffer
     // can implement alpha blending for coloring based on opacity
     VkPipelineColorBlendAttachmentState colorBlendAttachment{
-        .blendEnable = VK_FALSE,
+        .blendEnable = config.enableBlending ? VK_TRUE : VK_FALSE,
         .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
         .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
         .colorBlendOp = VK_BLEND_OP_ADD,
@@ -135,25 +128,25 @@ GraphicsPipeline::GraphicsPipeline(
     // used to define uniform values
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .setLayoutCount = 0,
-        .pSetLayouts = nullptr,
-        .pushConstantRangeCount = 0,
-        .pPushConstantRanges = nullptr,
+        .setLayoutCount = static_cast<uint32_t>(config.descriptorLayouts.size()),
+        .pSetLayouts = config.descriptorLayouts.empty() ? nullptr : config.descriptorLayouts.data(),
+        .pushConstantRangeCount = static_cast<uint32_t>(config.pushConstants.size()),
+        .pPushConstantRanges = config.pushConstants.empty() ? nullptr : config.pushConstants.data(),
     };
 
-    VkFormat cFormat = colorFormat;
+    VkFormat cFormat = config.colorFormat;
     VkPipelineRenderingCreateInfo renderingInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
         .pNext = nullptr,
         .colorAttachmentCount = 1,
         .pColorAttachmentFormats = &cFormat,
-        .depthAttachmentFormat = depthFormat,
+        .depthAttachmentFormat = config.depthFormat,
     };
 
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         .pNext = nullptr,
-        .depthTestEnable = VK_TRUE,
+        .depthTestEnable = config.enableDepthTest ? VK_TRUE : VK_FALSE,
         .depthWriteEnable = VK_TRUE,
         .depthCompareOp = VK_COMPARE_OP_LESS,
         .depthBoundsTestEnable = VK_FALSE,

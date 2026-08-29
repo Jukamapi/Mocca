@@ -1,13 +1,17 @@
 #pragma once
 
 #include "platform/vulkan/pipeline/compute_pipeline.h"
+#include "platform/vulkan/resources/allocated_buffer.h"
 
 #include <volk.h>
 
 #include <optional>
 #include <vector>
 
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+
 
 struct ComputePushConstants
 {
@@ -42,4 +46,26 @@ struct ComputeEffect
     ComputePipeline* pipeline;
 
     const char* name;
+};
+
+struct Vertex
+{
+    glm::vec3 position;
+    float uv_x;
+    glm::vec3 normal;
+    float uv_y;
+    glm::vec4 color;
+};
+
+struct GPUMeshBuffers
+{
+    AllocatedBuffer indexBuffer;
+    AllocatedBuffer vertexBuffer;
+    VkDeviceAddress vertexBufferAddress;
+};
+
+struct GPUDrawPushConstants
+{
+    glm::mat4 worldMatrix;
+    VkDeviceAddress vertexBuffer;
 };

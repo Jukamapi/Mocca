@@ -13,25 +13,8 @@
 ImGuiManager::ImGuiManager(
     const Context& context, const Window& window, const Swapchain& swapchain, VkFormat colorFormat, VkFormat depthFormat
 )
-    : m_device(context.getLogicalDevice().getHandle()),
-      m_graphicsQueue(context.getLogicalDevice().getGraphicsQueue()),
-      m_commandPool(context.getPhysicalDevice().getQueueFamilyIndices(), m_device)
+    : m_device(context.getLogicalDevice().getHandle())
 {
-    VkFenceCreateInfo fenceInfo{
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        .flags = VK_FENCE_CREATE_SIGNALED_BIT,
-    };
-
-    try
-    {
-        m_commandPool.allocateBuffers(1);
-    }
-    catch(...)
-    {
-        throw;
-    }
-
-    VK_CHECK(vkCreateFence(m_device, &fenceInfo, nullptr, &m_fence));
 
     VkDescriptorPoolSize pool_sizes[] = {
         {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
@@ -69,7 +52,7 @@ ImGuiManager::ImGuiManager(
         .Instance = context.getInstance().getHandle(),
         .PhysicalDevice = context.getPhysicalDevice().getHandle(),
         .Device = m_device,
-        .Queue = m_graphicsQueue,
+        .Queue = context.getLogicalDevice().getGraphicsQueue(),
         .DescriptorPool = m_descriptorPool,
         .MinImageCount = 3,
         .ImageCount = 3,
@@ -90,33 +73,6 @@ ImGuiManager::ImGuiManager(
     ImGui_ImplVulkan_Init(&initInfo);
 }
 
-void ImGuiManager::submit(std::function<void(VkCommandBuffer cmd)>&& function)
-{
-    VK_CHECK(vkResetFences(m_device, 1, &m_fence));
-    m_commandPool.reset();
-
-    VkCommandBuffer cmd = m_commandPool.getBuffers()[m_commandPool.getBuffersCount()];
-
-    VkCommandBufferBeginInfo cmdBeginInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-    };
-    VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
-
-    function(cmd);
-
-    VK_CHECK(vkEndCommandBuffer(cmd));
-
-    VkCommandBufferSubmitInfo cmdSubmitInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-        .commandBuffer = cmd
-    };
-
-    VkSubmitInfo2 submit{.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2, .pCommandBufferInfos = &cmdSubmitInfo};
-
-    VK_CHECK(vkQueueSubmit2(m_graphicsQueue, 1, &submit, m_fence));
-    VK_CHECK(vkWaitForFences(m_device, 1, &m_fence, true, 9999999999));
-}
 
 void ImGuiManager::beginFrame()
 {
@@ -133,10 +89,6 @@ void ImGuiManager::endFrame()
 
 ImGuiManager::~ImGuiManager()
 {
-    if(m_fence != VK_NULL_HANDLE)
-    {
-        vkDestroyFence(m_device, m_fence, nullptr);
-    }
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
