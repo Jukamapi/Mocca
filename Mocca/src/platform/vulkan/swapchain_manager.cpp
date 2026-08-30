@@ -1,8 +1,8 @@
 #include "swapchain_manager.h"
 
 #include "core/types.h"
-#include "platform/vulkan/core/physical_device.h"
-#include "platform/vulkan/resources/swapchain.h"
+#include "physical_device.h"
+#include "swapchain.h"
 
 SwapchainManager::SwapchainManager(
     const PhysicalDevice& physicalDevice, VkDevice logicalDevice, VkSurfaceKHR surface, Extent initialExtent

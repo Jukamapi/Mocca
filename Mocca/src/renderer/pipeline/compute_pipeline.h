@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pipeline.h"
-#include "platform/vulkan/resources/descriptor_layout.h"
+#include "resource/vulkan/descriptor_layout.h"
 
 #include <string>
 #include <vector>

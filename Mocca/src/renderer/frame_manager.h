@@ -1,10 +1,9 @@
 #pragma once
 
-#include "platform/vulkan/commands/command_pool.h"
-#include "platform/vulkan/resources/allocated_image.h"
-#include "platform/vulkan/resources/deletion_queue.h"
-#include "platform/vulkan/utils/vk_types.h"
-
+#include "platform/vulkan/command_pool.h"
+#include "platform/vulkan/vk_types.h"
+#include "resource/deletion_queue.h"
+#include "resource/vulkan/allocated_image.h"
 
 #include <volk.h>
 

@@ -1,6 +1,6 @@
 #include "gpu_alloc.h"
 
-#include "platform/vulkan/utils/vk_check.h"
+#include "vk_check.h"
 
 
 GpuAlloc::GpuAlloc(VkPhysicalDevice physicalDevice, VkDevice device, VkInstance instance)

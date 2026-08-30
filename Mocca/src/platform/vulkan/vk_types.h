@@ -1,7 +1,7 @@
 #pragma once
 
-#include "platform/vulkan/pipeline/compute_pipeline.h"
-#include "platform/vulkan/resources/allocated_buffer.h"
+#include "renderer/pipeline/compute_pipeline.h"
+#include "resource/vulkan/allocated_buffer.h"
 
 #include <volk.h>
 

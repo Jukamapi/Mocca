@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform/vulkan/pipeline/pipeline.h"
+#include "pipeline.h"
 
 #include <volk.h>
 

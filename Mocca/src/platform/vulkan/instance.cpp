@@ -1,6 +1,6 @@
 #include "instance.h"
 
-#include "platform/vulkan/utils/vk_check.h"
+#include "vk_check.h"
 
 #include <cstdint>
 #include <print>

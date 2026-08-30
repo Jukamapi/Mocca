@@ -1,8 +1,8 @@
 #pragma once
 
-#include "platform/vulkan/pipeline/compute_pipeline.h"
-#include "platform/vulkan/pipeline/graphics_pipeline.h"
-#include "platform/vulkan/resources/descriptor_layout.h"
+#include "compute_pipeline.h"
+#include "graphics_pipeline.h"
+#include "resource/vulkan/descriptor_layout.h"
 
 #include <volk.h>
 

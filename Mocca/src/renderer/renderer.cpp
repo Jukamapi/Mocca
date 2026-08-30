@@ -1,11 +1,11 @@
 #include "renderer.h"
 
 #include "core/types.h"
-#include "platform/vulkan/commands/command_pool.h"
-#include "platform/vulkan/core/context.h"
-#include "platform/vulkan/core/physical_device.h"
-#include "platform/vulkan/resources/swapchain.h"
-#include "platform/vulkan/utils/vk_check.h"
+#include "platform/vulkan/command_pool.h"
+#include "platform/vulkan/context.h"
+#include "platform/vulkan/physical_device.h"
+#include "platform/vulkan/swapchain.h"
+#include "platform/vulkan/vk_check.h"
 
 #include <cassert>
 #include <stdexcept>

@@ -1,6 +1,6 @@
 #include "graphics_pipeline.h"
 
-#include "platform/vulkan/utils/vk_check.h"
+#include "platform/vulkan/vk_check.h"
 
 
 GraphicsPipeline::GraphicsPipeline(const std::string& name, VkDevice device, const GraphicsPipelineConfig& config)

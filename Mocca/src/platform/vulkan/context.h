@@ -1,11 +1,10 @@
 #pragma once
 
-#include "platform/vulkan/core/gpu_alloc.h"
-#include "platform/vulkan/core/instance.h"
-#include "platform/vulkan/core/logical_device.h"
-#include "platform/vulkan/core/physical_device.h"
-#include "platform/vulkan/core/surface.h"
-
+#include "gpu_alloc.h"
+#include "instance.h"
+#include "logical_device.h"
+#include "physical_device.h"
+#include "surface.h"
 
 #include <volk.h>
 
