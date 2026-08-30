@@ -27,36 +27,36 @@ target_include_directories(vma INTERFACE ${MOCCA_VENDOR})
 add_library(mocca STATIC)
 
 target_sources(mocca PRIVATE
-    # engine
-    src/engine/application.cpp
-    src/engine/imgui_manager.cpp
-
-    # platform
+    # platform layer
     src/platform/window.cpp
+    src/platform/vulkan/context.cpp
+    src/platform/vulkan/instance.cpp
+    src/platform/vulkan/physical_device.cpp
+    src/platform/vulkan/logical_device.cpp
+    src/platform/vulkan/surface.cpp
+    src/platform/vulkan/gpu_alloc.cpp
+    src/platform/vulkan/command_pool.cpp
+    src/platform/vulkan/vk_check.cpp
+    src/platform/vulkan/swapchain.cpp
+    src/platform/vulkan/swapchain_manager.cpp
 
-    # vulkan
-    src/platform/vulkan/core/context.cpp
-    src/platform/vulkan/core/instance.cpp
-    src/platform/vulkan/core/physical_device.cpp
-    src/platform/vulkan/core/logical_device.cpp
-    src/platform/vulkan/core/surface.cpp
-    src/platform/vulkan/core/gpu_alloc.cpp
-    src/platform/vulkan/utils/vk_check.cpp
-    src/platform/vulkan/resources/swapchain.cpp
-    src/platform/vulkan/resources/swapchain_manager.cpp
-    src/platform/vulkan/resources/allocated_image.cpp
-    src/platform/vulkan/resources/allocated_buffer.cpp
-    src/platform/vulkan/resources/descriptor_allocator.cpp
-    src/platform/vulkan/resources/descriptor_layout.cpp
-    src/platform/vulkan/pipeline/pipeline.cpp
-    src/platform/vulkan/pipeline/pipeline_manager.cpp
-    src/platform/vulkan/pipeline/graphics_pipeline.cpp
-    src/platform/vulkan/pipeline/compute_pipeline.cpp
-    src/platform/vulkan/commands/command_pool.cpp
-    src/platform/vulkan/commands/frame_manager.cpp
+    # resource layer
+    src/resource/vulkan/allocated_image.cpp
+    src/resource/vulkan/allocated_buffer.cpp
+    src/resource/vulkan/descriptor_allocator.cpp
+    src/resource/vulkan/descriptor_layout.cpp
 
-    # renderer
-    src/engine/renderer.cpp
+    # rendering layer
+    src/renderer/renderer.cpp
+    src/renderer/frame_manager.cpp
+    src/renderer/imgui_manager.cpp
+    src/renderer/pipeline/pipeline.cpp
+    src/renderer/pipeline/pipeline_manager.cpp
+    src/renderer/pipeline/graphics_pipeline.cpp
+    src/renderer/pipeline/compute_pipeline.cpp
+
+    # app layer
+    src/application/application.cpp
 
     # vendor init
     ${MOCCA_VENDOR}/vendor_init.cpp
@@ -66,44 +66,46 @@ target_sources(mocca PUBLIC
     FILE_SET HEADERS
     BASE_DIRS ${MOCCA_SRC}
     FILES
-        # core
+        # core util layer
         src/core/event.h
         src/core/input.h
         src/core/timer.h
         src/core/types.h
 
-        # engine
-        src/engine/application.h
-        src/engine/renderer.h
-        src/engine/render_feature.h
-        src/engine/imgui_manager.h
-
-        # platform
+        # platform layer
         src/platform/window.h
-        src/platform/vulkan/core/context.h
-        src/platform/vulkan/core/instance.h
-        src/platform/vulkan/core/physical_device.h
-        src/platform/vulkan/core/logical_device.h
-        src/platform/vulkan/core/surface.h
-        src/platform/vulkan/core/gpu_alloc.h
-        src/platform/vulkan/utils/vk_check.h
-        src/platform/vulkan/utils/vk_types.h
-        src/platform/vulkan/resources/swapchain.h
-        src/platform/vulkan/resources/swapchain_manager.h
-        src/platform/vulkan/resources/allocated_image.h
-        src/platform/vulkan/resources/allocated_buffer.h
-        src/platform/vulkan/resources/descriptor_allocator.h
-        src/platform/vulkan/resources/descriptor_layout.h
-        src/platform/vulkan/pipeline/pipeline.h
-        src/platform/vulkan/pipeline/pipeline_manager.h
-        src/platform/vulkan/pipeline/graphics_pipeline.h
-        src/platform/vulkan/pipeline/compute_pipeline.h
-        src/platform/vulkan/commands/command_pool.h
-        src/platform/vulkan/commands/frame_manager.h
-        src/platform/vulkan/resources/deletion_queue.h
+        src/platform/vulkan/context.h
+        src/platform/vulkan/instance.h
+        src/platform/vulkan/physical_device.h
+        src/platform/vulkan/logical_device.h
+        src/platform/vulkan/surface.h
+        src/platform/vulkan/gpu_alloc.h
+        src/platform/vulkan/command_pool.h
+        src/platform/vulkan/vk_check.h
+        src/platform/vulkan/vk_types.h
+        src/platform/vulkan/swapchain.h
+        src/platform/vulkan/swapchain_manager.h
 
-        # resource
+        # resource layer
         src/resource/loader.h
+        src/resource/deletion_queue.h
+        src/resource/vulkan/allocated_image.h
+        src/resource/vulkan/allocated_buffer.h
+        src/resource/vulkan/descriptor_allocator.h
+        src/resource/vulkan/descriptor_layout.h
+
+        # rendering layer
+        src/renderer/renderer.h
+        src/renderer/render_feature.h
+        src/renderer/frame_manager.h
+        src/renderer/imgui_manager.h
+        src/renderer/pipeline/pipeline.h
+        src/renderer/pipeline/pipeline_manager.h
+        src/renderer/pipeline/graphics_pipeline.h
+        src/renderer/pipeline/compute_pipeline.h
+
+        # app layer
+        src/application/application.h
 )
 
 target_include_directories(mocca PUBLIC ${MOCCA_SRC})
