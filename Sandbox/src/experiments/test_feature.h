@@ -64,6 +64,7 @@ public:
     void onRender(VkCommandBuffer cmd, VkImageView drawImageView, uint32_t frameIndex) override
     {
 
+        // TODO: very inneficient with this "if" and allocating on hotpath
         if(frameIndex >= m_descriptorSets.size())
         {
             size_t oldSize = m_descriptorSets.size();

@@ -47,4 +47,7 @@ private:
     VkDebugUtilsMessengerEXT m_debugMessenger{VK_NULL_HANDLE};
     bool m_enableValidationLayers{false};
     std::vector<const char*> m_validationLayers{"VK_LAYER_KHRONOS_validation"};
+
+    // TODO: IMPORTANT - add this for best practices checks from vulkan
+    // std::vector<VkValidationFeatureEnableEXT> m_validationFeatures{VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
 };

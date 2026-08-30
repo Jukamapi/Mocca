@@ -10,6 +10,8 @@
 #include <cassert>
 #include <stdexcept>
 
+// TODO: add AssetManager or ResourceManager and move the rectangle stuff into there
+
 Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     : m_context(window),
       m_extentProvider(std::move(extentProvider)),
