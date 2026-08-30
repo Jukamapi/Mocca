@@ -1,12 +1,11 @@
 #pragma once
 
+#include "application/application.h"
 #include "core/input.h"
-#include "engine/application.h"
 #include "experiments/imgui_feature.h"
 #include "experiments/mesh_feature.h"
 #include "experiments/test_feature.h"
 #include "experiments/triangle_feature.h"
-
 
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
@@ -14,10 +13,10 @@
 
 #include <print>
 
-class MyApp : public Application
+class SandboxApp : public Application
 {
 public:
-    MyApp(uint32_t width, uint32_t height, const std::string& title)
+    SandboxApp(uint32_t width, uint32_t height, const std::string& title)
         : Application(width, height, title)
     {
     }
@@ -26,7 +25,7 @@ public:
     {
         m_renderer.pushFeature(std::make_unique<TestFeature>(m_renderer));
 
-        // m_renderer.pushFeature(std::make_unique<TriangleFeature>(m_renderer));
+        m_renderer.pushFeature(std::make_unique<TriangleFeature>(m_renderer));
 
         m_renderer.pushFeature(std::make_unique<MeshFeature>(m_renderer));
 

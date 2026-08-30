@@ -11,7 +11,7 @@
 int main(int argc, char* argv[])
 {
 
-    MyApp app(1280, 720, "Vulkan App");
+    SandboxApp app(1280, 720, "Vulkan App");
 
     try
     {

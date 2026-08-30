@@ -1,13 +1,14 @@
 #pragma once
 
-#include "engine/render_feature.h"
-#include "engine/renderer.h"
-#include "platform/vulkan/pipeline/compute_pipeline.h"
-#include "platform/vulkan/pipeline/pipeline_manager.h"
-#include "platform/vulkan/resources/descriptor_allocator.h"
-#include "platform/vulkan/resources/descriptor_layout.h"
-#include "platform/vulkan/utils/vk_types.h"
+#include "platform/vulkan/vk_types.h"
+#include "renderer/pipeline/compute_pipeline.h"
+#include "renderer/pipeline/pipeline_manager.h"
+#include "renderer/render_feature.h"
+#include "renderer/renderer.h"
 #include "resource/loader.h"
+#include "resource/vulkan/descriptor_allocator.h"
+#include "resource/vulkan/descriptor_layout.h"
+
 
 #include <imgui.h>
 

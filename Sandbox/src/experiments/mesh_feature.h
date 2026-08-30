@@ -1,10 +1,11 @@
 #pragma once
 
-#include "engine/render_feature.h"
-#include "engine/renderer.h"
-#include "platform/vulkan/pipeline/graphics_pipeline.h"
-#include "platform/vulkan/pipeline/pipeline_manager.h"
+#include "renderer/pipeline/graphics_pipeline.h"
+#include "renderer/pipeline/pipeline_manager.h"
+#include "renderer/render_feature.h"
+#include "renderer/renderer.h"
 #include "resource/loader.h"
+
 
 #include <imgui.h>
 
