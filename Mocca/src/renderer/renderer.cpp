@@ -1,16 +1,19 @@
 #include "renderer.h"
 
 #include "core/types.h"
+#include "core/vulkan/vk_check.h"
 #include "platform/vulkan/command_pool.h"
 #include "platform/vulkan/context.h"
-#include "platform/vulkan/physical_device.h"
-#include "platform/vulkan/swapchain.h"
-#include "platform/vulkan/vk_check.h"
+#include "platform/vulkan/context/physical_device.h"
+#include "platform/vulkan/presentation/swapchain.h"
+
 
 #include <cassert>
 #include <stdexcept>
 
 // TODO: add AssetManager or ResourceManager and move the rectangle stuff into there
+
+// TODO: IMPORTANT - move transitionImage and blitImage into seperate file
 
 Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     : m_context(window),
@@ -127,8 +130,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         commandBuffer,
         currentFrame.colorImage.getImage(),
         VK_IMAGE_LAYOUT_UNDEFINED,
-        // TODO: IMPORTANT Have to change this when changing to compute
-        VK_IMAGE_LAYOUT_GENERAL // <- back to VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL?
+        VK_IMAGE_LAYOUT_GENERAL
     );
 
     for(auto& feature : m_features)

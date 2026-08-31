@@ -1,6 +1,6 @@
 #include "frame_manager.h"
 
-#include "platform/vulkan/vk_check.h"
+#include "core/vulkan/vk_check.h"
 
 
 FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)

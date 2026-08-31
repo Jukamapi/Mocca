@@ -1,13 +1,15 @@
 #pragma once
 
-#include "platform/vulkan/vk_types.h"
-#include "renderer/pipeline/compute_pipeline.h"
-#include "renderer/pipeline/pipeline_manager.h"
+#include "core/vulkan/vk_types.h"
+
 #include "renderer/render_feature.h"
 #include "renderer/renderer.h"
+#include "renderer/vulkan/pipelines/compute_pipeline.h"
+#include "renderer/vulkan/pipelines/pipeline_manager.h"
 #include "resource/loader.h"
 #include "resource/vulkan/descriptor_allocator.h"
 #include "resource/vulkan/descriptor_layout.h"
+
 
 
 #include <imgui.h>

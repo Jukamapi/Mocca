@@ -1,8 +1,9 @@
 #include "swapchain.h"
 
 #include "core/types.h"
-#include "vk_check.h"
-#include "vk_types.h"
+#include "core/vulkan/vk_check.h"
+#include "core/vulkan/vk_types.h"
+
 
 #include <algorithm>
 

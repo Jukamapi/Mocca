@@ -1,6 +1,7 @@
 #include "pipeline.h"
 
-#include "platform/vulkan/vk_check.h"
+#include "core/vulkan/vk_check.h"
+
 
 Pipeline::Pipeline(const std::string& name, VkDevice device)
     : m_name(name),

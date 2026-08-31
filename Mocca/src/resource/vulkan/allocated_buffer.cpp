@@ -1,6 +1,6 @@
 #include "allocated_buffer.h"
 
-#include "platform/vulkan/vk_check.h"
+#include "core/vulkan/vk_check.h"
 
 
 AllocatedBuffer::AllocatedBuffer(

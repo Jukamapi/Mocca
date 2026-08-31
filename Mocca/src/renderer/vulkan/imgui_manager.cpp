@@ -1,9 +1,10 @@
 #include "imgui_manager.h"
 
-#include "platform/vulkan/vk_check.h"
+#include "core/vulkan/vk_check.h"
+
 
 #include "platform/vulkan/context.h"
-#include "platform/vulkan/swapchain.h"
+#include "platform/vulkan/presentation/swapchain.h"
 #include "platform/window.h"
 
 #include <imgui.h>

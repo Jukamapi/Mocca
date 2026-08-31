@@ -1,6 +1,7 @@
 #include "allocated_image.h"
 
-#include "platform/vulkan/vk_check.h"
+#include "core/vulkan/vk_check.h"
+
 
 AllocatedImage::AllocatedImage(
     VkDevice device,

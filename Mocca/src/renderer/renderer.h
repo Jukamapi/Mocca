@@ -1,12 +1,12 @@
 #pragma once
 
 #include "core/types.h"
-#include "frame_manager.h"
-#include "imgui_manager.h"
-#include "pipeline/pipeline_manager.h"
 #include "platform/vulkan/context.h"
-#include "platform/vulkan/swapchain_manager.h"
+#include "platform/vulkan/presentation/swapchain_manager.h"
 #include "render_feature.h"
+#include "vulkan/frame_manager.h"
+#include "vulkan/imgui_manager.h"
+#include "vulkan/pipelines/pipeline_manager.h"
 
 
 #include <functional>

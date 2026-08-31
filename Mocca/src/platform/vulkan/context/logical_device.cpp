@@ -1,7 +1,8 @@
 #include "logical_device.h"
 
-#include "vk_check.h"
-#include "vk_types.h"
+#include "core/vulkan/vk_check.h"
+#include "core/vulkan/vk_types.h"
+
 
 #include <set>
 #include <vector>

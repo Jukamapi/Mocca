@@ -1,10 +1,10 @@
 #pragma once
 
-#include "gpu_alloc.h"
-#include "instance.h"
-#include "logical_device.h"
-#include "physical_device.h"
-#include "surface.h"
+#include "context/gpu_alloc.h"
+#include "context/instance.h"
+#include "context/logical_device.h"
+#include "context/physical_device.h"
+#include "presentation/surface.h"
 
 #include <volk.h>
 

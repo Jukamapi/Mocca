@@ -1,6 +1,6 @@
 #pragma once
 
-#include "renderer/pipeline/compute_pipeline.h"
+#include "renderer/vulkan/pipelines/compute_pipeline.h"
 #include "resource/vulkan/allocated_buffer.h"
 
 #include <volk.h>
