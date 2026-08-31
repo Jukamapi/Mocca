@@ -1,6 +1,6 @@
 #include "core/vk_check.h"
 
-#include <vk_enum_string_helper.h>
+#include <vulkan/vk_enum_string_helper.h>
 #include <print>
 #include <stdexcept>
 
