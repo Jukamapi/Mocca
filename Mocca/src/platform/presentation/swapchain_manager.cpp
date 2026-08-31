@@ -1,7 +1,7 @@
 #include "swapchain_manager.h"
 
 #include "core/types.h"
-#include "platform/vulkan/context/physical_device.h"
+#include "platform/context/physical_device.h"
 #include "swapchain.h"
 
 SwapchainManager::SwapchainManager(

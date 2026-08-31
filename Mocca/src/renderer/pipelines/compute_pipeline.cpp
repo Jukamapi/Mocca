@@ -1,8 +1,8 @@
 #include "compute_pipeline.h"
 
-#include "core/vulkan/vk_check.h"
+#include "core/vk_check.h"
 
-#include "core/vulkan/vk_types.h"
+#include "core/vk_types.h"
 
 
 ComputePipeline::ComputePipeline(

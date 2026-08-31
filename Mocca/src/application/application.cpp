@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <thread>
 
+// TODO: IMPORTANT - get rid of vulkan/
 
 // this utilizes extent provider to somewhat respect the boundaries of architecture
 // and so it doesn't have to include sdl as much since it's big

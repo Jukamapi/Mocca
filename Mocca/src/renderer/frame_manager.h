@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/vulkan/vk_types.h"
-#include "platform/vulkan/command_pool.h"
+#include "core/vk_types.h"
+#include "platform/command_pool.h"
 
 
 #include "resource/deletion_queue.h"

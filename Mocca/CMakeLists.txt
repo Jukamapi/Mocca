@@ -28,22 +28,22 @@ add_library(mocca STATIC)
 
 target_sources(mocca PRIVATE
     # core layer
-    src/core/vulkan/vk_check.cpp
+    src/core/vk_check.cpp
 
     # platform layer
     src/platform/window.cpp
 
-    src/platform/vulkan/context.cpp
-    src/platform/vulkan/command_pool.cpp
+    src/platform/context.cpp
+    src/platform/command_pool.cpp
 
-    src/platform/vulkan/context/instance.cpp
-    src/platform/vulkan/context/physical_device.cpp
-    src/platform/vulkan/context/logical_device.cpp
-    src/platform/vulkan/context/gpu_alloc.cpp
+    src/platform/context/instance.cpp
+    src/platform/context/physical_device.cpp
+    src/platform/context/logical_device.cpp
+    src/platform/context/gpu_alloc.cpp
 
-    src/platform/vulkan/presentation/surface.cpp
-    src/platform/vulkan/presentation/swapchain.cpp
-    src/platform/vulkan/presentation/swapchain_manager.cpp
+    src/platform/presentation/surface.cpp
+    src/platform/presentation/swapchain.cpp
+    src/platform/presentation/swapchain_manager.cpp
 
     # resource layer
     src/resource/vulkan/allocated_image.cpp
@@ -53,12 +53,12 @@ target_sources(mocca PRIVATE
 
     # rendering layer
     src/renderer/renderer.cpp
-    src/renderer/vulkan/frame_manager.cpp
-    src/renderer/vulkan/imgui_manager.cpp
-    src/renderer/vulkan/pipelines/pipeline.cpp
-    src/renderer/vulkan/pipelines/pipeline_manager.cpp
-    src/renderer/vulkan/pipelines/graphics_pipeline.cpp
-    src/renderer/vulkan/pipelines/compute_pipeline.cpp
+    src/renderer/frame_manager.cpp
+    src/renderer/imgui_manager.cpp
+    src/renderer/pipelines/pipeline.cpp
+    src/renderer/pipelines/pipeline_manager.cpp
+    src/renderer/pipelines/graphics_pipeline.cpp
+    src/renderer/pipelines/compute_pipeline.cpp
 
     # app layer
     src/application/application.cpp
@@ -77,24 +77,24 @@ target_sources(mocca PUBLIC
         src/core/timer.h
         src/core/types.h
 
-        src/core/vulkan/vk_check.h
-        src/core/vulkan/vk_types.h
+        src/core/vk_check.h
+        src/core/vk_types.h
 
 
         # platform layer
         src/platform/window.h
 
-        src/platform/vulkan/command_pool.h
+        src/platform/command_pool.h
 
-        src/platform/vulkan/context.h
-        src/platform/vulkan/context/instance.h
-        src/platform/vulkan/context/physical_device.h
-        src/platform/vulkan/context/logical_device.h
-        src/platform/vulkan/context/gpu_alloc.h
+        src/platform/context.h
+        src/platform/context/instance.h
+        src/platform/context/physical_device.h
+        src/platform/context/logical_device.h
+        src/platform/context/gpu_alloc.h
 
-        src/platform/vulkan/presentation/surface.h
-        src/platform/vulkan/presentation/swapchain.h
-        src/platform/vulkan/presentation/swapchain_manager.h
+        src/platform/presentation/surface.h
+        src/platform/presentation/swapchain.h
+        src/platform/presentation/swapchain_manager.h
 
         # resource layer
         src/resource/loader.h
@@ -108,12 +108,12 @@ target_sources(mocca PUBLIC
         # rendering layer
         src/renderer/renderer.h
         src/renderer/render_feature.h
-        src/renderer/vulkan/frame_manager.h
-        src/renderer/vulkan/imgui_manager.h
-        src/renderer/vulkan/pipelines/pipeline.h
-        src/renderer/vulkan/pipelines/pipeline_manager.h
-        src/renderer/vulkan/pipelines/graphics_pipeline.h
-        src/renderer/vulkan/pipelines/compute_pipeline.h
+        src/renderer/frame_manager.h
+        src/renderer/imgui_manager.h
+        src/renderer/pipelines/pipeline.h
+        src/renderer/pipelines/pipeline_manager.h
+        src/renderer/pipelines/graphics_pipeline.h
+        src/renderer/pipelines/compute_pipeline.h
 
         # app layer
         src/application/application.h

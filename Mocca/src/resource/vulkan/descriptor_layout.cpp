@@ -1,6 +1,6 @@
 #include "descriptor_layout.h"
 
-#include "core/vulkan/vk_check.h"
+#include "core/vk_check.h"
 
 
 VkDescriptorSetLayoutBinding DescriptorLayout::binding(
