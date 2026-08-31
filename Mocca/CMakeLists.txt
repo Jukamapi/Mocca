@@ -46,6 +46,9 @@ target_sources(mocca PRIVATE
     src/platform/presentation/swapchain_manager.cpp
 
     # resource layer
+    src/resource/asset_manager.cpp
+    src/resource/resource_uploader.cpp
+
     src/resource/vulkan/allocated_image.cpp
     src/resource/vulkan/allocated_buffer.cpp
     src/resource/vulkan/descriptor_allocator.cpp
@@ -99,6 +102,8 @@ target_sources(mocca PUBLIC
         # resource layer
         src/resource/loader.h
         src/resource/deletion_queue.h
+        src/resource/asset_manager.h
+        src/resource/resource_uploader.h
 
         src/resource/vulkan/allocated_image.h
         src/resource/vulkan/allocated_buffer.h

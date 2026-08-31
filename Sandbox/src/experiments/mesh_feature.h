@@ -1,88 +1,87 @@
-#pragma once
+// #pragma once
 
-#include "renderer/pipelines/graphics_pipeline.h"
-#include "renderer/pipelines/pipeline_manager.h"
-#include "renderer/render_feature.h"
-#include "renderer/renderer.h"
-#include "resource/loader.h"
-
-
-#include <imgui.h>
+// #include "renderer/pipelines/graphics_pipeline.h"
+// #include "renderer/pipelines/pipeline_manager.h"
+// #include "renderer/render_feature.h"
+// #include "renderer/renderer.h"
+// #include "resource/loader.h"
 
 
-class MeshFeature : public RenderFeature
-{
-public:
-    MeshFeature(Renderer& renderer)
-        : m_device(renderer.getContext().getLogicalDevice().getHandle()),
-          m_drawExtent(renderer.getExtent()),
-          m_rectangle(&renderer.getRectangleMesh())
-    {
+// #include <imgui.h>
 
-        auto vertShader = loadShader("colored_triangle_mesh.vert.spv");
-        auto fragShader = loadShader("colored_triangle.frag.spv");
 
-        auto& pipelineManager = renderer.getPipelineManager();
+// class MeshFeature : public RenderFeature
+// {
+// public:
+//     MeshFeature(Renderer& renderer)
+//         : m_device(renderer.getContext().getLogicalDevice().getHandle()),
+//           m_drawExtent(renderer.getExtent())
+//     {
 
-        VkPushConstantRange bufferRange{
-            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-            .offset = 0,
-            .size = sizeof(GPUDrawPushConstants),
-        };
+//         auto vertShader = loadShader("colored_triangle_mesh.vert.spv");
+//         auto fragShader = loadShader("colored_triangle.frag.spv");
 
-        m_meshPipeline = &pipelineManager.createGraphicsPipeline(
-            "mesh",
-            {
-                .colorFormat = renderer.getDrawFormat(),
-                .depthFormat = renderer.getDepthFormat(),
-                .vertCode = vertShader,
-                .fragCode = fragShader,
-                .pushConstants = {bufferRange},
-            }
-        );
-    }
+//         auto& pipelineManager = renderer.getPipelineManager();
 
-    void onRender(VkCommandBuffer cmd, VkImageView drawImageView, uint32_t frameIndex) override
-    {
+//         VkPushConstantRange bufferRange{
+//             .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+//             .offset = 0,
+//             .size = sizeof(GPUDrawPushConstants),
+//         };
 
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_meshPipeline->getHandle());
+//         m_meshPipeline = &pipelineManager.createGraphicsPipeline(
+//             "mesh",
+//             {
+//                 .colorFormat = renderer.getDrawFormat(),
+//                 .depthFormat = renderer.getDepthFormat(),
+//                 .vertCode = vertShader,
+//                 .fragCode = fragShader,
+//                 .pushConstants = {bufferRange},
+//             }
+//         );
+//     }
 
-        GPUDrawPushConstants pushConstants{
-            .worldMatrix = glm::mat4{1.f},
-            .vertexBuffer = m_rectangle->vertexBufferAddress
-        };
+//     void onRender(VkCommandBuffer cmd, VkImageView drawImageView, uint32_t frameIndex) override
+//     {
 
-        vkCmdPushConstants(
-            cmd,
-            m_meshPipeline->getLayout(),
-            VK_SHADER_STAGE_VERTEX_BIT,
-            0,
-            sizeof(GPUDrawPushConstants),
-            &pushConstants
-        );
+//         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_meshPipeline->getHandle());
 
-        vkCmdBindIndexBuffer(cmd, m_rectangle->indexBuffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+//         GPUDrawPushConstants pushConstants{
+//             .worldMatrix = glm::mat4{1.f},
+//             .vertexBuffer = m_rectangle->vertexBufferAddress
+//         };
 
-        vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
-    }
+//         vkCmdPushConstants(
+//             cmd,
+//             m_meshPipeline->getLayout(),
+//             VK_SHADER_STAGE_VERTEX_BIT,
+//             0,
+//             sizeof(GPUDrawPushConstants),
+//             &pushConstants
+//         );
 
-    void onResize(uint32_t width, uint32_t height) override
-    {
-        m_drawExtent = {width, height};
-    }
+//         vkCmdBindIndexBuffer(cmd, m_rectangle->indexBuffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-    RenderPassType getType() const override
-    {
-        return RenderPassType::Graphics;
-    }
+//         vkCmdDrawIndexed(cmd, 6, 1, 0, 0, 0);
+//     }
 
-private:
-    VkDevice m_device{VK_NULL_HANDLE};
-    VkImageView m_drawImageView{VK_NULL_HANDLE};
+//     void onResize(uint32_t width, uint32_t height) override
+//     {
+//         m_drawExtent = {width, height};
+//     }
 
-    GraphicsPipeline* m_meshPipeline;
+//     RenderPassType getType() const override
+//     {
+//         return RenderPassType::Graphics;
+//     }
 
-    VkExtent2D m_drawExtent{};
+// private:
+//     VkDevice m_device{VK_NULL_HANDLE};
+//     VkImageView m_drawImageView{VK_NULL_HANDLE};
 
-    const GPUMeshBuffers* m_rectangle{nullptr};
-};
+//     GraphicsPipeline* m_meshPipeline;
+
+//     VkExtent2D m_drawExtent{};
+
+//     std::vector<std::shared_ptr<MeshAsset>> m_testMeshes;
+// };

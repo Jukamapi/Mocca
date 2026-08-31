@@ -6,6 +6,8 @@
 class AllocatedBuffer
 {
 public:
+    AllocatedBuffer() = default;
+
     AllocatedBuffer(VmaAllocator allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 
     AllocatedBuffer(const AllocatedBuffer&) = delete;

@@ -11,7 +11,9 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_vulkan.h>
 
+#include <memory>
 #include <print>
+
 
 class SandboxApp : public Application
 {
@@ -23,13 +25,13 @@ public:
 
     void onInit() override
     {
-        m_renderer.pushFeature(std::make_unique<TestFeature>(m_renderer));
+        m_renderer->pushFeature(std::make_unique<TestFeature>(*m_renderer));
 
-        m_renderer.pushFeature(std::make_unique<TriangleFeature>(m_renderer));
+        m_renderer->pushFeature(std::make_unique<TriangleFeature>(*m_renderer));
 
-        m_renderer.pushFeature(std::make_unique<MeshFeature>(m_renderer));
+        // m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer));
 
-        m_renderer.pushFeature(std::make_unique<ImguiFeature>());
+        m_renderer->pushFeature(std::make_unique<ImguiFeature>());
     }
 
     void onTick(float deltaTime) override
@@ -39,7 +41,7 @@ public:
 
         if(isPressed && !wasPressed)
         {
-            auto* triangleFeature = m_renderer.getFeature<TriangleFeature>();
+            auto* triangleFeature = m_renderer->getFeature<TriangleFeature>();
             if(triangleFeature)
             {
                 bool currentState = triangleFeature->isEnabled();

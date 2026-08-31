@@ -1,0 +1,36 @@
+#pragma once
+
+#include "core/vk_types.h"
+#include "resource_uploader.h"
+
+
+#include <filesystem>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <vector>
+
+class ResourceUploader;
+
+class AssetManager
+{
+public:
+    AssetManager(VkDevice device, VkQueue graphicsQueue, const QueueFamilyIndices& indices, VmaAllocator allocator);
+
+    AssetManager(const AssetManager&) = delete;
+    AssetManager& operator=(const AssetManager&) = delete;
+
+    AssetManager(AssetManager&&) noexcept = default;
+    AssetManager& operator=(AssetManager&&) noexcept = default;
+
+
+    std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadGltfMeshes(std::filesystem::path filePath);
+
+    void initDefaultData();
+
+private:
+    ResourceUploader m_resourceUploader;
+    std::optional<GPUMeshBuffers> m_rectangle;
+
+    constexpr static bool OVERRIDE_COLORS = true;
+};

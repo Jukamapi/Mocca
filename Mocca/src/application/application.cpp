@@ -3,6 +3,9 @@
 #include "core/input.h"
 #include "core/timer.h"
 
+#include "renderer/renderer.h"
+#include "resource/asset_manager.h"
+
 
 #include <chrono>
 #include <cstdint>
@@ -13,11 +16,20 @@
 // this utilizes extent provider to somewhat respect the boundaries of architecture
 // and so it doesn't have to include sdl as much since it's big
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
-    : m_window(width, height, title),
-      m_renderer(m_window, [this]() -> Extent { return m_window.getDrawableSize(); })
+    : m_window(width, height, title)
 {
     // event callback
     m_window.onEvent = [this](const Event& event) { m_eventQueue.push_back(event); };
+
+    m_renderer = std::make_unique<Renderer>(m_window, [this]() -> Extent { return m_window.getDrawableSize(); });
+
+    const auto& context = m_renderer->getContext();
+    VkDevice device = context.getLogicalDevice().getHandle();
+    VkQueue graphicsQueue = context.getLogicalDevice().getGraphicsQueue();
+    const auto& indices = context.getPhysicalDevice().getQueueFamilyIndices();
+    VmaAllocator allocator = context.getVmaAlloc().getVmaAllocator();
+
+    m_assetManager = std::make_unique<AssetManager>(device, graphicsQueue, indices, allocator);
 }
 
 void Application::run()
@@ -68,16 +80,16 @@ void Application::processEvents()
 
         case EventType::WindowMinimize:
             m_isMinimized = true;
-            m_renderer.markSwapchainDirty();
+            m_renderer->markSwapchainDirty();
             break;
 
         case EventType::WindowRestore:
             m_isMinimized = false;
-            m_renderer.markSwapchainDirty();
+            m_renderer->markSwapchainDirty();
             break;
 
         case EventType::WindowResize:
-            m_renderer.markSwapchainDirty();
+            m_renderer->markSwapchainDirty();
             break;
 
 
@@ -98,7 +110,7 @@ void Application::tickLogic(float dt)
     onTick(dt);
 
     // feature logic
-    for(auto& feature : m_renderer.getFeatures())
+    for(auto& feature : m_renderer->getFeatures())
     {
         if(feature->isEnabled())
             feature->onUpdate(dt);
@@ -107,21 +119,21 @@ void Application::tickLogic(float dt)
 
 void Application::tickRender(float dt)
 {
-    m_renderer.beginUiFrame();
+    m_renderer->beginUiFrame();
 
     // TODO: for global UI, might change name for clarity
     onImgui();
 
-    for(auto& feature : m_renderer.getFeatures())
+    for(auto& feature : m_renderer->getFeatures())
     {
         if(feature->isEnabled())
             feature->onImgui();
     }
 
-    m_renderer.endUiFrame();
+    m_renderer->endUiFrame();
 
     // calls each features' onRender
-    m_renderer.drawFrame();
+    m_renderer->drawFrame();
 }
 
 Application::~Application() {}

@@ -9,7 +9,6 @@
 #include "render_feature.h"
 
 
-
 #include <functional>
 #include <memory>
 #include <vector>
@@ -115,11 +114,6 @@ public:
         return DEPTH_FORMAT;
     }
 
-    const GPUMeshBuffers& getRectangleMesh() const
-    {
-        return *m_rectangle;
-    }
-
 private:
     bool acquireNextImage(uint32_t& outImageIndex);
     VkCommandBuffer recordCommandBuffer(uint32_t imageIndex);
@@ -155,13 +149,6 @@ private:
     PipelineManager m_pipelineManager;
 
     bool m_isSuspended{false};
-
-    CommandPool m_commandPool;
-    VkCommandBuffer m_commandBuffer{VK_NULL_HANDLE};
-    VkFence m_fence{VK_NULL_HANDLE};
-
-    // TODO: idk if it should be here
-    std::optional<GPUMeshBuffers> m_rectangle;
 
     inline static constexpr VkFormat DRAW_FORMAT{VK_FORMAT_R16G16B16A16_SFLOAT};
     inline static constexpr VkFormat DEPTH_FORMAT{VK_FORMAT_D32_SFLOAT};

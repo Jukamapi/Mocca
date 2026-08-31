@@ -30,6 +30,8 @@ AllocatedBuffer::AllocatedBuffer(AllocatedBuffer&& other) noexcept
 {
     other.m_buffer = VK_NULL_HANDLE;
     other.m_allocation = VK_NULL_HANDLE;
+    other.m_allocator = VK_NULL_HANDLE;
+    other.m_info = {};
 }
 
 AllocatedBuffer& AllocatedBuffer::operator=(AllocatedBuffer&& other) noexcept
@@ -46,8 +48,10 @@ AllocatedBuffer& AllocatedBuffer::operator=(AllocatedBuffer&& other) noexcept
         m_allocation = other.m_allocation;
         m_info = other.m_info;
 
+        other.m_allocator = VK_NULL_HANDLE;
         other.m_buffer = VK_NULL_HANDLE;
         other.m_allocation = VK_NULL_HANDLE;
+        other.m_info = {};
     }
 
     return *this;
@@ -55,5 +59,8 @@ AllocatedBuffer& AllocatedBuffer::operator=(AllocatedBuffer&& other) noexcept
 
 AllocatedBuffer::~AllocatedBuffer()
 {
-    vmaDestroyBuffer(m_allocator, m_buffer, m_allocation);
+    if(m_buffer != VK_NULL_HANDLE && m_allocator != VK_NULL_HANDLE)
+    {
+        vmaDestroyBuffer(m_allocator, m_buffer, m_allocation);
+    }
 }

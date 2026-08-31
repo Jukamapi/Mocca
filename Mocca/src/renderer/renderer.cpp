@@ -27,18 +27,9 @@ Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
       ),
       m_frameManager(m_context.getPhysicalDevice().getQueueFamilyIndices(), m_context.getLogicalDevice().getHandle()),
       m_imGuiManager(m_context, window, m_swapchainManager.getSwapchain(), DRAW_FORMAT, DEPTH_FORMAT),
-      m_pipelineManager(m_context.getLogicalDevice().getHandle()),
-      m_commandPool(m_context.getPhysicalDevice().getQueueFamilyIndices(), m_context.getLogicalDevice().getHandle())
+      m_pipelineManager(m_context.getLogicalDevice().getHandle())
 {
-    m_commandPool.allocateBuffers(1);
-
-    VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .flags = 0};
-
-    VK_CHECK(vkCreateFence(m_context.getLogicalDevice().getHandle(), &fenceInfo, nullptr, &m_fence));
-
     createFrameImages();
-
-    initDefaultData();
 }
 
 void Renderer::drawFrame()
@@ -476,125 +467,6 @@ void Renderer::createFrameImages()
     }
 }
 
-void Renderer::immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function)
-{
-    VK_CHECK(vkResetFences(m_context.getLogicalDevice().getHandle(), 1, &m_fence));
-    m_commandPool.reset();
-
-    VkCommandBuffer cmd = m_commandPool.getBuffers()[0];
-
-    VkCommandBufferBeginInfo cmdBeginInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-    };
-    VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
-
-    function(cmd);
-
-    VK_CHECK(vkEndCommandBuffer(cmd));
-
-    VkCommandBufferSubmitInfo cmdSubmitInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-        .commandBuffer = cmd
-    };
-
-    VkSubmitInfo2 submit{
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
-        .commandBufferInfoCount = 1,
-        .pCommandBufferInfos = &cmdSubmitInfo,
-    };
-
-    VK_CHECK(vkQueueSubmit2(m_context.getLogicalDevice().getGraphicsQueue(), 1, &submit, m_fence));
-    VK_CHECK(vkWaitForFences(m_context.getLogicalDevice().getHandle(), 1, &m_fence, true, 9999999999));
-}
-
-
-GPUMeshBuffers Renderer::uploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices)
-{
-    const size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
-    const size_t indexBufferSize = indices.size() * sizeof(uint32_t);
-
-    AllocatedBuffer index{
-        m_context.getVmaAlloc().getVmaAllocator(),
-        indexBufferSize,
-        VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-        VMA_MEMORY_USAGE_GPU_ONLY
-    };
-
-    AllocatedBuffer vertex{
-        m_context.getVmaAlloc().getVmaAllocator(),
-        vertexBufferSize,
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-            VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-        VMA_MEMORY_USAGE_GPU_ONLY
-    };
-
-
-    AllocatedBuffer staging{
-        m_context.getVmaAlloc().getVmaAllocator(),
-        vertexBufferSize + indexBufferSize,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        VMA_MEMORY_USAGE_CPU_ONLY
-    };
-
-    void* data = staging.getMappedData();
-
-    std::memcpy(data, vertices.data(), vertexBufferSize);
-    std::memcpy(static_cast<char*>(data) + vertexBufferSize, indices.data(), indexBufferSize);
-
-    immediateSubmit(
-        [&](VkCommandBuffer cmd)
-        {
-            VkBufferCopy vertexCopy{.srcOffset = 0, .dstOffset = 0, .size = vertexBufferSize};
-
-            vkCmdCopyBuffer(cmd, staging.getBuffer(), vertex.getBuffer(), 1, &vertexCopy);
-
-            VkBufferCopy indexCopy{.srcOffset = vertexBufferSize, .dstOffset = 0, .size = indexBufferSize};
-            vkCmdCopyBuffer(cmd, staging.getBuffer(), index.getBuffer(), 1, &indexCopy);
-        }
-    );
-
-    VkBufferDeviceAddressInfo deviceAdressInfo{
-        .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
-        .buffer = vertex.getBuffer()
-    };
-
-    VkDeviceAddress vertexAddress =
-        vkGetBufferDeviceAddress(m_context.getLogicalDevice().getHandle(), &deviceAdressInfo);
-
-
-    GPUMeshBuffers newSurface{std::move(index), std::move(vertex), vertexAddress};
-
-    return newSurface;
-}
-
-void Renderer::initDefaultData()
-{
-    std::array<Vertex, 4> rectVertices;
-
-    rectVertices[0].position = {0.5, -0.5, 0};
-    rectVertices[1].position = {0.5, 0.5, 0};
-    rectVertices[2].position = {-0.5, -0.5, 0};
-    rectVertices[3].position = {-0.5, 0.5, 0};
-
-    rectVertices[0].color = {0, 0, 0, 1};
-    rectVertices[1].color = {0.5, 0.5, 0.5, 1};
-    rectVertices[2].color = {1, 0, 0, 1};
-    rectVertices[3].color = {0, 1, 0, 1};
-
-    std::array<uint32_t, 6> rectIndices;
-
-    rectIndices[0] = 0;
-    rectIndices[1] = 1;
-    rectIndices[2] = 2;
-
-    rectIndices[3] = 2;
-    rectIndices[4] = 1;
-    rectIndices[5] = 3;
-
-    m_rectangle = uploadMesh(rectIndices, rectVertices);
-}
-
 
 void Renderer::destroyFrameImages()
 {
@@ -610,9 +482,6 @@ Renderer::~Renderer()
     vkDeviceWaitIdle(m_context.getLogicalDevice().getHandle());
 
     m_features.clear();
-
-    if(m_fence != VK_NULL_HANDLE)
-        vkDestroyFence(m_context.getLogicalDevice().getHandle(), m_fence, nullptr);
 
     destroyFrameImages();
 }

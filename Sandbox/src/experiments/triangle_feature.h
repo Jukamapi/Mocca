@@ -7,7 +7,6 @@
 #include "resource/loader.h"
 
 
-
 #include <imgui.h>
 
 
