@@ -37,5 +37,5 @@ private:
     VkDevice m_logicalDevice{VK_NULL_HANDLE};
     VkCommandPool m_commandPool{VK_NULL_HANDLE};
     uint32_t m_usedCount = 0;
-    std::vector<VkCommandBuffer> m_buffers;
+    std::vector<VkCommandBuffer> m_buffers{};
 };

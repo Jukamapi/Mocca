@@ -35,7 +35,7 @@ protected:
 
     virtual void onTick(float deltaTime) {}
     virtual void onImgui() {}
-    virtual void onShutdown() {}
+    void onShutdown();
 
     // call destructors in reverse order, important ordering for now
     Window m_window;

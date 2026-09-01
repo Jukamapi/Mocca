@@ -163,7 +163,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         .imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, // compute doesnt touch this
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-        .clearValue = {.depthStencil = {1.0f, 0}},
+        .clearValue = {.depthStencil = {0.f, 0}},
     };
 
     VkRenderingInfo renderingInfo{

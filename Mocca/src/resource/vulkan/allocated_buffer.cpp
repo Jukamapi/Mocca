@@ -38,7 +38,7 @@ AllocatedBuffer& AllocatedBuffer::operator=(AllocatedBuffer&& other) noexcept
 {
     if(this != &other)
     {
-        if(m_buffer != VK_NULL_HANDLE)
+        if(m_buffer != VK_NULL_HANDLE && m_allocator != VK_NULL_HANDLE)
         {
             vmaDestroyBuffer(m_allocator, m_buffer, m_allocation);
         }

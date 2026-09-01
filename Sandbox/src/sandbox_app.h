@@ -6,6 +6,7 @@
 #include "experiments/mesh_feature.h"
 #include "experiments/test_feature.h"
 #include "experiments/triangle_feature.h"
+#include "resource/asset_manager.h"
 
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
@@ -25,11 +26,13 @@ public:
 
     void onInit() override
     {
+        m_loadedMeshes = m_assetManager->loadGltfMeshes("basicmesh.glb").value();
+
         m_renderer->pushFeature(std::make_unique<TestFeature>(*m_renderer));
 
         m_renderer->pushFeature(std::make_unique<TriangleFeature>(*m_renderer));
 
-        // m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer));
+        m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer, &m_loadedMeshes));
 
         m_renderer->pushFeature(std::make_unique<ImguiFeature>());
     }
@@ -60,4 +63,5 @@ public:
     }
 
 private:
+    std::vector<std::shared_ptr<MeshAsset>> m_loadedMeshes;
 };

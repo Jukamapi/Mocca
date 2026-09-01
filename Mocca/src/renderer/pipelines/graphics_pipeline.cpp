@@ -148,7 +148,7 @@ GraphicsPipeline::GraphicsPipeline(const std::string& name, VkDevice device, con
         .pNext = nullptr,
         .depthTestEnable = config.enableDepthTest ? VK_TRUE : VK_FALSE,
         .depthWriteEnable = VK_TRUE,
-        .depthCompareOp = VK_COMPARE_OP_LESS,
+        .depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL,
         .depthBoundsTestEnable = VK_FALSE,
         .stencilTestEnable = VK_FALSE,
         .front = {},

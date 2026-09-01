@@ -34,10 +34,6 @@ public:
 
     void pushFeature(std::unique_ptr<RenderFeature> feature);
     void drawFrame();
-    void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
-
-
-    GPUMeshBuffers uploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
     void beginUiFrame()
     {

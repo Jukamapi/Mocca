@@ -5,12 +5,9 @@
 
 
 #include <filesystem>
-#include <iostream>
 #include <memory>
 #include <optional>
 #include <vector>
-
-class ResourceUploader;
 
 class AssetManager
 {
@@ -26,11 +23,8 @@ public:
 
     std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadGltfMeshes(std::filesystem::path filePath);
 
-    void initDefaultData();
-
 private:
     ResourceUploader m_resourceUploader;
-    std::optional<GPUMeshBuffers> m_rectangle;
 
     constexpr static bool OVERRIDE_COLORS = true;
 };

@@ -70,7 +70,6 @@ GPUMeshBuffers ResourceUploader::uploadMesh(std::span<uint32_t> indices, std::sp
         VMA_MEMORY_USAGE_GPU_ONLY
     };
 
-
     AllocatedBuffer staging{
         m_allocator,
         vertexBufferSize + indexBufferSize,

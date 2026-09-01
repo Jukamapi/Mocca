@@ -4,6 +4,7 @@
 #include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/tools.hpp>
 
+#include <iostream>
 #include <print>
 
 AssetManager::AssetManager(
@@ -14,9 +15,15 @@ AssetManager::AssetManager(
 }
 
 
-std::optional<std::vector<std::shared_ptr<MeshAsset>>> AssetManager::loadGltfMeshes(std::filesystem::path filePath)
+std::optional<std::vector<std::shared_ptr<MeshAsset>>> AssetManager::loadGltfMeshes(std::filesystem::path fileName)
 {
-    std::cout << "Loading GLTF: " << filePath << std::endl;
+    std::cout << "Loading GLTF: " << fileName << std::endl;
+
+#ifdef ASSETS_DIR
+    std::filesystem::path filePath = std::filesystem::path(ASSETS_DIR) / fileName;
+#else
+    std::filesystem::path filePath = std::filesystem::path("assets") / fileName;
+#endif
 
     fastgltf::GltfDataBuffer data;
     data.loadFromFile(filePath);
@@ -150,32 +157,4 @@ std::optional<std::vector<std::shared_ptr<MeshAsset>>> AssetManager::loadGltfMes
     }
 
     return meshes;
-}
-
-
-void AssetManager::initDefaultData()
-{
-    std::array<Vertex, 4> rectVertices;
-
-    rectVertices[0].position = {0.5, -0.5, 0};
-    rectVertices[1].position = {0.5, 0.5, 0};
-    rectVertices[2].position = {-0.5, -0.5, 0};
-    rectVertices[3].position = {-0.5, 0.5, 0};
-
-    rectVertices[0].color = {0, 0, 0, 1};
-    rectVertices[1].color = {0.5, 0.5, 0.5, 1};
-    rectVertices[2].color = {1, 0, 0, 1};
-    rectVertices[3].color = {0, 1, 0, 1};
-
-    std::array<uint32_t, 6> rectIndices;
-
-    rectIndices[0] = 0;
-    rectIndices[1] = 1;
-    rectIndices[2] = 2;
-
-    rectIndices[3] = 2;
-    rectIndices[4] = 1;
-    rectIndices[5] = 3;
-
-    m_rectangle = m_resourceUploader.uploadMesh(rectIndices, rectVertices);
 }

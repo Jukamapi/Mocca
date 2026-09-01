@@ -129,6 +129,7 @@ target_include_directories(mocca PUBLIC ${MOCCA_SRC})
 target_compile_definitions(mocca PUBLIC
     VK_NO_PROTOTYPES
     SHADER_DIR="${SPIRV_DIR}"
+    ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets"
 )
 
 target_link_libraries(mocca PUBLIC

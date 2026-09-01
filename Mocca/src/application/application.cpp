@@ -11,7 +11,9 @@
 #include <cstdint>
 #include <thread>
 
-// TODO: IMPORTANT - get rid of vulkan/
+// TODO: IMPORTANT - Application is the owner of asset manager, then in the derived class so Sandbox it has the "
+// std::vector<std::shared_ptr<MeshAsset>> m_loadedMeshes;" and then submit the meshes into the meshFeature in the
+// onTick?
 
 // this utilizes extent provider to somewhat respect the boundaries of architecture
 // and so it doesn't have to include sdl as much since it's big
@@ -135,5 +137,11 @@ void Application::tickRender(float dt)
     // calls each features' onRender
     m_renderer->drawFrame();
 }
+
+void Application::onShutdown()
+{
+    vkDeviceWaitIdle(m_renderer->getContext().getLogicalDevice().getHandle());
+}
+
 
 Application::~Application() {}
