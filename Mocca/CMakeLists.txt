@@ -52,6 +52,7 @@ target_sources(mocca PRIVATE
     src/resource/vulkan/allocated_image.cpp
     src/resource/vulkan/allocated_buffer.cpp
     src/resource/vulkan/descriptor_allocator.cpp
+    src/resource/vulkan/descriptor_allocator_growable.cpp
     src/resource/vulkan/descriptor_layout.cpp
 
     # rendering layer
@@ -108,6 +109,7 @@ target_sources(mocca PUBLIC
         src/resource/vulkan/allocated_image.h
         src/resource/vulkan/allocated_buffer.h
         src/resource/vulkan/descriptor_allocator.h
+        src/resource/vulkan/descriptor_allocator_growable.h
         src/resource/vulkan/descriptor_layout.h
 
         # rendering layer
