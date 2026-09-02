@@ -15,14 +15,15 @@ DescriptorWriter& DescriptorWriter::writeBuffer(
 
     VkWriteDescriptorSet write{
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstBinding = static_cast<uint32_t>(binding),
         .dstSet = VK_NULL_HANDLE, // empty for now
+        .dstBinding = static_cast<uint32_t>(binding),
         .descriptorCount = 1,
         .descriptorType = type,
         .pBufferInfo = &info,
     };
 
     m_writes.push_back(write);
+    return *this;
 }
 
 DescriptorWriter& DescriptorWriter::writeImage(
@@ -34,8 +35,8 @@ DescriptorWriter& DescriptorWriter::writeImage(
 
     VkWriteDescriptorSet write = {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstBinding = static_cast<uint32_t>(binding),
         .dstSet = VK_NULL_HANDLE, // empty for now
+        .dstBinding = static_cast<uint32_t>(binding),
         .descriptorCount = 1,
         .descriptorType = type,
         .pImageInfo = &info,

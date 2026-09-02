@@ -9,6 +9,7 @@
 #include "resource/loader.h"
 #include "resource/vulkan/descriptor_allocator.h"
 #include "resource/vulkan/descriptor_layout.h"
+#include "resource/vulkan/descriptor_writer.h"
 
 
 #include <imgui.h>
@@ -80,23 +81,9 @@ public:
 
         VkDescriptorSet currentSet = m_descriptorSets[frameIndex];
 
-        VkDescriptorImageInfo imgInfo{
-            .imageView = drawImageView,
-            .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-        };
-
-        VkWriteDescriptorSet drawImageWrite{
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .pNext = nullptr,
-            .dstSet = currentSet,
-            .dstBinding = 0,
-            .descriptorCount = 1,
-            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-            .pImageInfo = &imgInfo,
-        };
-
-        // TODO: bindless approach or descriptor set per frame
-        vkUpdateDescriptorSets(m_device, 1, &drawImageWrite, 0, nullptr);
+        DescriptorWriter writer(m_device);
+        writer.writeImage(0, drawImageView, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
+            .updateSet(currentSet);
 
         const ComputeEffect& activeEffect = m_backgroundEffects[m_currentBackgroundEffect];
 
