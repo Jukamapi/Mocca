@@ -125,7 +125,6 @@ private:
     // handles scaling, format conversion between high precision to standard
     void blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, VkImage dst, VkExtent2D dstExtent);
 
-    void initDefaultData();
 
     // allocates and deallocates color and depth images
     void createFrameImages();

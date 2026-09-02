@@ -33,13 +33,12 @@ public:
 
         m_meshPipeline = &pipelineManager.createGraphicsPipeline(
             "mesh",
-            {
-                .colorFormat = renderer.getDrawFormat(),
-                .depthFormat = renderer.getDepthFormat(),
-                .vertCode = vertShader,
-                .fragCode = fragShader,
-                .pushConstants = {bufferRange},
-            }
+            {.colorFormat = renderer.getDrawFormat(),
+             .depthFormat = renderer.getDepthFormat(),
+             .vertCode = vertShader,
+             .fragCode = fragShader,
+             .pushConstants = {bufferRange},
+             .blendMode = BlendMode::Additive}
         );
     }
 

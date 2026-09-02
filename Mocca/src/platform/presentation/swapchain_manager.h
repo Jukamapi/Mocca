@@ -28,6 +28,11 @@ public:
         return *m_swapchain;
     }
 
+    const Extent& getExtent() const
+    {
+        return m_currentExtent;
+    }
+
     // if swapchain is marked dirty it means it's scheduled for recreating
     void markDirty()
     {

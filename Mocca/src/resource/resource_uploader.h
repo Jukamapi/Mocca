@@ -26,7 +26,6 @@ public:
 
     GPUMeshBuffers uploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
-    void initDefaultData();
 
 private:
     VkDevice m_device;

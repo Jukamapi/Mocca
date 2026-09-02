@@ -8,6 +8,13 @@
 #include <string>
 #include <vector>
 
+enum class BlendMode
+{
+    None,
+    Additive,
+    Alpha
+};
+
 struct GraphicsPipelineConfig
 {
     VkFormat colorFormat{VK_FORMAT_UNDEFINED};
@@ -24,7 +31,7 @@ struct GraphicsPipelineConfig
     VkFrontFace frontFace{VK_FRONT_FACE_CLOCKWISE};
     bool enableDepthTest{true};
     bool enableDepthWrite{true};
-    bool enableBlending{false};
+    BlendMode blendMode{BlendMode::None};
 };
 
 class GraphicsPipeline : public Pipeline
