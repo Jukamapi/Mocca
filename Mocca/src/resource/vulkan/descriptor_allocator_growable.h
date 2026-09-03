@@ -23,7 +23,7 @@ public:
     DescriptorAllocatorGrowable(DescriptorAllocatorGrowable&& other) noexcept;
     DescriptorAllocatorGrowable& operator=(DescriptorAllocatorGrowable&& other) noexcept;
 
-    VkDescriptorSet allocate(VkDescriptorSetLayout layout, void* pNext);
+    VkDescriptorSet allocate(VkDescriptorSetLayout layout, void* pNext = nullptr);
     void clearPools();
 
 private:

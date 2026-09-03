@@ -132,22 +132,16 @@ DescriptorAllocatorGrowable& DescriptorAllocatorGrowable::operator=(DescriptorAl
 {
     if(this != &other)
     {
-
-        /*
-        VkDevice m_device{VK_NULL_HANDLE};
-    std::vector<PoolSizeRatio> m_ratios;
-    std::vector<VkDescriptorPool> m_fullPools;
-    std::vector<VkDescriptorPool> m_readyPools;
-    uint32_t m_setsPerPool;
-        */
+        destroyPools();
 
         m_device = other.m_device;
         m_setsPerPool = other.m_setsPerPool;
-        m_ratios = other.m_ratios;
-        m_fullPools = other.m_fullPools;
-        m_readyPools = other.m_readyPools;
+        m_ratios = std::move(other.m_ratios);
+        m_fullPools = std::move(other.m_fullPools);
+        m_readyPools = std::move(other.m_readyPools);
 
-        other.destroyPools();
+        other.m_device = VK_NULL_HANDLE;
+        other.m_setsPerPool = 0;
     }
 
     return *this;
@@ -155,15 +149,13 @@ DescriptorAllocatorGrowable& DescriptorAllocatorGrowable::operator=(DescriptorAl
 
 DescriptorAllocatorGrowable::DescriptorAllocatorGrowable(DescriptorAllocatorGrowable&& other) noexcept
     : m_device(other.m_device),
-      m_setsPerPool(other.m_setsPerPool)
+      m_setsPerPool(other.m_setsPerPool),
+      m_ratios(std::move(other.m_ratios)),
+      m_fullPools(std::move(other.m_fullPools)),
+      m_readyPools(std::move(other.m_readyPools))
 {
-    m_device = other.m_device;
-    m_setsPerPool = other.m_setsPerPool;
-    m_ratios = other.m_ratios;
-    m_fullPools = other.m_fullPools;
-    m_readyPools = other.m_readyPools;
-
-    other.destroyPools();
+    other.m_device = VK_NULL_HANDLE;
+    other.m_setsPerPool = 0;
 }
 
 DescriptorAllocatorGrowable::~DescriptorAllocatorGrowable()
