@@ -60,6 +60,7 @@ target_sources(mocca PRIVATE
     src/renderer/renderer.cpp
     src/renderer/frame_manager.cpp
     src/renderer/imgui_manager.cpp
+    src/renderer/global_uniforms.cpp
     src/renderer/pipelines/pipeline.cpp
     src/renderer/pipelines/pipeline_manager.cpp
     src/renderer/pipelines/graphics_pipeline.cpp
@@ -119,6 +120,7 @@ target_sources(mocca PUBLIC
         src/renderer/render_feature.h
         src/renderer/frame_manager.h
         src/renderer/imgui_manager.h
+        src/renderer/global_uniforms.h
         src/renderer/pipelines/pipeline.h
         src/renderer/pipelines/pipeline_manager.h
         src/renderer/pipelines/graphics_pipeline.h

@@ -22,6 +22,16 @@ FrameManager::FrameManager(const QueueFamilyIndices& indices, VkDevice device)
         {
             m_frames[i].commandPool.allocateBuffers(1);
 
+            m_frames[i].frameAllocator = DescriptorAllocatorGrowable(
+                device,
+                1000,
+                std::array{
+                    DescriptorAllocatorGrowable::PoolSizeRatio{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3.0f},
+                    DescriptorAllocatorGrowable::PoolSizeRatio{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3.0f},
+                    DescriptorAllocatorGrowable::PoolSizeRatio{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.0f}
+                }
+            );
+
             VK_CHECK(vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_frames[i].imageAvailableSemaphore));
             VK_CHECK(vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_frames[i].renderFinishedSemaphore));
             VK_CHECK(vkCreateFence(m_device, &fenceInfo, nullptr, &m_frames[i].renderFence));

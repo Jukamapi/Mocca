@@ -2,17 +2,16 @@
 
 #include "core/vk_types.h"
 #include "platform/command_pool.h"
-
-
 #include "resource/deletion_queue.h"
 #include "resource/vulkan/allocated_image.h"
+#include "resource/vulkan/descriptor_allocator_growable.h"
 
 #include <volk.h>
 
 #include <array>
 
 struct QueueFamilyIndices;
-class CommandPool;
+
 
 class FrameManager
 {
@@ -39,6 +38,7 @@ public:
 
         AllocatedImage colorImage;
         AllocatedImage depthImage;
+        DescriptorAllocatorGrowable frameAllocator;
 
         FrameData(const QueueFamilyIndices& indices, VkDevice device)
             : commandPool(indices, device)

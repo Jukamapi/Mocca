@@ -2,11 +2,13 @@
 
 #include "core/types.h"
 #include "frame_manager.h"
+#include "global_uniforms.h"
 #include "imgui_manager.h"
 #include "pipelines/pipeline_manager.h"
 #include "platform/context.h"
 #include "platform/presentation/swapchain_manager.h"
 #include "render_feature.h"
+#include "resource/vulkan/descriptor_allocator.h"
 
 
 #include <functional>
@@ -100,6 +102,16 @@ public:
         return m_pipelineManager;
     }
 
+    const DescriptorAllocator& getGlobalDescriptorAllocator() const
+    {
+        return m_globalDescriptorAllocator;
+    }
+
+    const GlobalUniforms& getGlobalUniforms() const
+    {
+        return m_globalUniforms;
+    }
+
     const VkFormat& getDrawFormat() const
     {
         return DRAW_FORMAT;
@@ -134,6 +146,9 @@ private:
 
     ExtentProvider m_extentProvider;
     VkExtent2D m_renderExtent;
+
+    DescriptorAllocator m_globalDescriptorAllocator;
+    GlobalUniforms m_globalUniforms;
 
     SwapchainManager m_swapchainManager;
     FrameManager m_frameManager;

@@ -14,6 +14,10 @@
 
 #include <imgui.h>
 
+// TODO: split the features into cpp and h files. Also use the Renderer allocator for static allocs and FrameManager
+// allocator for dynamic
+
+// m_descriptorSets[i] = renderer.getGlobalDescriptorAllocator().allocate(m_descriptorLayout.getHandle());
 
 class TestFeature : public RenderFeature
 {

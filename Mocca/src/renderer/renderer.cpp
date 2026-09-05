@@ -11,7 +11,6 @@
 #include <cassert>
 #include <stdexcept>
 
-// TODO: add AssetManager or ResourceManager and move the rectangle stuff into there
 
 // TODO: IMPORTANT - move transitionImage and blitImage into seperate file
 
@@ -19,6 +18,21 @@ Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     : m_context(window),
       m_extentProvider(std::move(extentProvider)),
       m_renderExtent(m_extentProvider().width, m_extentProvider().height),
+      m_globalDescriptorAllocator(
+          m_context.getLogicalDevice().getHandle(),
+          128,
+          std::array{
+              DescriptorAllocator::PoolSizeRatio{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0.5f},
+              DescriptorAllocator::PoolSizeRatio{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0.5f},
+              DescriptorAllocator::PoolSizeRatio{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 0.5f}
+          }
+      ),
+      m_globalUniforms(
+          m_context.getLogicalDevice().getHandle(),
+          m_context.getVmaAlloc().getVmaAllocator(),
+          FrameManager::FRAME_COUNT,
+          m_globalDescriptorAllocator
+      ),
       m_swapchainManager(
           m_context.getPhysicalDevice(),
           m_context.getLogicalDevice().getHandle(),
@@ -77,6 +91,8 @@ bool Renderer::acquireNextImage(uint32_t& outImageIndex)
     );
 
     currentFrame.deletionQueue.flush();
+
+    currentFrame.frameAllocator.clearPools();
 
     currentFrame.commandPool.reset();
 
