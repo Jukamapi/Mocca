@@ -130,14 +130,6 @@ private:
     // swapchain handling
     bool processResize();
 
-    // helper method for changing images
-    void transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
-
-    // copies an image from one place to another
-    // handles scaling, format conversion between high precision to standard
-    void blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, VkImage dst, VkExtent2D dstExtent);
-
-
     // allocates and deallocates color and depth images
     void createFrameImages();
     void destroyFrameImages();
