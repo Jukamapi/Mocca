@@ -2,7 +2,7 @@
 
 #include "core/vk_check.h"
 
-
+// TODO: Add textures functionality with moving data from Cpu
 AllocatedImage::AllocatedImage(
     VkDevice device,
     VmaAllocator allocator,
