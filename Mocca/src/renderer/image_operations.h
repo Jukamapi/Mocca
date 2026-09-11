@@ -4,13 +4,18 @@
 #include <cassert>
 
 // helper method for changing images
-inline void transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
+inline void transitionImage(
+    VkCommandBuffer cmd,
+    VkImage image,
+    VkImageLayout oldLayout,
+    VkImageLayout newLayout,
+    VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+)
 {
     VkAccessFlags2 srcAccess{};
     VkAccessFlags2 dstAccess{};
     VkPipelineStageFlags2 srcStage{};
     VkPipelineStageFlags2 dstStage{};
-    VkImageAspectFlags aspectMask{};
 
     switch(oldLayout)
     {
@@ -24,13 +29,23 @@ inline void transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout ol
         srcStage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
         break;
 
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+        srcAccess = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        srcStage = VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        srcAccess = VK_ACCESS_2_TRANSFER_READ_BIT;
+        srcStage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        break;
+
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
         srcAccess = VK_ACCESS_2_TRANSFER_WRITE_BIT;
         srcStage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
         break;
 
     case VK_IMAGE_LAYOUT_GENERAL:
-        srcAccess = VK_ACCESS_2_SHADER_WRITE_BIT;
+        srcAccess = VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT;
         srcStage = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
         break;
 
@@ -44,7 +59,6 @@ inline void transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout ol
     case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
         dstAccess = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
         dstStage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         break;
 
     case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
@@ -56,26 +70,26 @@ inline void transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout ol
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
         dstAccess = VK_ACCESS_2_TRANSFER_READ_BIT;
         dstStage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         break;
 
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
         dstAccess = VK_ACCESS_2_TRANSFER_WRITE_BIT;
         dstStage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         break;
 
     case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
         dstAccess = VK_ACCESS_2_NONE;
         dstStage = VK_PIPELINE_STAGE_2_NONE;
-        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         break;
 
     case VK_IMAGE_LAYOUT_GENERAL:
-        // dstAccess = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
         dstAccess = VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT;
         dstStage = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-        aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        break;
+
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        dstAccess = VK_ACCESS_2_SHADER_READ_BIT;
+        dstStage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
         break;
 
 
@@ -88,9 +102,9 @@ inline void transitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout ol
     VkImageSubresourceRange range{
         .aspectMask = aspectMask,
         .baseMipLevel = 0,
-        .levelCount = 1,
+        .levelCount = VK_REMAINING_MIP_LEVELS,
         .baseArrayLayer = 0,
-        .layerCount = 1,
+        .layerCount = VK_REMAINING_ARRAY_LAYERS,
     };
 
     VkImageMemoryBarrier2 barrier{
@@ -128,6 +142,7 @@ inline void blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, Vk
         .dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
         .dstOffsets = {{0, 0, 0}, {(int32_t)dstExtent.width, (int32_t)dstExtent.height, 1}},
     };
+
     VkBlitImageInfo2 blitInfo{
         .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2,
         .srcImage = src,
@@ -138,5 +153,6 @@ inline void blitImage(VkCommandBuffer cmd, VkImage src, VkExtent2D srcExtent, Vk
         .pRegions = &blitRegion,
         .filter = VK_FILTER_LINEAR,
     };
+
     vkCmdBlitImage2(cmd, &blitInfo);
 }

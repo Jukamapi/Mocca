@@ -14,7 +14,8 @@ public:
         VkExtent3D extent,
         VkFormat format,
         VkImageUsageFlags usage,
-        VkImageAspectFlags aspect
+        VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT,
+        bool mipmapped = false
     );
     ~AllocatedImage();
     AllocatedImage(const AllocatedImage&) = delete;
@@ -40,6 +41,10 @@ public:
     {
         return m_extent;
     }
+    uint32_t getMipLevels() const
+    {
+        return m_mipLevels;
+    }
 
 private:
     VkImage m_image{VK_NULL_HANDLE};
@@ -47,6 +52,7 @@ private:
     VmaAllocation m_allocation{nullptr};
     VkExtent3D m_extent{};
     VkFormat m_format{};
+    uint32_t m_mipLevels{1};
 
     VkDevice m_device{VK_NULL_HANDLE};
     VmaAllocator m_allocator{nullptr};

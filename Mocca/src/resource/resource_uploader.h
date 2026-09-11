@@ -9,6 +9,8 @@
 
 #include <volk.h>
 
+class AllocatedImage;
+
 class ResourceUploader
 {
 public:
@@ -26,6 +28,9 @@ public:
 
     GPUMeshBuffers uploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
+    AllocatedImage uploadImage(
+        const void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false
+    );
 
 private:
     VkDevice m_device;

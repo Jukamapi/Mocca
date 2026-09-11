@@ -1,6 +1,10 @@
 #include "resource_uploader.h"
 
 #include "core/vk_check.h"
+#include "renderer/image_operations.h"
+#include "vulkan/allocated_image.h"
+
+
 
 ResourceUploader::ResourceUploader(
     VkDevice device, VkQueue graphicsQueue, const QueueFamilyIndices& indices, VmaAllocator allocator
@@ -105,6 +109,62 @@ GPUMeshBuffers ResourceUploader::uploadMesh(std::span<uint32_t> indices, std::sp
     GPUMeshBuffers newSurface{std::move(index), std::move(vertex), vertexAddress};
 
     return newSurface;
+}
+
+AllocatedImage ResourceUploader::uploadImage(
+    const void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped
+)
+{
+    const size_t dataSize = size.depth * size.width * size.height * 4;
+
+    AllocatedBuffer staging{m_allocator, dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY};
+
+    std::memcpy(staging.getMappedData(), data, dataSize);
+
+    AllocatedImage newImage(
+        m_device,
+        m_allocator,
+        size,
+        format,
+        usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        VK_IMAGE_ASPECT_COLOR_BIT,
+        mipmapped
+    );
+
+    immediateSubmit(
+        [&](VkCommandBuffer cmd)
+        {
+            // Transition UNDEFINED -> TRANSFER_DST
+            transitionImage(cmd, newImage.getImage(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+            VkBufferImageCopy copyRegion{
+                .bufferOffset = 0,
+                .bufferRowLength = 0,
+                .bufferImageHeight = 0,
+                .imageSubresource =
+                    {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .mipLevel = 0, .baseArrayLayer = 0, .layerCount = 1},
+                .imageExtent = size
+            };
+
+            vkCmdCopyBufferToImage(
+                cmd,
+                staging.getBuffer(),
+                newImage.getImage(),
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                1,
+                &copyRegion
+            );
+
+            transitionImage(
+                cmd,
+                newImage.getImage(),
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            );
+        }
+    );
+
+    return newImage;
 }
 
 ResourceUploader::~ResourceUploader()

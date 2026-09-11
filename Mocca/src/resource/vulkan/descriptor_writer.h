@@ -9,6 +9,7 @@ class DescriptorWriter
 {
 public:
     explicit DescriptorWriter(VkDevice device);
+    DescriptorWriter() = default;
 
     DescriptorWriter(const DescriptorWriter&) = delete;
     DescriptorWriter& operator=(const DescriptorWriter&) = delete;

@@ -107,7 +107,7 @@ public:
         return m_globalDescriptorAllocator;
     }
 
-    const GlobalUniforms& getGlobalUniforms() const
+    GlobalUniforms& getGlobalUniforms()
     {
         return m_globalUniforms;
     }
@@ -120,6 +120,16 @@ public:
     const VkFormat& getDepthFormat() const
     {
         return DEPTH_FORMAT;
+    }
+
+    DescriptorAllocatorGrowable& getCurrentFrameAllocator()
+    {
+        return m_frameManager.getCurrentFrame().frameAllocator;
+    }
+
+    const DescriptorLayout& getMaterialLayout() const
+    {
+        return m_materialLayout;
     }
 
 private:
@@ -149,6 +159,8 @@ private:
 
     ImGuiManager m_imGuiManager;
     PipelineManager m_pipelineManager;
+
+    DescriptorLayout m_materialLayout;
 
     bool m_isSuspended{false};
 

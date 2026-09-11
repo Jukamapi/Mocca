@@ -9,7 +9,6 @@
 #include "platform/presentation/swapchain.h"
 
 
-
 #include <cassert>
 #include <stdexcept>
 
@@ -45,6 +44,17 @@ Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
       m_imGuiManager(m_context, window, m_swapchainManager.getSwapchain(), DRAW_FORMAT, DEPTH_FORMAT),
       m_pipelineManager(m_context.getLogicalDevice().getHandle())
 {
+    std::array materialBindings = {
+        DescriptorLayout::binding(
+            0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT
+        ),
+        DescriptorLayout::binding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT),
+        DescriptorLayout::binding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+    };
+    m_materialLayout = DescriptorLayout(m_context.getLogicalDevice().getHandle(), materialBindings, nullptr, 0);
+
     createFrameImages();
 }
 
@@ -211,11 +221,13 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
     VkRect2D scissor{.offset = {0, 0}, .extent = m_renderExtent};
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
+    uint32_t frameIndex = m_frameManager.getCurrentFrameIndex();
+
     for(auto& feature : m_features)
     {
         if(feature->isEnabled() && feature->getType() == RenderPassType::Graphics)
         {
-            feature->onRender(commandBuffer, currentFrame.colorImage.getImageView(), imageIndex);
+            feature->onRender(commandBuffer, currentFrame.colorImage.getImageView(), frameIndex);
         }
     }
 

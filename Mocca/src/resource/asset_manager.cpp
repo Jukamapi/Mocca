@@ -1,5 +1,7 @@
 #include "asset_manager.h"
 
+#include "resource/vulkan/descriptor_writer.h"
+
 #include <fastgltf/core.hpp>
 #include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/tools.hpp>
@@ -8,12 +10,112 @@
 #include <print>
 
 AssetManager::AssetManager(
-    VkDevice device, VkQueue graphicsQueue, const QueueFamilyIndices& indices, VmaAllocator allocator
+    VkDevice device,
+    VkQueue graphicsQueue,
+    const QueueFamilyIndices& indices,
+    VmaAllocator allocator,
+    VkDescriptorSetLayout materialLayout
 )
-    : m_resourceUploader(device, graphicsQueue, indices, allocator)
+    : m_device(device),
+      m_materialLayout(materialLayout),
+      m_samplerLibrary(device),
+      m_resourceUploader(device, graphicsQueue, indices, allocator),
+      m_materialAllocator(
+          device,
+          64,
+          std::array{
+              DescriptorAllocatorGrowable::PoolSizeRatio{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1.0f},
+              DescriptorAllocatorGrowable::PoolSizeRatio{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2.0f}
+          }
+      )
 {
+    initDefaultTextures();
+
+    m_defaultMaterialConstants = AllocatedBuffer(
+        allocator,
+        sizeof(MaterialConstants),
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VMA_MEMORY_USAGE_CPU_TO_GPU
+    );
+
+    auto* constants = static_cast<MaterialConstants*>(m_defaultMaterialConstants.getMappedData());
+    constants->colorFactors = glm::vec4(1.0f);
+    constants->metalRoughFactors = glm::vec4(1.0f, 0.5f, 0.0f, 0.0f);
+
+    MaterialResources defaultResources{
+        .colorImageView = m_whiteTexture.getImageView(),
+        .colorSampler = m_samplerLibrary.getLinearRepeat(),
+        .metalRoughImageView = m_whiteTexture.getImageView(),
+        .metalRoughSampler = m_samplerLibrary.getLinearRepeat(),
+        .dataBuffer = m_defaultMaterialConstants.getBuffer(),
+        .dataBufferOffset = 0,
+    };
+
+    m_defaultMaterial = createMaterial(MaterialPass::MainColor, defaultResources);
 }
 
+MaterialInstance AssetManager::createMaterial(MaterialPass pass, const MaterialResources& resources)
+{
+    MaterialInstance matInstance;
+    matInstance.passType = pass;
+    matInstance.materialSet = m_materialAllocator.allocate(m_materialLayout);
+
+    DescriptorWriter(m_device)
+        .writeBuffer(
+            0,
+            resources.dataBuffer,
+            sizeof(MaterialConstants),
+            resources.dataBufferOffset,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+        )
+        .writeImage(
+            1,
+            resources.colorImageView,
+            resources.colorSampler,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        )
+        .writeImage(
+            2,
+            resources.metalRoughImageView,
+            resources.metalRoughSampler,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        )
+        .updateSet(matInstance.materialSet);
+
+    return matInstance;
+}
+
+void AssetManager::initDefaultTextures()
+{
+    uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
+    m_whiteTexture =
+        m_resourceUploader.uploadImage(&white, {1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+
+    uint32_t grey = glm::packUnorm4x8(glm::vec4(0.66f, 0.66f, 0.66f, 1));
+    m_greyTexture =
+        m_resourceUploader.uploadImage(&grey, {1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+
+    uint32_t black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 0));
+    m_blackTexture =
+        m_resourceUploader.uploadImage(&black, {1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+
+
+    std::array<uint32_t, 16 * 16> pixels;
+    uint32_t magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
+    for(int x = 0; x < 16; x++)
+    {
+        for(int y = 0; y < 16; y++)
+        {
+            pixels[y * 16 + x] = ((x % 2) ^ (y % 2)) ? magenta : black;
+        }
+    }
+
+    m_errorCheckerboardTexture =
+        m_resourceUploader
+            .uploadImage(pixels.data(), {16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT);
+}
 
 std::optional<std::vector<std::shared_ptr<MeshAsset>>> AssetManager::loadGltfMeshes(std::filesystem::path fileName)
 {

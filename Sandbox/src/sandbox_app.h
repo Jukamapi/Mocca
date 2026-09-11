@@ -32,7 +32,7 @@ public:
 
         m_renderer->pushFeature(std::make_unique<TriangleFeature>(*m_renderer));
 
-        m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer, &m_loadedMeshes));
+        m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer, *m_assetManager, &m_loadedMeshes));
 
         m_renderer->pushFeature(std::make_unique<ImguiFeature>());
     }

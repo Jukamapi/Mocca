@@ -2,6 +2,10 @@
 
 #include "core/vk_check.h"
 
+#include <algorithm>
+#include <cmath>
+
+
 // TODO: Add textures functionality with moving data from Cpu
 AllocatedImage::AllocatedImage(
     VkDevice device,
@@ -9,19 +13,30 @@ AllocatedImage::AllocatedImage(
     VkExtent3D extent,
     VkFormat format,
     VkImageUsageFlags usage,
-    VkImageAspectFlags aspect
+    VkImageAspectFlags aspect,
+    bool mipmapped
 )
     : m_extent(extent),
       m_format(format),
       m_device(device),
       m_allocator(allocator)
 {
+
+    if(mipmapped)
+    {
+        m_mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(extent.width, extent.height)))) + 1;
+    }
+    else
+    {
+        m_mipLevels = 1;
+    }
+
     VkImageCreateInfo imageInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .imageType = VK_IMAGE_TYPE_2D,
         .format = m_format,
         .extent = m_extent,
-        .mipLevels = 1,
+        .mipLevels = m_mipLevels,
         .arrayLayers = 1,
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .tiling = VK_IMAGE_TILING_OPTIMAL,
@@ -42,6 +57,8 @@ AllocatedImage::AllocatedImage(
     catch(...)
     {
         vmaDestroyImage(m_allocator, m_image, m_allocation);
+        m_image = VK_NULL_HANDLE;
+        m_allocation = nullptr;
         throw;
     }
 }
@@ -56,7 +73,7 @@ void AllocatedImage::createImageView(VkImageAspectFlags aspect)
         .subresourceRange = {
             .aspectMask = aspect,
             .baseMipLevel = 0,
-            .levelCount = 1,
+            .levelCount = m_mipLevels,
             .baseArrayLayer = 0,
             .layerCount = 1,
         },
@@ -69,14 +86,17 @@ void AllocatedImage::createImageView(VkImageAspectFlags aspect)
 void AllocatedImage::destroy()
 {
     if(m_imageView != VK_NULL_HANDLE)
+    {
         vkDestroyImageView(m_device, m_imageView, nullptr);
+        m_imageView = VK_NULL_HANDLE;
+    }
 
     if(m_image != VK_NULL_HANDLE)
+    {
         vmaDestroyImage(m_allocator, m_image, m_allocation);
-
-    m_image = VK_NULL_HANDLE;
-    m_imageView = VK_NULL_HANDLE;
-    m_allocation = nullptr;
+        m_image = VK_NULL_HANDLE;
+        m_allocation = nullptr;
+    }
 }
 
 AllocatedImage::AllocatedImage(AllocatedImage&& other) noexcept
@@ -85,6 +105,7 @@ AllocatedImage::AllocatedImage(AllocatedImage&& other) noexcept
       m_allocation(other.m_allocation),
       m_extent(other.m_extent),
       m_format(other.m_format),
+      m_mipLevels(other.m_mipLevels),
       m_device(other.m_device),
       m_allocator(other.m_allocator)
 {
@@ -104,6 +125,7 @@ AllocatedImage& AllocatedImage::operator=(AllocatedImage&& other) noexcept
         m_allocation = other.m_allocation;
         m_extent = other.m_extent;
         m_format = other.m_format;
+        m_mipLevels = other.m_mipLevels;
         m_device = other.m_device;
         m_allocator = other.m_allocator;
 

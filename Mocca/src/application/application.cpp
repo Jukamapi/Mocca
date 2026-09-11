@@ -11,10 +11,6 @@
 #include <cstdint>
 #include <thread>
 
-// TODO: IMPORTANT - Application is the owner of asset manager, then in the derived class so Sandbox it has the "
-// std::vector<std::shared_ptr<MeshAsset>> m_loadedMeshes;" and then submit the meshes into the meshFeature in the
-// onTick?
-
 // this utilizes extent provider to somewhat respect the boundaries of architecture
 // and so it doesn't have to include sdl as much since it's big
 Application::Application(uint32_t width, uint32_t height, const std::string& title)
@@ -31,7 +27,13 @@ Application::Application(uint32_t width, uint32_t height, const std::string& tit
     const auto& indices = context.getPhysicalDevice().getQueueFamilyIndices();
     VmaAllocator allocator = context.getVmaAlloc().getVmaAllocator();
 
-    m_assetManager = std::make_unique<AssetManager>(device, graphicsQueue, indices, allocator);
+    m_assetManager = std::make_unique<AssetManager>(
+        device,
+        graphicsQueue,
+        indices,
+        allocator,
+        m_renderer->getMaterialLayout().getHandle()
+    );
 }
 
 void Application::run()
