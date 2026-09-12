@@ -116,6 +116,11 @@ void Application::tickLogic(float dt)
     // sandbox logic
     onTick(dt);
 
+    if(m_scene)
+    {
+        m_scene->update();
+    }
+
     // feature logic
     for(auto& feature : m_renderer->getFeatures())
     {

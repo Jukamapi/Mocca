@@ -7,6 +7,7 @@
 #include "renderer/renderer.h"
 #include "resource/asset_manager.h"
 #include "resource/loader.h"
+#include "scene/scene.h"
 
 
 #include <imgui.h>
@@ -17,10 +18,10 @@
 class MeshFeature : public RenderFeature
 {
 public:
-    MeshFeature(Renderer& renderer, AssetManager& assetManager, const DrawContext& drawContext)
+    MeshFeature(Renderer& renderer, AssetManager& assetManager, const Scene& scene)
         : m_renderer(renderer),
           m_assetManager(assetManager),
-          m_drawContext(&drawContext),
+          m_scene(&scene),
           m_drawExtent(renderer.getExtent())
     {
         auto vertShader = loadShader("mesh.vert.spv");
@@ -76,16 +77,22 @@ public:
 
     void onRender(VkCommandBuffer cmd, VkImageView drawImageView, uint32_t frameIndex) override
     {
-        if(!m_drawContext || m_drawContext->opaqueSurfaces.empty())
+        if(!m_scene)
+            return;
+
+        const DrawContext& drawContext = m_scene->getDrawContext();
+
+        if(drawContext.opaqueSurfaces.empty())
             return;
 
         // camera
-        glm::mat4 view = glm::translate(glm::vec3{0, 0, -5});
+        float aspect = (float)m_drawExtent.width / (float)m_drawExtent.height;
 
-        glm::mat4 projection =
-            glm::perspective(glm::radians(70.f), (float)m_drawExtent.width / (float)m_drawExtent.height, 10000.f, 0.1f);
+        const Camera& camera = m_scene->getCamera();
 
-        projection[1][1] *= -1;
+        glm::mat4 view = camera.getViewMatrix();
+
+        glm::mat4 projection = camera.getProjectionMatrix(aspect);
 
         m_renderer.getGlobalUniforms().update(
             frameIndex,
@@ -103,7 +110,7 @@ public:
         GraphicsPipeline* currentPipeline = nullptr;
         VkBuffer currentIndexBuffer = VK_NULL_HANDLE;
 
-        for(const auto& obj : m_drawContext->opaqueSurfaces)
+        for(const auto& obj : drawContext.opaqueSurfaces)
         {
             MaterialInstance* material = obj.material ? obj.material : &m_assetManager.getDefaultMaterial();
 
@@ -173,9 +180,9 @@ public:
 private:
     Renderer& m_renderer;
     AssetManager& m_assetManager;
-    const DrawContext* m_drawContext;
 
-    const std::vector<std::shared_ptr<MeshAsset>>* m_testMeshes = nullptr;
+    // saving it as pointer so i can change scenes
+    const Scene* m_scene{nullptr};
     VkExtent2D m_drawExtent{};
 
     GraphicsPipeline* m_opaquePipeline{nullptr};

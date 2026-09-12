@@ -51,7 +51,7 @@ public:
 
         // m_renderer->pushFeature(std::make_unique<TriangleFeature>(*m_renderer));
 
-        m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer, *m_assetManager, m_scene->getDrawContext()));
+        m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer, *m_assetManager, *m_scene));
 
         m_renderer->pushFeature(std::make_unique<ImguiFeature>());
     }
@@ -61,9 +61,9 @@ public:
         static float time = 0.0f;
         time += deltaTime;
 
+        // toggling triangle
         static bool wasPressed = false;
         bool isPressed = Input::isKeyDown(Key::Space);
-
         if(isPressed && !wasPressed)
         {
             auto* triangleFeature = m_renderer->getFeature<TriangleFeature>();
@@ -76,6 +76,7 @@ public:
         }
         wasPressed = isPressed;
 
+        // suzanne spinning
         if(auto suzanne = m_scene->getNode("Suzanne"))
         {
             glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, 0.0f));
@@ -87,7 +88,28 @@ public:
             suzanne->setLocalTransform(translation * rotation * scale);
         }
 
-        m_scene->update();
+        Camera& camera = m_scene->getCamera();
+
+        if(Input::isMouseButtonDown(MouseButton::Right))
+        {
+            camera.yaw += (float)Input::mouseDeltaX * camera.mouseSensitivity;
+            camera.pitch -= (float)Input::mouseDeltaY * camera.mouseSensitivity;
+            camera.pitch = glm::clamp(camera.pitch, -89.0f, 89.0f);
+        }
+
+        const float speed = camera.moveSpeed * deltaTime;
+        glm::mat4 camRot = camera.getRotationMatrix();
+        glm::vec3 forward = -glm::vec3(camRot[2]);
+        glm::vec3 right = glm::vec3(camRot[0]);
+
+        if(Input::isKeyDown(Key::W))
+            camera.position += forward * speed;
+        if(Input::isKeyDown(Key::S))
+            camera.position -= forward * speed;
+        if(Input::isKeyDown(Key::D))
+            camera.position += right * speed;
+        if(Input::isKeyDown(Key::A))
+            camera.position -= right * speed;
     }
 
     void onImgui() override
@@ -98,5 +120,4 @@ public:
     }
 
 private:
-    std::vector<std::shared_ptr<MeshAsset>> m_loadedMeshes;
 };

@@ -71,6 +71,7 @@ target_sources(mocca PRIVATE
     src/scene/mesh_node.cpp
     src/scene/node.cpp
     src/scene/scene.cpp
+    src/scene/camera.cpp
 
     # app layer
     src/application/application.cpp
@@ -145,6 +146,7 @@ target_sources(mocca PUBLIC
         src/scene/node.h
         src/scene/renderable.h
         src/scene/scene.h
+        src/scene/camera.h
 
         # app layer
         src/application/application.h

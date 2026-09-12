@@ -12,8 +12,11 @@
 #include <cassert>
 #include <stdexcept>
 
-
+// TODO: move the windowCount to static?
 int Window::s_windowCount = 0;
+
+// TODO: try to move the camera movement etc into one place, right now its in window.cpp, camera.cpp, application.cpp,
+// sandboxapp.cpp...
 
 Window::Window(uint32_t width, uint32_t height, const std::string title)
     : m_appName(title),
@@ -78,6 +81,12 @@ Key translateSdlKey(SDL_Scancode code)
         return Key::D;
     case SDL_SCANCODE_SPACE:
         return Key::Space;
+    case SDL_SCANCODE_LSHIFT:
+        return Key::LeftShift;
+    case SDL_SCANCODE_LCTRL:
+        return Key::LeftCtrl;
+    case SDL_SCANCODE_X:
+        return Key::X;
     default:
         return Key::Unknown;
     }
@@ -85,8 +94,11 @@ Key translateSdlKey(SDL_Scancode code)
 
 void Window::pollEvents()
 {
+    Input::resetDeltas();
+
     SDL_Event event;
     Key myKey;
+
     while(SDL_PollEvent(&event))
     {
         switch(event.type)
@@ -123,6 +135,7 @@ void Window::pollEvents()
             myKey = translateSdlKey(event.key.keysym.scancode);
             Input::setKeyState(myKey, true);
             break;
+
         case SDL_KEYUP:
             myKey = translateSdlKey(event.key.keysym.scancode);
             Input::setKeyState(myKey, false);
@@ -131,6 +144,25 @@ void Window::pollEvents()
         case SDL_MOUSEMOTION:
             Input::mouseX = event.motion.x;
             Input::mouseY = event.motion.y;
+            Input::mouseDeltaX += event.motion.xrel;
+            Input::mouseDeltaY += event.motion.yrel;
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            bool pressed = (event.type == SDL_MOUSEBUTTONDOWN);
+            if(event.button.button == SDL_BUTTON_LEFT)
+            {
+                Input::setMouseButtonState(MouseButton::Left, pressed);
+            }
+            else if(event.button.button == SDL_BUTTON_RIGHT)
+            {
+                Input::setMouseButtonState(MouseButton::Right, pressed);
+            }
+            else if(event.button.button == SDL_BUTTON_MIDDLE)
+            {
+                Input::setMouseButtonState(MouseButton::Middle, pressed);
+            }
             break;
         }
 
