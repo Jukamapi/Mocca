@@ -7,15 +7,16 @@
 #include "experiments/test_feature.h"
 #include "experiments/triangle_feature.h"
 #include "resource/asset_manager.h"
+#include "scene/camera_controller.h"
 #include "scene/mesh_node.h"
 #include "scene/scene.h"
+
 
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_vulkan.h>
 
 #include <memory>
-#include <print>
 
 
 class SandboxApp : public Application
@@ -54,28 +55,24 @@ public:
         m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer, *m_assetManager, *m_scene));
 
         m_renderer->pushFeature(std::make_unique<ImguiFeature>());
+
+        m_cameraController = std::make_unique<CameraController>(m_scene->getCamera());
     }
 
     void onTick(float deltaTime) override
     {
-        static float time = 0.0f;
-        time += deltaTime;
+        m_cameraController->update(deltaTime);
 
-        // toggling triangle
-        static bool wasPressed = false;
-        bool isPressed = Input::isKeyDown(Key::Space);
-        if(isPressed && !wasPressed)
+        if(Input::isKeyPressed(Key::X))
         {
-            auto* triangleFeature = m_renderer->getFeature<TriangleFeature>();
-            if(triangleFeature)
+            if(auto* triangleFeature = m_renderer->getFeature<TriangleFeature>())
             {
-                bool currentState = triangleFeature->isEnabled();
-                triangleFeature->setEnabled(!currentState);
-                std::println("Triangle is now: {}", !currentState ? "ON" : "OFF");
+                triangleFeature->setEnabled(!triangleFeature->isEnabled());
             }
         }
-        wasPressed = isPressed;
 
+        static float time = 0.0f;
+        time += deltaTime;
         // suzanne spinning
         if(auto suzanne = m_scene->getNode("Suzanne"))
         {
@@ -87,29 +84,6 @@ public:
 
             suzanne->setLocalTransform(translation * rotation * scale);
         }
-
-        Camera& camera = m_scene->getCamera();
-
-        if(Input::isMouseButtonDown(MouseButton::Right))
-        {
-            camera.yaw += (float)Input::mouseDeltaX * camera.mouseSensitivity;
-            camera.pitch -= (float)Input::mouseDeltaY * camera.mouseSensitivity;
-            camera.pitch = glm::clamp(camera.pitch, -89.0f, 89.0f);
-        }
-
-        const float speed = camera.moveSpeed * deltaTime;
-        glm::mat4 camRot = camera.getRotationMatrix();
-        glm::vec3 forward = -glm::vec3(camRot[2]);
-        glm::vec3 right = glm::vec3(camRot[0]);
-
-        if(Input::isKeyDown(Key::W))
-            camera.position += forward * speed;
-        if(Input::isKeyDown(Key::S))
-            camera.position -= forward * speed;
-        if(Input::isKeyDown(Key::D))
-            camera.position += right * speed;
-        if(Input::isKeyDown(Key::A))
-            camera.position -= right * speed;
     }
 
     void onImgui() override
@@ -119,5 +93,14 @@ public:
         ImGui::End();
     }
 
+    void onInput() override
+    {
+        if(Input::isKeyPressed(Key::Escape))
+        {
+            close();
+        }
+    }
+
 private:
+    std::unique_ptr<CameraController> m_cameraController;
 };

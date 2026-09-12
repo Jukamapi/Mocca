@@ -29,6 +29,7 @@ add_library(mocca STATIC)
 target_sources(mocca PRIVATE
     # core layer
     src/core/vk_check.cpp
+    src/core/input.cpp
 
     # platform layer
     src/platform/window.cpp
@@ -72,6 +73,7 @@ target_sources(mocca PRIVATE
     src/scene/node.cpp
     src/scene/scene.cpp
     src/scene/camera.cpp
+    src/scene/camera_controller.cpp
 
     # app layer
     src/application/application.cpp
@@ -147,6 +149,7 @@ target_sources(mocca PUBLIC
         src/scene/renderable.h
         src/scene/scene.h
         src/scene/camera.h
+        src/scene/camera_controller.h
 
         # app layer
         src/application/application.h

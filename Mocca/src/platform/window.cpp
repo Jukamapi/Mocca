@@ -94,15 +94,26 @@ Key translateSdlKey(SDL_Scancode code)
 
 void Window::pollEvents()
 {
-    Input::resetDeltas();
-
     SDL_Event event;
-    Key myKey;
+
+    bool imguiKeyboard = false;
+    bool imguiMouse = false;
+    if(ImGui::GetCurrentContext() != nullptr)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        imguiKeyboard = io.WantCaptureKeyboard;
+        imguiMouse = io.WantCaptureMouse;
+    }
 
     while(SDL_PollEvent(&event))
     {
+
+        ImGui_ImplSDL2_ProcessEvent(&event);
+
         switch(event.type)
         {
+
+        // window events
         case SDL_QUIT:
             if(onEvent)
                 onEvent({EventType::WindowClose});
@@ -131,42 +142,41 @@ void Window::pollEvents()
             }
             break;
 
+        // keyboard inputs
         case SDL_KEYDOWN:
-            myKey = translateSdlKey(event.key.keysym.scancode);
-            Input::setKeyState(myKey, true);
-            break;
-
         case SDL_KEYUP:
-            myKey = translateSdlKey(event.key.keysym.scancode);
-            Input::setKeyState(myKey, false);
+            if(!imguiKeyboard)
+            {
+                Key key = translateSdlKey(event.key.keysym.scancode);
+                Input::setKeyState(key, event.type == SDL_KEYDOWN);
+            }
             break;
 
+        // mouse inputs
         case SDL_MOUSEMOTION:
-            Input::mouseX = event.motion.x;
-            Input::mouseY = event.motion.y;
-            Input::mouseDeltaX += event.motion.xrel;
-            Input::mouseDeltaY += event.motion.yrel;
+            if(!imguiMouse)
+            {
+                Input::setMousePosition(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
+
+                Input::addMouseDelta(static_cast<float>(event.motion.xrel), static_cast<float>(event.motion.yrel));
+            }
             break;
 
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP:
-            bool pressed = (event.type == SDL_MOUSEBUTTONDOWN);
-            if(event.button.button == SDL_BUTTON_LEFT)
+            if(!imguiMouse)
             {
-                Input::setMouseButtonState(MouseButton::Left, pressed);
-            }
-            else if(event.button.button == SDL_BUTTON_RIGHT)
-            {
-                Input::setMouseButtonState(MouseButton::Right, pressed);
-            }
-            else if(event.button.button == SDL_BUTTON_MIDDLE)
-            {
-                Input::setMouseButtonState(MouseButton::Middle, pressed);
+                bool pressed = (event.type == SDL_MOUSEBUTTONDOWN);
+
+                if(event.button.button == SDL_BUTTON_LEFT)
+                    Input::setMouseButtonState(MouseButton::Left, pressed);
+                else if(event.button.button == SDL_BUTTON_RIGHT)
+                    Input::setMouseButtonState(MouseButton::Right, pressed);
+                else if(event.button.button == SDL_BUTTON_MIDDLE)
+                    Input::setMouseButtonState(MouseButton::Middle, pressed);
             }
             break;
         }
-
-        ImGui_ImplSDL2_ProcessEvent(&event);
     }
 }
 

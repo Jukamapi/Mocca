@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <glm/vec2.hpp>
 
 enum class Key
 {
@@ -29,35 +30,31 @@ enum class MouseButton
 class Input
 {
 public:
-    inline static int mouseX = 0;
-    inline static int mouseY = 0;
-    inline static int mouseDeltaX = 0;
-    inline static int mouseDeltaY = 0;
+    static void newFrame();
 
-    inline static std::array<bool, (size_t)Key::COUNT> keys = {false};
-    inline static std::array<bool, (size_t)MouseButton::COUNT> mouseButtons = {false};
+    static bool isKeyDown(Key key);
+    static bool isKeyPressed(Key key);  // pressed this frame
+    static bool isKeyReleased(Key key); // released this frame
 
-    static void setKeyState(Key key, bool pressed)
-    {
-        keys[(size_t)key] = pressed;
-    }
-    static bool isKeyDown(Key key)
-    {
-        return keys[(size_t)key];
-    }
+    static bool isMouseButtonDown(MouseButton button);
+    static bool isMouseButtonPressed(MouseButton button);
 
-    static void setMouseButtonState(MouseButton button, bool pressed)
-    {
-        mouseButtons[(size_t)button] = pressed;
-    }
-    static bool isMouseButtonDown(MouseButton button)
-    {
-        return mouseButtons[(size_t)button];
-    }
+    static glm::vec2 getMousePosition();
+    static glm::vec2 getMouseDelta();
 
-    static void resetDeltas()
-    {
-        mouseDeltaX = 0;
-        mouseDeltaY = 0;
-    }
+
+    static void setKeyState(Key key, bool pressed);
+    static void setMouseButtonState(MouseButton button, bool pressed);
+    static void setMousePosition(float x, float y);
+    static void addMouseDelta(float dx, float dy);
+
+private:
+    static inline std::array<bool, (size_t)Key::COUNT> s_currKeys{};
+    static inline std::array<bool, (size_t)Key::COUNT> s_prevKeys{};
+
+    static inline std::array<bool, (size_t)MouseButton::COUNT> s_currMouseButtons{};
+    static inline std::array<bool, (size_t)MouseButton::COUNT> s_prevMouseButtons{};
+
+    static inline glm::vec2 s_mousePos{0.0f, 0.0f};
+    static inline glm::vec2 s_mouseDelta{0.0f, 0.0f};
 };

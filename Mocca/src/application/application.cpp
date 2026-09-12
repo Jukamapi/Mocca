@@ -48,6 +48,8 @@ void Application::run()
 
     while(m_isRunning)
     {
+        Input::newFrame();
+
         m_window.pollEvents();
         processEvents();
 
@@ -65,14 +67,6 @@ void Application::run()
     }
 
     onShutdown();
-}
-
-void Application::processInputs()
-{
-    if(Input::isKeyDown(Key::Escape))
-    {
-        m_isRunning = false;
-    }
 }
 
 void Application::processEvents()
@@ -111,7 +105,7 @@ void Application::processEvents()
 void Application::tickLogic(float dt)
 {
     // global input
-    processInputs();
+    onInput();
 
     // sandbox logic
     onTick(dt);
@@ -133,7 +127,6 @@ void Application::tickRender(float dt)
 {
     m_renderer->beginUiFrame();
 
-    // TODO: for global UI, might change name for clarity
     onImgui();
 
     for(auto& feature : m_renderer->getFeatures())
@@ -151,6 +144,11 @@ void Application::tickRender(float dt)
 void Application::onShutdown()
 {
     vkDeviceWaitIdle(m_renderer->getContext().getLogicalDevice().getHandle());
+}
+
+void Application::close()
+{
+    m_isRunning = false;
 }
 
 
