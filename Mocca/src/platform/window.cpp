@@ -12,11 +12,11 @@
 #include <cassert>
 #include <stdexcept>
 
-// TODO: move the windowCount to static?
+// TODO MOCCA: move the windowCount to static?
 int Window::s_windowCount = 0;
 
-// TODO: try to move the camera movement etc into one place, right now its in window.cpp, camera.cpp, application.cpp,
-// sandboxapp.cpp...
+// TODO MOCCA: try to move the camera movement etc into one place, right now its in window.cpp, camera.cpp,
+// application.cpp, sandboxapp.cpp...
 
 Window::Window(uint32_t width, uint32_t height, const std::string title)
     : m_appName(title),

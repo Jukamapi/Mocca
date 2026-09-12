@@ -1,7 +1,7 @@
 #include "camera.h"
 
 
-// TODO: refresh knowledge about matrixes used in graphics, and quaternions
+// TODO MOCCA: refresh knowledge about matrixes used in graphics, and quaternions
 glm::mat4 Camera::getViewMatrix() const
 {
 

@@ -11,11 +11,10 @@
 #include "resource/vulkan/descriptor_writer.h"
 
 
-
 #include <imgui.h>
 
-// TODO: split the features into cpp and h files. Also use the Renderer allocator for static allocs and FrameManager
-// allocator for dynamic
+// TODO MOCCA: split the features into cpp and h files. Also use the Renderer allocator for static allocs and
+// FrameManager allocator for dynamic
 
 // m_descriptorSets[i] = renderer.getGlobalDescriptorAllocator().allocate(m_descriptorLayout.getHandle());
 
@@ -71,7 +70,7 @@ public:
     void onRender(VkCommandBuffer cmd, VkImageView drawImageView, uint32_t frameIndex) override
     {
 
-        // TODO: very inneficient with this "if" and allocating on hotpath
+        // TODO MOCCA: very inneficient with this "if" and allocating on hotpath
         if(frameIndex >= m_descriptorSets.size())
         {
             size_t oldSize = m_descriptorSets.size();

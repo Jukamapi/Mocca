@@ -47,7 +47,7 @@ Swapchain::Swapchain(
 
     if(indices.graphicsFamily != indices.presentFamily)
     {
-        // TODO: maybe change to EXCLUSIVE, but needs additional logic, concurrent mode gives worse perfomance
+        // TODO MOCCA: maybe change to EXCLUSIVE, but needs additional logic, concurrent mode gives worse perfomance
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         // remember this stores pointer, so if moved to other function it becomes dangling after constructor is done

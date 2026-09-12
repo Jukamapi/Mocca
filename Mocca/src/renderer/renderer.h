@@ -17,9 +17,9 @@
 
 class Swapchain;
 
-// TODO: add AssetManager or ResourceManager and move the rectangle stuff into there
+// TODO MOCCA: add AssetManager or ResourceManager and move the rectangle stuff into there
 
-// TODO: figure out if some of the stuff from here should be moved
+// TODO MOCCA: figure out if some of the stuff from here should be moved
 
 // class handling main rendering logic
 class Renderer

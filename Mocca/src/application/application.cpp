@@ -7,10 +7,11 @@
 #include "resource/asset_manager.h"
 #include "scene/scene.h"
 
-
 #include <chrono>
 #include <cstdint>
 #include <thread>
+
+// TODO MOCCA: implement a class that will handle the events/inputs
 
 // this utilizes extent provider to somewhat respect the boundaries of architecture
 // and so it doesn't have to include sdl as much since it's big

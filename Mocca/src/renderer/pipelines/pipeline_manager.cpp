@@ -4,13 +4,13 @@
 PipelineManager::PipelineManager(VkDevice device)
     : m_device(device)
 {
-    // TODO: load pipeline cache
+    // TODO MOCCA: load pipeline cache
 }
 
 PipelineManager::~PipelineManager()
 {
     m_pipelines.clear();
-    // TODO: save pipeline cache
+    // TODO MOCCA: save pipeline cache
     // vkDestroyPipelineCache(m_device, m_pipelineCache, nullptr);
 }
 

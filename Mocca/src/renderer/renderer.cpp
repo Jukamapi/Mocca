@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 
-// TODO: IMPORTANT - move transitionImage and blitImage into seperate file
+// TODO MOCCA: IMPORTANT - move transitionImage and blitImage into seperate file
 
 Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     : m_context(window),
@@ -143,8 +143,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
 
     VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
-    // ---------- compute ----------
-
+    // compute part
     transitionImage(
         commandBuffer,
         currentFrame.colorImage.getImage(),
@@ -160,8 +159,7 @@ VkCommandBuffer Renderer::recordCommandBuffer(uint32_t imageIndex)
         }
     }
 
-    // ---------- graphics ----------
-
+    // graphics part
     transitionImage(
         commandBuffer,
         currentFrame.colorImage.getImage(),

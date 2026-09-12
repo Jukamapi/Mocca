@@ -10,7 +10,7 @@ struct QueueFamilyIndices;
 class PhysicalDevice;
 struct Extent;
 
-// TODO: move this out of resources/ and maybe into its own presentation/
+// TODO MOCCA: move this out of resources/ and maybe into its own presentation/
 class Swapchain
 {
 public:

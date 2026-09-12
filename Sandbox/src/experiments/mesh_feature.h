@@ -14,6 +14,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
+// TODO MOCCA: Move the updating of uniforms as it should be an engine thing not a mesh thing.
+
+// TODO MOCCA: Split a lot of the .h into .cpp files as well.
+
+// TODO MOCCA: Improve the drawing of opaque/transparent objects to utilize hardware culling, overall change the whole
+// implementation as it has quite a lot of bugs
 
 class MeshFeature : public RenderFeature
 {
@@ -82,8 +88,7 @@ public:
 
         const DrawContext& drawContext = m_scene->getDrawContext();
 
-        if(drawContext.opaqueSurfaces.empty())
-            return;
+        VkDescriptorSet globalSet = m_renderer.getGlobalUniforms().getDescriptorSet(frameIndex);
 
         // camera
         float aspect = (float)m_drawExtent.width / (float)m_drawExtent.height;
@@ -105,7 +110,6 @@ public:
         );
         // end of camera
 
-        VkDescriptorSet globalSet = m_renderer.getGlobalUniforms().getDescriptorSet(frameIndex);
 
         GraphicsPipeline* currentPipeline = nullptr;
         VkBuffer currentIndexBuffer = VK_NULL_HANDLE;
