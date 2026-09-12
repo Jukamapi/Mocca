@@ -5,6 +5,7 @@
 
 #include "renderer/renderer.h"
 #include "resource/asset_manager.h"
+#include "scene/scene.h"
 
 
 #include <chrono>
@@ -34,6 +35,8 @@ Application::Application(uint32_t width, uint32_t height, const std::string& tit
         allocator,
         m_renderer->getMaterialLayout().getHandle()
     );
+
+    m_scene = std::make_unique<Scene>();
 }
 
 void Application::run()

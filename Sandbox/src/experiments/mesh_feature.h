@@ -17,10 +17,10 @@
 class MeshFeature : public RenderFeature
 {
 public:
-    MeshFeature(Renderer& renderer, AssetManager& assetManager, const std::vector<std::shared_ptr<MeshAsset>>* meshes)
+    MeshFeature(Renderer& renderer, AssetManager& assetManager, const DrawContext& drawContext)
         : m_renderer(renderer),
           m_assetManager(assetManager),
-          m_testMeshes(meshes),
+          m_drawContext(&drawContext),
           m_drawExtent(renderer.getExtent())
     {
         auto vertShader = loadShader("mesh.vert.spv");
@@ -76,10 +76,10 @@ public:
 
     void onRender(VkCommandBuffer cmd, VkImageView drawImageView, uint32_t frameIndex) override
     {
-
-        if(!m_testMeshes || m_testMeshes->empty())
+        if(!m_drawContext || m_drawContext->opaqueSurfaces.empty())
             return;
 
+        // camera
         glm::mat4 view = glm::translate(glm::vec3{0, 0, -5});
 
         glm::mat4 projection =
@@ -96,78 +96,69 @@ public:
              .sunlightDirection = glm::normalize(glm::vec4(0.5f, 1.0f, 0.5f, 1.0f)),
              .sunlightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.5f)}
         );
+        // end of camera
 
         VkDescriptorSet globalSet = m_renderer.getGlobalUniforms().getDescriptorSet(frameIndex);
 
         GraphicsPipeline* currentPipeline = nullptr;
         VkBuffer currentIndexBuffer = VK_NULL_HANDLE;
 
-        for(const auto& mesh : *m_testMeshes)
+        for(const auto& obj : m_drawContext->opaqueSurfaces)
         {
-            glm::mat4 modelMatrix = glm::mat4(1.0f);
+            MaterialInstance* material = obj.material ? obj.material : &m_assetManager.getDefaultMaterial();
 
-            for(const auto& surface : mesh->surfaces)
+            GraphicsPipeline* targetPipeline =
+                (material->passType == MaterialPass::Transparent) ? m_transparentPipeline : m_opaquePipeline;
+
+            if(targetPipeline != currentPipeline)
             {
-                MaterialInstance* material =
-                    surface.material ? surface.material.get() : &m_assetManager.getDefaultMaterial();
-
-                GraphicsPipeline* targetPipeline =
-                    (material->passType == MaterialPass::Transparent) ? m_transparentPipeline : m_opaquePipeline;
-
-                if(targetPipeline != currentPipeline)
-                {
-                    currentPipeline = targetPipeline;
-                    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, currentPipeline->getHandle());
-
-                    vkCmdBindDescriptorSets(
-                        cmd,
-                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                        currentPipeline->getLayout(),
-                        0,
-                        1,
-                        &globalSet,
-                        0,
-                        nullptr
-                    );
-                }
+                currentPipeline = targetPipeline;
+                vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, currentPipeline->getHandle());
 
                 vkCmdBindDescriptorSets(
                     cmd,
                     VK_PIPELINE_BIND_POINT_GRAPHICS,
                     currentPipeline->getLayout(),
+                    0,
                     1,
-                    1,
-                    &material->materialSet,
+                    &globalSet,
                     0,
                     nullptr
                 );
-
-
-                if(mesh->meshBuffers.indexBuffer.getBuffer() != currentIndexBuffer)
-                {
-                    currentIndexBuffer = mesh->meshBuffers.indexBuffer.getBuffer();
-                    vkCmdBindIndexBuffer(cmd, currentIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-                }
-
-
-                GPUDrawPushConstants pushConstants{
-                    .worldMatrix = modelMatrix,
-                    .vertexBuffer = mesh->meshBuffers.vertexBufferAddress,
-                };
-
-                vkCmdPushConstants(
-                    cmd,
-                    currentPipeline->getLayout(),
-                    VK_SHADER_STAGE_VERTEX_BIT,
-                    0,
-                    sizeof(GPUDrawPushConstants),
-                    &pushConstants
-                );
-
-                vkCmdDrawIndexed(cmd, surface.count, 1, surface.startIndex, 0, 0);
             }
+
+            vkCmdBindDescriptorSets(
+                cmd,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                currentPipeline->getLayout(),
+                1,
+                1,
+                &material->materialSet,
+                0,
+                nullptr
+            );
+
+            if(obj.indexBuffer != currentIndexBuffer)
+            {
+                currentIndexBuffer = obj.indexBuffer;
+                vkCmdBindIndexBuffer(cmd, currentIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+            }
+
+            GPUDrawPushConstants pushConstants{.worldMatrix = obj.transform, .vertexBuffer = obj.vertexBufferAddress};
+
+            vkCmdPushConstants(
+                cmd,
+                currentPipeline->getLayout(),
+                VK_SHADER_STAGE_VERTEX_BIT,
+                0,
+                sizeof(GPUDrawPushConstants),
+                &pushConstants
+            );
+
+            vkCmdDrawIndexed(cmd, obj.indexCount, 1, obj.firstIndex, 0, 0);
         }
     }
+
 
     void onResize(uint32_t width, uint32_t height) override
     {
@@ -182,6 +173,8 @@ public:
 private:
     Renderer& m_renderer;
     AssetManager& m_assetManager;
+    const DrawContext* m_drawContext;
+
     const std::vector<std::shared_ptr<MeshAsset>>* m_testMeshes = nullptr;
     VkExtent2D m_drawExtent{};
 

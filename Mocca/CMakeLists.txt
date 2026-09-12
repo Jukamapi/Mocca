@@ -67,6 +67,11 @@ target_sources(mocca PRIVATE
     src/renderer/pipelines/graphics_pipeline.cpp
     src/renderer/pipelines/compute_pipeline.cpp
 
+    # scene
+    src/scene/mesh_node.cpp
+    src/scene/node.cpp
+    src/scene/scene.cpp
+
     # app layer
     src/application/application.cpp
 
@@ -134,6 +139,12 @@ target_sources(mocca PUBLIC
         src/renderer/pipelines/pipeline_manager.h
         src/renderer/pipelines/graphics_pipeline.h
         src/renderer/pipelines/compute_pipeline.h
+
+        # scene
+        src/scene/mesh_node.h
+        src/scene/node.h
+        src/scene/renderable.h
+        src/scene/scene.h
 
         # app layer
         src/application/application.h
