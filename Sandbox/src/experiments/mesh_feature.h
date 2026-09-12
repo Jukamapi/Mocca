@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/vk_types.h"
+#include "renderer/draw_types.h"
 #include "renderer/pipelines/graphics_pipeline.h"
 #include "renderer/pipelines/pipeline_manager.h"
 #include "renderer/render_feature.h"

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/vk_types.h"
+#include "mesh_types.h"
+#include "platform/vk_device_types.h"
 #include "resource_uploader.h"
 #include "vulkan/allocated_image.h"
 #include "vulkan/descriptor_allocator_growable.h"
@@ -80,5 +81,5 @@ private:
     AllocatedImage m_greyTexture;
     AllocatedImage m_errorCheckerboardTexture;
 
-    constexpr static bool OVERRIDE_COLORS = true;
+    constexpr static bool OVERRIDE_COLORS = false;
 };

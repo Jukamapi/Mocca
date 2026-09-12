@@ -1,7 +1,6 @@
 #pragma once
 
-#include "core/vk_types.h"
-
+#include "renderer/compute_types.h"
 #include "renderer/pipelines/compute_pipeline.h"
 #include "renderer/pipelines/pipeline_manager.h"
 #include "renderer/render_feature.h"
@@ -10,6 +9,7 @@
 #include "resource/vulkan/descriptor_allocator.h"
 #include "resource/vulkan/descriptor_layout.h"
 #include "resource/vulkan/descriptor_writer.h"
+
 
 
 #include <imgui.h>

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "core/vk_types.h"
+#include "mesh_types.h"
 #include "platform/command_pool.h"
+#include "platform/vk_device_types.h"
+
 
 
 #include <functional>

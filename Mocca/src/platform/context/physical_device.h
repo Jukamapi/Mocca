@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/vk_types.h"
+#include "platform/vk_device_types.h"
 
 #include <vector>
 

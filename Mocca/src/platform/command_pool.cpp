@@ -1,7 +1,7 @@
 #include "command_pool.h"
 
 #include "core/vk_check.h"
-#include "core/vk_types.h"
+#include "vk_device_types.h"
 
 
 CommandPool::CommandPool(const QueueFamilyIndices& indices, VkDevice device)

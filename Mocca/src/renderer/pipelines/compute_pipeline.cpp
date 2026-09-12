@@ -1,8 +1,7 @@
 #include "compute_pipeline.h"
 
 #include "core/vk_check.h"
-
-#include "core/vk_types.h"
+#include "renderer/compute_types.h"
 
 
 ComputePipeline::ComputePipeline(

@@ -85,7 +85,6 @@ target_sources(mocca PUBLIC
         src/core/types.h
 
         src/core/vk_check.h
-        src/core/vk_types.h
 
 
         # platform layer
@@ -103,11 +102,16 @@ target_sources(mocca PUBLIC
         src/platform/presentation/swapchain.h
         src/platform/presentation/swapchain_manager.h
 
+        src/platform/vk_device_types.h
+
         # resource layer
         src/resource/loader.h
         src/resource/deletion_queue.h
         src/resource/asset_manager.h
         src/resource/resource_uploader.h
+
+        src/resource/material_types.h
+        src/resource/mesh_types.h
 
         src/resource/vulkan/allocated_image.h
         src/resource/vulkan/allocated_buffer.h
@@ -123,6 +127,9 @@ target_sources(mocca PUBLIC
         src/renderer/frame_manager.h
         src/renderer/imgui_manager.h
         src/renderer/global_uniforms.h
+        src/renderer/draw_types.h
+        src/renderer/compute_types.h
+
         src/renderer/pipelines/pipeline.h
         src/renderer/pipelines/pipeline_manager.h
         src/renderer/pipelines/graphics_pipeline.h

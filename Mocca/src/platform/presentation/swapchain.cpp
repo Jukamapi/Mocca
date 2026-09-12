@@ -2,7 +2,7 @@
 
 #include "core/types.h"
 #include "core/vk_check.h"
-#include "core/vk_types.h"
+#include "platform/vk_device_types.h"
 
 
 #include <algorithm>
