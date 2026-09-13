@@ -13,6 +13,8 @@
 #include <optional>
 #include <vector>
 
+class ModelAsset;
+
 class AssetManager
 {
 public:
@@ -33,6 +35,8 @@ public:
 
 
     std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadGltfMeshes(std::filesystem::path filePath);
+
+    std::shared_ptr<ModelAsset> loadModel(const std::filesystem::path& fileName);
 
     void initDefaultTextures();
 
@@ -69,7 +73,10 @@ public:
 
 
 private:
+    std::unordered_map<std::string, std::shared_ptr<ModelAsset>> m_loadedModels;
+
     VkDevice m_device{VK_NULL_HANDLE};
+    VmaAllocator m_allocator;
     VkDescriptorSetLayout m_materialLayout{VK_NULL_HANDLE};
 
     SamplerLibrary m_samplerLibrary;

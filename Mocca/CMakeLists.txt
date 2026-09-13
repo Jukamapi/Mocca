@@ -120,6 +120,7 @@ target_sources(mocca PUBLIC
 
         src/resource/material_types.h
         src/resource/mesh_types.h
+        src/resource/model_asset.h
 
         src/resource/vulkan/allocated_image.h
         src/resource/vulkan/allocated_buffer.h

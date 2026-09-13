@@ -8,7 +8,6 @@
 #include "experiments/triangle_feature.h"
 #include "resource/asset_manager.h"
 #include "scene/camera_controller.h"
-#include "scene/mesh_node.h"
 #include "scene/scene.h"
 
 
@@ -29,24 +28,17 @@ public:
 
     void onInit() override
     {
-        auto meshes = m_assetManager->loadGltfMeshes("basicmesh.glb");
-        if(meshes)
+        auto structureModel = m_assetManager->loadModel("structure.glb");
+
+        if(structureModel)
         {
-            auto defaultMaterial = std::make_shared<MaterialInstance>(m_assetManager->getDefaultMaterial());
-
-            for(auto& mesh : *meshes)
-            {
-                auto node = std::make_shared<MeshNode>();
-                node->setMesh(mesh);
-
-                for(auto& surface : mesh->surfaces)
-                {
-                    surface.material = defaultMaterial;
-                }
-
-                m_scene->addRootNode(mesh->name, node);
-            }
+            auto structureNode = m_scene->instantiate(structureModel);
+            m_scene->addRootNode("structure", structureNode);
         }
+
+        m_scene->getCamera().position = glm::vec3(30.0f, 0.0f, -85.0f);
+        m_cameraController = std::make_unique<CameraController>(m_scene->getCamera());
+
 
         m_renderer->pushFeature(std::make_unique<TestFeature>(*m_renderer));
 
@@ -55,8 +47,6 @@ public:
         m_renderer->pushFeature(std::make_unique<MeshFeature>(*m_renderer, *m_assetManager, *m_scene));
 
         m_renderer->pushFeature(std::make_unique<ImguiFeature>());
-
-        m_cameraController = std::make_unique<CameraController>(m_scene->getCamera());
     }
 
     void onTick(float deltaTime) override
@@ -103,4 +93,6 @@ public:
 
 private:
     std::unique_ptr<CameraController> m_cameraController;
+    // TODO MOCCA:
+    // std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> m_loadedScenes;
 };
