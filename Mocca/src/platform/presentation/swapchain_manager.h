@@ -11,8 +11,6 @@ class PhysicalDevice;
 class LogicalDevice;
 class Surface;
 
-// TODO MOCCA: move this out of resources/ and maybe into its own presentation/
-
 class SwapchainManager
 {
 public:

@@ -6,7 +6,6 @@
 #include <cmath>
 
 
-// TODO MOCCA: Add textures functionality with moving data from Cpu
 AllocatedImage::AllocatedImage(
     VkDevice device,
     VmaAllocator allocator,

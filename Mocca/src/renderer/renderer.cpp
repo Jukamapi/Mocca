@@ -13,8 +13,6 @@
 #include <stdexcept>
 
 
-// TODO MOCCA: IMPORTANT - move transitionImage and blitImage into seperate file
-
 Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     : m_context(window),
       m_extentProvider(std::move(extentProvider)),
@@ -58,18 +56,22 @@ Renderer::Renderer(const Window& window, ExtentProvider extentProvider)
     createFrameImages();
 }
 
-void Renderer::drawFrame()
+bool Renderer::beginFrame()
 {
     if(!processResize())
-        return;
+        return false;
 
-    uint32_t imageIndex;
-    if(!acquireNextImage(imageIndex))
-        return;
+    if(!acquireNextImage(m_currentImageIndex))
+        return false;
 
-    VkCommandBuffer cmd = recordCommandBuffer(imageIndex);
+    return true;
+}
 
-    submitAndPresent(imageIndex, cmd);
+void Renderer::endFrame()
+{
+    VkCommandBuffer cmd = recordCommandBuffer(m_currentImageIndex);
+
+    submitAndPresent(m_currentImageIndex, cmd);
 
     m_frameManager.advance();
 }
@@ -358,6 +360,12 @@ void Renderer::createFrameImages()
             VK_IMAGE_ASPECT_DEPTH_BIT
         );
     }
+}
+
+void Renderer::updateGlobalUniforms(const GlobalRenderData& data)
+{
+    uint32_t currentFrame = m_frameManager.getCurrentFrameIndex();
+    m_globalUniforms.update(currentFrame, data);
 }
 
 

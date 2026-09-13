@@ -17,10 +17,6 @@
 
 class Swapchain;
 
-// TODO MOCCA: add AssetManager or ResourceManager and move the rectangle stuff into there
-
-// TODO MOCCA: figure out if some of the stuff from here should be moved
-
 // class handling main rendering logic
 class Renderer
 {
@@ -35,7 +31,11 @@ public:
     Renderer& operator=(Renderer&&) = delete;
 
     void pushFeature(std::unique_ptr<RenderFeature> feature);
-    void drawFrame();
+
+    bool beginFrame();
+    void endFrame();
+
+    void updateGlobalUniforms(const GlobalRenderData& data);
 
     void beginUiFrame()
     {
@@ -132,12 +132,13 @@ public:
         return m_materialLayout;
     }
 
+
 private:
     bool acquireNextImage(uint32_t& outImageIndex);
     VkCommandBuffer recordCommandBuffer(uint32_t imageIndex);
     void submitAndPresent(uint32_t imageIndex, VkCommandBuffer cmd);
 
-    // swapchain handling
+    // swapchain helper handling
     bool processResize();
 
     // allocates and deallocates color and depth images
@@ -154,6 +155,7 @@ private:
 
     SwapchainManager m_swapchainManager;
     FrameManager m_frameManager;
+    uint32_t m_currentImageIndex{0};
 
     std::vector<std::unique_ptr<RenderFeature>> m_features;
 

@@ -126,6 +126,13 @@ void Application::tickLogic(float dt)
 
 void Application::tickRender(float dt)
 {
+    if(!m_renderer->beginFrame())
+        return;
+
+    float aspect = (float)m_renderer->getExtent().width / (float)m_renderer->getExtent().height;
+    GlobalRenderData frameData = m_scene->getRenderData(aspect);
+    m_renderer->updateGlobalUniforms(frameData);
+
     m_renderer->beginUiFrame();
 
     onImgui();
@@ -139,7 +146,7 @@ void Application::tickRender(float dt)
     m_renderer->endUiFrame();
 
     // calls each features' onRender
-    m_renderer->drawFrame();
+    m_renderer->endFrame();
 }
 
 void Application::onShutdown()

@@ -12,7 +12,6 @@
 #include <cassert>
 #include <stdexcept>
 
-// TODO MOCCA: move the windowCount to static?
 int Window::s_windowCount = 0;
 
 // TODO MOCCA: try to move the camera movement etc into one place, right now its in window.cpp, camera.cpp,

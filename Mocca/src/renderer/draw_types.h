@@ -35,3 +35,14 @@ struct DrawContext
         transparentSurfaces.clear();
     }
 };
+
+struct alignas(16) GlobalRenderData
+{
+    glm::mat4 view;
+    glm::mat4 proj;
+    glm::mat4 viewproj;
+    glm::vec4 ambientColor;
+    glm::vec4 sunlightDirection;
+    glm::vec4 sunlightColor;
+};
+static_assert(sizeof(GlobalRenderData) % 16 == 0, "GlobalRenderData must be 16-byte aligned");

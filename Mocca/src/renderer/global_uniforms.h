@@ -1,23 +1,15 @@
 #pragma once
 
+#include "draw_types.h"
 #include "resource/vulkan/allocated_buffer.h"
 #include "resource/vulkan/descriptor_allocator.h"
 #include "resource/vulkan/descriptor_layout.h"
+
 
 #include <volk.h>
 #include <glm/mat4x4.hpp>
 
 #include <vector>
-
-struct GlobalRenderData
-{
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 viewproj;
-    glm::vec4 ambientColor;
-    glm::vec4 sunlightDirection;
-    glm::vec4 sunlightColor;
-};
 
 class GlobalUniforms
 {

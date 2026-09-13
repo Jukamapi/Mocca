@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <vector>
 
+class GlobalRenderData;
+
 class Scene
 {
 public:
@@ -17,6 +19,7 @@ public:
     std::shared_ptr<Node> getNode(const std::string& name);
 
     void update();
+
     const DrawContext& getDrawContext() const
     {
         return m_drawContext;
@@ -30,6 +33,8 @@ public:
     {
         return m_camera;
     }
+
+    GlobalRenderData getRenderData(float aspectRatio) const;
 
 private:
     std::vector<std::shared_ptr<Node>> m_rootNodes;
