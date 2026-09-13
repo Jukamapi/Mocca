@@ -14,8 +14,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-// TODO MOCCA: Move the updating of uniforms as it should be an engine thing not a mesh thing.
-
 // TODO MOCCA: Split a lot of the .h into .cpp files as well.
 
 // TODO MOCCA: Improve the drawing of opaque/transparent objects to utilize hardware culling, overall change the whole
@@ -90,84 +88,9 @@ public:
 
         VkDescriptorSet globalSet = m_renderer.getGlobalUniforms().getDescriptorSet(frameIndex);
 
-        // camera
-        float aspect = (float)m_drawExtent.width / (float)m_drawExtent.height;
+        renderObjects(cmd, m_opaquePipeline, globalSet, drawContext.opaqueSurfaces);
 
-        const Camera& camera = m_scene->getCamera();
-
-        glm::mat4 view = camera.getViewMatrix();
-
-        glm::mat4 projection = camera.getProjectionMatrix(aspect);
-
-        m_renderer.getGlobalUniforms().update(
-            frameIndex,
-            {.view = view,
-             .proj = projection,
-             .viewproj = projection * view,
-             .ambientColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f),
-             .sunlightDirection = glm::normalize(glm::vec4(0.5f, 1.0f, 0.5f, 1.0f)),
-             .sunlightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.5f)}
-        );
-        // end of camera
-
-
-        GraphicsPipeline* currentPipeline = nullptr;
-        VkBuffer currentIndexBuffer = VK_NULL_HANDLE;
-
-        for(const auto& obj : drawContext.opaqueSurfaces)
-        {
-            MaterialInstance* material = obj.material ? obj.material : &m_assetManager.getDefaultMaterial();
-
-            GraphicsPipeline* targetPipeline =
-                (material->passType == MaterialPass::Transparent) ? m_transparentPipeline : m_opaquePipeline;
-
-            if(targetPipeline != currentPipeline)
-            {
-                currentPipeline = targetPipeline;
-                vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, currentPipeline->getHandle());
-
-                vkCmdBindDescriptorSets(
-                    cmd,
-                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    currentPipeline->getLayout(),
-                    0,
-                    1,
-                    &globalSet,
-                    0,
-                    nullptr
-                );
-            }
-
-            vkCmdBindDescriptorSets(
-                cmd,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                currentPipeline->getLayout(),
-                1,
-                1,
-                &material->materialSet,
-                0,
-                nullptr
-            );
-
-            if(obj.indexBuffer != currentIndexBuffer)
-            {
-                currentIndexBuffer = obj.indexBuffer;
-                vkCmdBindIndexBuffer(cmd, currentIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-            }
-
-            GPUDrawPushConstants pushConstants{.worldMatrix = obj.transform, .vertexBuffer = obj.vertexBufferAddress};
-
-            vkCmdPushConstants(
-                cmd,
-                currentPipeline->getLayout(),
-                VK_SHADER_STAGE_VERTEX_BIT,
-                0,
-                sizeof(GPUDrawPushConstants),
-                &pushConstants
-            );
-
-            vkCmdDrawIndexed(cmd, obj.indexCount, 1, obj.firstIndex, 0, 0);
-        }
+        renderObjects(cmd, m_transparentPipeline, globalSet, drawContext.transparentSurfaces);
     }
 
 
@@ -182,6 +105,73 @@ public:
     }
 
 private:
+    void renderObjects(
+        VkCommandBuffer cmd,
+        GraphicsPipeline* pipeline,
+        VkDescriptorSet globalSet,
+        const std::vector<RenderObject>& objects
+    )
+    {
+        if(objects.empty())
+            return;
+
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getHandle());
+
+        vkCmdBindDescriptorSets(
+            cmd,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipeline->getLayout(),
+            0,
+            1,
+            &globalSet,
+            0,
+            nullptr
+        );
+
+        VkDescriptorSet currentMaterialSet = VK_NULL_HANDLE;
+        VkBuffer currentIndexBuffer = VK_NULL_HANDLE;
+
+        for(const auto& obj : objects)
+        {
+            MaterialInstance* material = obj.material ? obj.material : &m_assetManager.getDefaultMaterial();
+
+            if(material->materialSet != currentMaterialSet)
+            {
+                currentMaterialSet = material->materialSet;
+                vkCmdBindDescriptorSets(
+                    cmd,
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    pipeline->getLayout(),
+                    1,
+                    1,
+                    &currentMaterialSet,
+                    0,
+                    nullptr
+                );
+            }
+
+            if(obj.indexBuffer != currentIndexBuffer)
+            {
+                currentIndexBuffer = obj.indexBuffer;
+                vkCmdBindIndexBuffer(cmd, currentIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+            }
+
+            GPUDrawPushConstants pushConstants{.worldMatrix = obj.transform, .vertexBuffer = obj.vertexBufferAddress};
+
+            vkCmdPushConstants(
+                cmd,
+                pipeline->getLayout(),
+                VK_SHADER_STAGE_VERTEX_BIT,
+                0,
+                sizeof(GPUDrawPushConstants),
+                &pushConstants
+            );
+
+            vkCmdDrawIndexed(cmd, obj.indexCount, 1, obj.firstIndex, 0, 0);
+        }
+    }
+
+
     Renderer& m_renderer;
     AssetManager& m_assetManager;
 
