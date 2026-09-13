@@ -5,7 +5,6 @@
 #include "vulkan/allocated_image.h"
 
 
-
 ResourceUploader::ResourceUploader(
     VkDevice device, VkQueue graphicsQueue, const QueueFamilyIndices& indices, VmaAllocator allocator
 )
@@ -50,7 +49,7 @@ void ResourceUploader::immediateSubmit(std::function<void(VkCommandBuffer cmd)>&
     };
 
     VK_CHECK(vkQueueSubmit2(m_graphicsQueue, 1, &submit, m_fence));
-    VK_CHECK(vkWaitForFences(m_device, 1, &m_fence, true, 9999999999));
+    VK_CHECK(vkWaitForFences(m_device, 1, &m_fence, true, UINT64_MAX));
 }
 
 
@@ -115,6 +114,7 @@ AllocatedImage ResourceUploader::uploadImage(
     const void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped
 )
 {
+    // TODO MOCCA: implement the mip levels, not just level 0
     const size_t dataSize = size.depth * size.width * size.height * 4;
 
     AllocatedBuffer staging{m_allocator, dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY};

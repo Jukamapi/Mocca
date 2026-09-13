@@ -15,7 +15,7 @@ public:
         return m_mesh;
     }
 
-    void draw(const glm::mat4& topMatrix, DrawContext& ctx) override;
+    void draw(DrawContext& ctx) override;
 
 private:
     std::shared_ptr<MeshAsset> m_mesh;

@@ -11,6 +11,8 @@
 #include <cstdint>
 #include <thread>
 
+// TODO MOCCA: optimize the rendering, check all the waits if they are needed/in good place
+
 // TODO MOCCA: implement a class that will handle the events/inputs
 
 // this utilizes extent provider to somewhat respect the boundaries of architecture

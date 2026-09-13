@@ -18,8 +18,8 @@ void Scene::update()
 
     for(auto& root : m_rootNodes)
     {
-        root->updateTransforms(glm::mat4{1.0f});
-        root->draw(glm::mat4{1.0f}, m_drawContext);
+        root->updateTransforms();
+        root->draw(m_drawContext);
     }
 }
 

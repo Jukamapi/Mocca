@@ -62,6 +62,11 @@ public:
     {
         return m_samplerLibrary;
     }
+    ResourceUploader& getResourceUploader()
+    {
+        return m_resourceUploader;
+    }
+
 
 private:
     VkDevice m_device{VK_NULL_HANDLE};

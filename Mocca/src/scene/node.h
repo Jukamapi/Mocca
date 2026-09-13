@@ -10,6 +10,8 @@ public:
     virtual ~Node() = default;
 
     void addChild(std::shared_ptr<Node> child);
+    bool removeChild(const std::shared_ptr<Node>& child);
+
     void setLocalTransform(const glm::mat4& matrix);
 
     const glm::mat4& getLocalTransform() const
@@ -21,8 +23,24 @@ public:
         return m_worldTransform;
     }
 
-    void updateTransforms(const glm::mat4& parentMatrix);
-    void draw(const glm::mat4& topMatrix, DrawContext& ctx) override;
+    void updateTransforms(const glm::mat4& parentMatrix = glm::mat4{1.0f}, bool parentDirty = false);
+
+    void draw(DrawContext& ctx) override;
+
+    bool getIsDirty() const
+    {
+        return m_isDirty;
+    }
+
+    std::weak_ptr<Node> getParent() const
+    {
+        return m_parent;
+    }
+
+    bool hasParent() const
+    {
+        return !m_parent.expired();
+    }
 
 protected:
     std::weak_ptr<Node> m_parent;

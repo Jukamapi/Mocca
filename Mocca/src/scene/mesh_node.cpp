@@ -1,11 +1,9 @@
 #include "mesh_node.h"
 
-void MeshNode::draw(const glm::mat4& topMatrix, DrawContext& ctx)
+void MeshNode::draw(DrawContext& ctx)
 {
     if(m_mesh)
     {
-        glm::mat4 nodeMatrix = topMatrix * m_worldTransform;
-
         for(const auto& surface : m_mesh->surfaces)
         {
             RenderObject object{
@@ -13,7 +11,7 @@ void MeshNode::draw(const glm::mat4& topMatrix, DrawContext& ctx)
                 .firstIndex = surface.startIndex,
                 .indexBuffer = m_mesh->meshBuffers.indexBuffer.getBuffer(),
                 .material = surface.material.get(),
-                .transform = nodeMatrix,
+                .transform = m_worldTransform,
                 .vertexBufferAddress = m_mesh->meshBuffers.vertexBufferAddress
             };
 
@@ -28,5 +26,5 @@ void MeshNode::draw(const glm::mat4& topMatrix, DrawContext& ctx)
         }
     }
 
-    Node::draw(topMatrix, ctx);
+    Node::draw(ctx);
 }

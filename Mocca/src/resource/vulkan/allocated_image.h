@@ -23,8 +23,6 @@ public:
     AllocatedImage(AllocatedImage&&) noexcept;
     AllocatedImage& operator=(AllocatedImage&&) noexcept;
 
-    void destroy();
-
     VkImage getImage() const
     {
         return m_image;
@@ -45,6 +43,9 @@ public:
     {
         return m_mipLevels;
     }
+
+    void destroy();
+
 
 private:
     VkImage m_image{VK_NULL_HANDLE};

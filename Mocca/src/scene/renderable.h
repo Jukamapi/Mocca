@@ -8,5 +8,5 @@ class IRenderable
 {
 public:
     virtual ~IRenderable() = default;
-    virtual void draw(const glm::mat4& topMatrix, DrawContext& ctx) = 0;
+    virtual void draw(DrawContext& ctx) = 0;
 };
