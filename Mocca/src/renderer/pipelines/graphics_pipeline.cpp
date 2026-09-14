@@ -76,7 +76,7 @@ GraphicsPipeline::GraphicsPipeline(const std::string& name, VkDevice device, con
         .rasterizerDiscardEnable = VK_FALSE,
         .polygonMode = VK_POLYGON_MODE_FILL, // for wireframe enable gpu feature
         .cullMode = config.cullMode,
-        .frontFace = config.frontFace, // what vertex order is frontface
+        .frontFace = config.frontFace, // vertex order thats is frontface
         .depthBiasEnable = VK_FALSE,   // rasterizer can change depth values
         .depthBiasConstantFactor = 0.0f,
         .depthBiasClamp = 0.0f,

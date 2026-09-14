@@ -9,6 +9,9 @@
 #include <fastgltf/types.hpp>
 
 #include <glm/gtx/quaternion.hpp>
+
+#include <stb/stb_image.h>
+
 #include <print>
 
 namespace
@@ -376,11 +379,26 @@ std::shared_ptr<ModelAsset> AssetManager::loadModel(const std::filesystem::path&
         model->samplers.push_back(newSampler);
     }
 
-    // texture placeholder
-    std::vector<VkImageView> imageViews;
-    for(size_t i = 0; i < gltf.images.size(); ++i)
+    // texture
+    model->images.reserve(gltf.images.size());
+    std::vector<VkImageView> gltfImageViews;
+    gltfImageViews.reserve(gltf.images.size());
+
+    for(fastgltf::Image& img : gltf.images)
     {
-        imageViews.push_back(m_errorCheckerboardTexture.getImageView());
+        auto loadedImage = loadImage(gltf, img, filePath.parent_path());
+        if(loadedImage.has_value())
+        {
+            model->images.push_back(std::move(*loadedImage));
+
+            gltfImageViews.push_back(model->images.back().getImageView());
+        }
+        else
+        {
+            gltfImageViews.push_back(m_errorCheckerboardTexture.getImageView());
+
+            std::println(stderr, "Failed to load glTF image: {}", img.name);
+        }
     }
 
     // material
@@ -425,12 +443,25 @@ std::shared_ptr<ModelAsset> AssetManager::loadModel(const std::filesystem::path&
             {
                 size_t texIdx = mat.pbrData.baseColorTexture.value().textureIndex;
                 size_t imgIdx = gltf.textures[texIdx].imageIndex.value();
-                materialResources.colorImageView = imageViews[imgIdx];
+                materialResources.colorImageView = gltfImageViews[imgIdx];
 
                 if(gltf.textures[texIdx].samplerIndex.has_value())
                 {
                     size_t samplerIdx = gltf.textures[texIdx].samplerIndex.value();
                     materialResources.colorSampler = model->samplers[samplerIdx];
+                }
+            }
+
+            if(mat.pbrData.metallicRoughnessTexture.has_value())
+            {
+                size_t texIdx = mat.pbrData.metallicRoughnessTexture.value().textureIndex;
+                size_t imgIdx = gltf.textures[texIdx].imageIndex.value();
+                materialResources.metalRoughImageView = gltfImageViews[imgIdx];
+
+                if(gltf.textures[texIdx].samplerIndex.has_value())
+                {
+                    size_t samplerIdx = gltf.textures[texIdx].samplerIndex.value();
+                    materialResources.metalRoughSampler = model->samplers[samplerIdx];
                 }
             }
 
@@ -571,9 +602,156 @@ std::shared_ptr<ModelAsset> AssetManager::loadModel(const std::filesystem::path&
             node.transform
         );
 
+
         model->nodes.push_back(desc);
     }
 
     m_loadedModels[key] = model;
     return model;
+}
+
+std::optional<AllocatedImage> AssetManager::loadImage(
+    fastgltf::Asset& asset, fastgltf::Image& image, const std::filesystem::path& parentPath
+)
+{
+    AllocatedImage newImage{};
+    int width = 0, height = 0, nrChannels = 0;
+
+    auto uploadHelper = [&](unsigned char* data, int w, int h)
+    {
+        VkExtent3D imageSize{.width = static_cast<uint32_t>(w), .height = static_cast<uint32_t>(h), .depth = 1};
+
+        newImage = m_resourceUploader
+                       .uploadImage(data, imageSize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
+    };
+
+    std::visit(
+        fastgltf::visitor{
+            [](auto& arg) {},
+            [&](fastgltf::sources::URI& filePath)
+            {
+                assert(filePath.fileByteOffset == 0);
+                assert(filePath.uri.isLocalPath());
+
+                std::filesystem::path fullPath = parentPath / filePath.uri.path();
+
+                unsigned char* data = stbi_load(fullPath.string().c_str(), &width, &height, &nrChannels, 4);
+                if(data)
+                {
+                    uploadHelper(data, width, height);
+                    stbi_image_free(data);
+                }
+            },
+            [&](fastgltf::sources::Vector& vector)
+            {
+                unsigned char* data = stbi_load_from_memory(
+                    vector.bytes.data(),
+                    static_cast<int>(vector.bytes.size()),
+                    &width,
+                    &height,
+                    &nrChannels,
+                    4
+                );
+                if(data)
+                {
+                    uploadHelper(data, width, height);
+                    stbi_image_free(data);
+                }
+            },
+
+            [&](fastgltf::sources::ByteView& byteView)
+            {
+                unsigned char* data = stbi_load_from_memory(
+                    reinterpret_cast<const unsigned char*>(byteView.bytes.data()),
+                    static_cast<int>(byteView.bytes.size()),
+                    &width,
+                    &height,
+                    &nrChannels,
+                    4
+                );
+                if(data)
+                {
+                    uploadHelper(data, width, height);
+                    stbi_image_free(data);
+                }
+            },
+            [&](fastgltf::sources::BufferView& view)
+            {
+                auto& bufferView = asset.bufferViews[view.bufferViewIndex];
+                auto& buffer = asset.buffers[bufferView.bufferIndex];
+
+                std::visit(
+                    fastgltf::visitor{
+                        [](auto& arg) {},
+                        [&](fastgltf::sources::Array& array)
+                        {
+                            const unsigned char* rawPtr =
+                                reinterpret_cast<const unsigned char*>(array.bytes.data()) + bufferView.byteOffset;
+
+                            unsigned char* data = stbi_load_from_memory(
+                                rawPtr,
+                                static_cast<int>(bufferView.byteLength),
+                                &width,
+                                &height,
+                                &nrChannels,
+                                4
+                            );
+                            if(data)
+                            {
+                                uploadHelper(data, width, height);
+                                stbi_image_free(data);
+                            }
+                        },
+                        [&](fastgltf::sources::Vector& vector)
+                        {
+                            const unsigned char* rawPtr =
+                                reinterpret_cast<const unsigned char*>(vector.bytes.data()) + bufferView.byteOffset;
+
+                            unsigned char* data = stbi_load_from_memory(
+                                rawPtr,
+                                static_cast<int>(bufferView.byteLength),
+                                &width,
+                                &height,
+                                &nrChannels,
+                                4
+                            );
+                            if(data)
+                            {
+                                uploadHelper(data, width, height);
+                                stbi_image_free(data);
+                            }
+                        },
+                        [&](fastgltf::sources::ByteView& byteView)
+                        {
+                            const unsigned char* rawPtr =
+                                reinterpret_cast<const unsigned char*>(byteView.bytes.data()) + bufferView.byteOffset;
+
+                            unsigned char* data = stbi_load_from_memory(
+                                rawPtr,
+                                static_cast<int>(bufferView.byteLength),
+                                &width,
+                                &height,
+                                &nrChannels,
+                                4
+                            );
+                            if(data)
+                            {
+                                uploadHelper(data, width, height);
+                                stbi_image_free(data);
+                            }
+                        }
+                    },
+                    buffer.data
+                );
+            },
+        },
+        image.data
+    );
+
+    if(newImage.getImage() == VK_NULL_HANDLE)
+    {
+        return std::nullopt;
+    }
+
+    return newImage;
 }

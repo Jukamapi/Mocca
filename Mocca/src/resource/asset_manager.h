@@ -15,6 +15,12 @@
 
 class ModelAsset;
 
+namespace fastgltf
+{
+struct Asset;
+struct Image;
+} // namespace fastgltf
+
 class AssetManager
 {
 public:
@@ -35,6 +41,10 @@ public:
 
 
     std::optional<std::vector<std::shared_ptr<MeshAsset>>> loadGltfMeshes(std::filesystem::path filePath);
+
+    std::optional<AllocatedImage> loadImage(
+        fastgltf::Asset& asset, fastgltf::Image& image, const std::filesystem::path& parentPath
+    );
 
     std::shared_ptr<ModelAsset> loadModel(const std::filesystem::path& fileName);
 

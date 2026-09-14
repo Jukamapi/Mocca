@@ -13,7 +13,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 struct ModelNodeDescription
@@ -58,8 +57,7 @@ public:
     std::vector<std::shared_ptr<MeshAsset>> meshes;
     std::vector<std::shared_ptr<MaterialInstance>> materials;
     std::vector<ModelNodeDescription> nodes;
-
-    std::unordered_map<std::string, AllocatedImage> images;
+    std::vector<AllocatedImage> images;
 
     AllocatedBuffer materialDataBuffer;
     DescriptorAllocatorGrowable descriptorPool;

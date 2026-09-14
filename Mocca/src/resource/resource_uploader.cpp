@@ -134,7 +134,6 @@ AllocatedImage ResourceUploader::uploadImage(
     immediateSubmit(
         [&](VkCommandBuffer cmd)
         {
-            // Transition UNDEFINED -> TRANSFER_DST
             transitionImage(cmd, newImage.getImage(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
             VkBufferImageCopy copyRegion{

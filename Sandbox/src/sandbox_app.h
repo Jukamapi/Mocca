@@ -28,15 +28,15 @@ public:
 
     void onInit() override
     {
-        auto structureModel = m_assetManager->loadModel("structure.glb");
+        auto helmetModel = m_assetManager->loadModel("DamagedHelmet.glb");
 
-        if(structureModel)
+        if(helmetModel)
         {
-            auto structureNode = m_scene->instantiate(structureModel);
-            m_scene->addRootNode("structure", structureNode);
+            auto helmetNode = m_scene->instantiate(helmetModel);
+            m_scene->addRootNode("helmet", helmetNode);
         }
 
-        m_scene->getCamera().position = glm::vec3(30.0f, 0.0f, -85.0f);
+        m_scene->getCamera().position = glm::vec3(1.0f, 0.0f, 0.0f);
         m_cameraController = std::make_unique<CameraController>(m_scene->getCamera());
 
 
@@ -64,7 +64,7 @@ public:
         static float time = 0.0f;
         time += deltaTime;
         // suzanne spinning
-        if(auto suzanne = m_scene->getNode("Suzanne"))
+        if(auto helmet = m_scene->getNode("helmet"))
         {
             glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, 0.0f));
 
@@ -72,7 +72,7 @@ public:
 
             glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
 
-            suzanne->setLocalTransform(translation * rotation * scale);
+            helmet->setLocalTransform(translation * rotation * scale);
         }
     }
 
