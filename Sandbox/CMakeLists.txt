@@ -1,10 +1,20 @@
 add_executable(sandbox
     src/main.cpp
+
     src/sandbox_app.h
+    src/sandbox_app.cpp
+
     src/experiments/imgui_feature.h
+    src/experiments/imgui_feature.cpp
+
     src/experiments/test_feature.h
+    src/experiments/test_feature.cpp
+
     src/experiments/triangle_feature.h
+    src/experiments/triangle_feature.cpp
+
     src/experiments/mesh_feature.h
+    src/experiments/mesh_feature.cpp
 )
 target_include_directories(sandbox PRIVATE src)
 
