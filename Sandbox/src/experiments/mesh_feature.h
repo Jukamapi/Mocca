@@ -14,6 +14,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
+#include <numeric>
+
 // TODO MOCCA: Split a lot of the .h into .cpp files as well.
 
 // TODO MOCCA: Improve the drawing of opaque/transparent objects to utilize hardware culling, overall change the whole
@@ -53,8 +55,8 @@ public:
                 .fragCode = fragShader,
                 .descriptorLayouts = setLayouts,
                 .pushConstants = {bufferRange},
-                .cullMode = VK_CULL_MODE_NONE,
-                .frontFace = VK_FRONT_FACE_CLOCKWISE,
+                .cullMode = VK_CULL_MODE_BACK_BIT,
+                .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
                 .enableDepthTest = true,
                 .enableDepthWrite = true,
                 .blendMode = BlendMode::None,
@@ -71,10 +73,10 @@ public:
                 .descriptorLayouts = setLayouts,
                 .pushConstants = {bufferRange},
                 .cullMode = VK_CULL_MODE_NONE,
-                .frontFace = VK_FRONT_FACE_CLOCKWISE,
+                .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
                 .enableDepthTest = true,
                 .enableDepthWrite = false,
-                .blendMode = BlendMode::Additive,
+                .blendMode = BlendMode::Alpha,
             }
         );
     }
@@ -112,8 +114,54 @@ private:
         const std::vector<RenderObject>& objects
     )
     {
-        if(objects.empty())
-            return;
+        bool isTransparent = (pipeline == m_transparentPipeline);
+
+        m_sortIndices.resize(objects.size());
+        std::iota(m_sortIndices.begin(), m_sortIndices.end(), 0);
+
+        MaterialInstance* defaultMaterial = &m_assetManager.getDefaultMaterial();
+
+        if(isTransparent)
+        {
+            glm::vec3 cameraPos = m_scene->getCamera().position;
+
+            std::sort(
+                m_sortIndices.begin(),
+                m_sortIndices.end(),
+                [&](uint32_t a, uint32_t b)
+                {
+                    float distA = glm::length2(glm::vec3(objects[a].transform[3]) - cameraPos);
+                    float distB = glm::length2(glm::vec3(objects[b].transform[3]) - cameraPos);
+                    return distA > distB;
+                }
+            );
+        }
+        else
+        {
+            std::sort(
+                m_sortIndices.begin(),
+                m_sortIndices.end(),
+                [&](uint32_t a, uint32_t b)
+                {
+                    const auto& objA = objects[a];
+                    const auto& objB = objects[b];
+
+                    bool doubleSidedA = objA.material ? objA.material->doubleSided : false;
+                    bool doubleSidedB = objB.material ? objB.material->doubleSided : false;
+
+                    if(doubleSidedA != doubleSidedB)
+                        return doubleSidedA < doubleSidedB;
+
+                    VkDescriptorSet setA = objA.material ? objA.material->materialSet : defaultMaterial->materialSet;
+                    VkDescriptorSet setB = objB.material ? objB.material->materialSet : defaultMaterial->materialSet;
+
+                    if(setA != setB)
+                        return setA < setB;
+
+                    return objA.indexBuffer < objB.indexBuffer;
+                }
+            );
+        }
 
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getHandle());
 
@@ -128,16 +176,27 @@ private:
             nullptr
         );
 
+        VkCullModeFlags currentCullMode = VK_CULL_MODE_FLAG_BITS_MAX_ENUM;
         VkDescriptorSet currentMaterialSet = VK_NULL_HANDLE;
         VkBuffer currentIndexBuffer = VK_NULL_HANDLE;
 
-        for(const auto& obj : objects)
+        for(uint32_t idx : m_sortIndices)
         {
+            const auto& obj = objects[idx];
+
             MaterialInstance* material = obj.material ? obj.material : &m_assetManager.getDefaultMaterial();
+
+            VkCullModeFlags targetCull = material->doubleSided ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
+            if(targetCull != currentCullMode)
+            {
+                currentCullMode = targetCull;
+                vkCmdSetCullMode(cmd, currentCullMode);
+            }
 
             if(material->materialSet != currentMaterialSet)
             {
                 currentMaterialSet = material->materialSet;
+
                 vkCmdBindDescriptorSets(
                     cmd,
                     VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -153,6 +212,7 @@ private:
             if(obj.indexBuffer != currentIndexBuffer)
             {
                 currentIndexBuffer = obj.indexBuffer;
+
                 vkCmdBindIndexBuffer(cmd, currentIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
             }
 
@@ -167,10 +227,10 @@ private:
                 &pushConstants
             );
 
+            // TODO MOCCA: implement vkCmdDrawIndexedIndirect
             vkCmdDrawIndexed(cmd, obj.indexCount, 1, obj.firstIndex, 0, 0);
         }
     }
-
 
     Renderer& m_renderer;
     AssetManager& m_assetManager;
@@ -181,4 +241,6 @@ private:
 
     GraphicsPipeline* m_opaquePipeline{nullptr};
     GraphicsPipeline* m_transparentPipeline{nullptr};
+
+    std::vector<uint32_t> m_sortIndices;
 };

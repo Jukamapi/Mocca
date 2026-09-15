@@ -85,14 +85,15 @@ AssetManager::AssetManager(
         .dataBufferOffset = 0,
     };
 
-    m_defaultMaterial = createMaterial(MaterialPass::MainColor, defaultResources);
+    m_defaultMaterial = createMaterial(MaterialPass::MainColor, defaultResources, false);
 }
 
-MaterialInstance AssetManager::createMaterial(MaterialPass pass, const MaterialResources& resources)
+MaterialInstance AssetManager::createMaterial(MaterialPass pass, const MaterialResources& resources, bool doubleSided)
 {
     MaterialInstance matInstance;
     matInstance.passType = pass;
     matInstance.materialSet = m_materialAllocator.allocate(m_materialLayout);
+    matInstance.doubleSided = doubleSided;
 
     DescriptorWriter(m_device)
         .writeBuffer(
@@ -465,7 +466,9 @@ std::shared_ptr<ModelAsset> AssetManager::loadModel(const std::filesystem::path&
                 }
             }
 
-            model->materials.push_back(std::make_shared<MaterialInstance>(createMaterial(passType, materialResources)));
+            model->materials.push_back(
+                std::make_shared<MaterialInstance>(createMaterial(passType, materialResources, mat.doubleSided))
+            );
 
             dataIndex++;
         }

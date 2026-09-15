@@ -48,8 +48,7 @@ public:
     ~GraphicsPipeline() override = default;
 
 private:
-    inline static constexpr std::array<VkDynamicState, 2> m_dynamicStates{
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR,
+    inline static constexpr std::array<VkDynamicState, 3> m_dynamicStates{
+        VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, VK_DYNAMIC_STATE_CULL_MODE
     };
 };

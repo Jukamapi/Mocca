@@ -50,7 +50,7 @@ public:
 
     void initDefaultTextures();
 
-    MaterialInstance createMaterial(MaterialPass pass, const MaterialResources& resources);
+    MaterialInstance createMaterial(MaterialPass pass, const MaterialResources& resources, bool doubleSided);
 
     const AllocatedImage& getErrorCheckerboardImage() const
     {

@@ -20,6 +20,7 @@ struct alignas(16) MaterialConstants
 };
 static_assert(sizeof(MaterialConstants) == 256, "MaterialConstants must be 256 bytes");
 
+// TODO MOCCA: add emmissive textures support
 struct MaterialResources
 {
     VkImageView colorImageView{VK_NULL_HANDLE};
@@ -34,4 +35,5 @@ struct MaterialInstance
 {
     VkDescriptorSet materialSet{VK_NULL_HANDLE};
     MaterialPass passType{MaterialPass::MainColor};
+    bool doubleSided{false};
 };

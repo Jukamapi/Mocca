@@ -29,5 +29,6 @@ public:
     virtual RenderPassType getType() const = 0;
 
 private:
-    bool m_isEnabled = true;
+    bool m_isEnabled{true};
+    float gpuTimeMs{0.0f};
 };
