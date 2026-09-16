@@ -29,6 +29,14 @@ void SandboxApp::onInit()
         m_scene->addRootNode("structure", structureNode);
     }
 
+    auto helmetModel = m_assetManager->loadModel("DamagedHelmet.glb");
+
+    if(helmetModel)
+    {
+        auto helmetNode = m_scene->instantiate(helmetModel);
+        m_scene->addRootNode("helmet", helmetNode);
+    }
+
     m_scene->getCamera().position = glm::vec3(1.0f, 0.0f, 0.0f);
     m_cameraController = std::make_unique<CameraController>(m_scene->getCamera());
 

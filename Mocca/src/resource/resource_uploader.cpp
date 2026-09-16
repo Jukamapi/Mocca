@@ -114,22 +114,20 @@ AllocatedImage ResourceUploader::uploadImage(
     const void* data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped
 )
 {
-    // TODO MOCCA: implement the mip levels, not just level 0
+    VkImageUsageFlags imageUsage = usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+    if(mipmapped)
+    {
+        imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    }
+
     const size_t dataSize = size.depth * size.width * size.height * 4;
 
     AllocatedBuffer staging{m_allocator, dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY};
 
     std::memcpy(staging.getMappedData(), data, dataSize);
 
-    AllocatedImage newImage(
-        m_device,
-        m_allocator,
-        size,
-        format,
-        usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-        VK_IMAGE_ASPECT_COLOR_BIT,
-        mipmapped
-    );
+    AllocatedImage newImage(m_device, m_allocator, size, format, imageUsage, VK_IMAGE_ASPECT_COLOR_BIT, mipmapped);
 
     immediateSubmit(
         [&](VkCommandBuffer cmd)
@@ -154,12 +152,19 @@ AllocatedImage ResourceUploader::uploadImage(
                 &copyRegion
             );
 
-            transitionImage(
-                cmd,
-                newImage.getImage(),
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            );
+            if(mipmapped)
+            {
+                generateMipmaps(cmd, newImage.getImage(), {newImage.getExtent().width, newImage.getExtent().height});
+            }
+            else
+            {
+                transitionImage(
+                    cmd,
+                    newImage.getImage(),
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                );
+            }
         }
     );
 

@@ -636,8 +636,8 @@ std::optional<AllocatedImage> AssetManager::loadImage(
     {
         VkExtent3D imageSize{.width = static_cast<uint32_t>(w), .height = static_cast<uint32_t>(h), .depth = 1};
 
-        newImage = m_resourceUploader
-                       .uploadImage(data, imageSize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, false);
+        newImage =
+            m_resourceUploader.uploadImage(data, imageSize, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, true);
     };
 
     std::visit(
