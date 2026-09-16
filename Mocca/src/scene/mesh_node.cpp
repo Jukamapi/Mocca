@@ -11,6 +11,7 @@ void MeshNode::draw(DrawContext& ctx)
                 .firstIndex = surface.startIndex,
                 .indexBuffer = m_mesh->meshBuffers.indexBuffer.getBuffer(),
                 .material = surface.material.get(),
+                .bounds = surface.bounds,
                 .transform = m_worldTransform,
                 .vertexBufferAddress = m_mesh->meshBuffers.vertexBufferAddress
             };

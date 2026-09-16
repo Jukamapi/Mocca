@@ -2,6 +2,7 @@
 
 #include <volk.h>
 #include <glm/mat4x4.hpp>
+
 #include <vector>
 
 struct MaterialInstance;
@@ -12,6 +13,13 @@ struct GPUDrawPushConstants
     VkDeviceAddress vertexBuffer;
 };
 
+struct Bounds
+{
+    glm::vec3 origin;
+    float sphereRadius;
+    glm::vec3 extents;
+};
+
 struct RenderObject
 {
     uint32_t indexCount{0};
@@ -19,7 +27,7 @@ struct RenderObject
     VkBuffer indexBuffer{VK_NULL_HANDLE};
 
     MaterialInstance* material{nullptr};
-
+    Bounds bounds;
     glm::mat4 transform{1.0f};
     VkDeviceAddress vertexBufferAddress{0};
 };

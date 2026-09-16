@@ -3,6 +3,10 @@
 #include "mesh_node.h"
 #include "resource/model_asset.h"
 
+#include <glm/vec3.hpp>
+
+#include <array>
+
 
 void Scene::addRootNode(const std::string& name, std::shared_ptr<Node> node)
 {
@@ -96,4 +100,44 @@ std::shared_ptr<Node> Scene::instantiate(const std::shared_ptr<ModelAsset>& mode
     modelRoot->updateTransforms();
 
     return modelRoot;
+}
+
+bool Scene::isVisible(const RenderObject& obj, const glm::mat4& viewProj) const
+{
+    static constexpr std::array<glm::vec3, 8> corners{
+        glm::vec3{1, 1, 1},
+        glm::vec3{1, 1, -1},
+        glm::vec3{1, -1, 1},
+        glm::vec3{1, -1, -1},
+        glm::vec3{-1, 1, 1},
+        glm::vec3{-1, 1, -1},
+        glm::vec3{-1, -1, 1},
+        glm::vec3{-1, -1, -1},
+    };
+
+    glm::mat4 mvp = viewProj * obj.transform;
+
+    glm::vec3 min = {1.5, 1.5, 1.5};
+    glm::vec3 max = {-1.5, -1.5, -1.5};
+
+    for(int c = 0; c < 8; c++)
+    {
+        glm::vec4 v = mvp * glm::vec4(obj.bounds.origin + (corners[c] * obj.bounds.extents), 1.f);
+
+        v.x = v.x / v.w;
+        v.y = v.y / v.w;
+        v.z = v.z / v.w;
+
+        min = glm::min(glm::vec3{v.x, v.y, v.z}, min);
+        max = glm::max(glm::vec3{v.x, v.y, v.z}, max);
+    }
+
+    if(min.z > 1.f || max.z < 0.f || min.x > 1.f || max.x < -1.f || min.y > 1.f || max.y < -1.f)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }

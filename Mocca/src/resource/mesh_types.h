@@ -1,6 +1,7 @@
 #pragma once
 
 #include "material_types.h"
+#include "renderer/draw_types.h"
 #include "vulkan/allocated_buffer.h"
 
 
@@ -31,6 +32,7 @@ struct GeoSurface
 {
     uint32_t startIndex;
     uint32_t count;
+    Bounds bounds;
     std::shared_ptr<MaterialInstance> material;
 };
 

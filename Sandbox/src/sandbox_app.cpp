@@ -21,12 +21,12 @@ SandboxApp::SandboxApp(uint32_t width, uint32_t height, const std::string& title
 
 void SandboxApp::onInit()
 {
-    auto helmetModel = m_assetManager->loadModel("DamagedHelmet.glb");
+    auto structureModel = m_assetManager->loadModel("structure.glb");
 
-    if(helmetModel)
+    if(structureModel)
     {
-        auto helmetNode = m_scene->instantiate(helmetModel);
-        m_scene->addRootNode("helmet", helmetNode);
+        auto structureNode = m_scene->instantiate(structureModel);
+        m_scene->addRootNode("structure", structureNode);
     }
 
     m_scene->getCamera().position = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -56,7 +56,7 @@ void SandboxApp::onTick(float deltaTime)
 
     static float time = 0.0f;
     time += deltaTime;
-    // suzanne spinning
+    // helm spinning
     if(auto helmet = m_scene->getNode("helmet"))
     {
         glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, 0.0f));

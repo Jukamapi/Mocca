@@ -43,6 +43,8 @@ public:
 
     std::shared_ptr<Node> instantiate(const std::shared_ptr<ModelAsset>& model, bool registerNamedNodes = true);
 
+    bool isVisible(const RenderObject& obj, const glm::mat4& viewProj) const;
+
 private:
     std::vector<std::shared_ptr<Node>> m_rootNodes;
     std::unordered_map<std::string, std::shared_ptr<Node>> m_nodeRegistry;

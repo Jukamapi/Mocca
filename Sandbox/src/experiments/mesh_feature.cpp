@@ -12,8 +12,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include <numeric>
-
 MeshFeature::MeshFeature(Renderer& renderer, AssetManager& assetManager, const Scene& scene)
     : m_renderer(renderer),
       m_assetManager(assetManager),
@@ -103,8 +101,19 @@ void MeshFeature::renderObjects(
 {
     bool isTransparent = (pipeline == m_transparentPipeline);
 
-    m_sortIndices.resize(objects.size());
-    std::iota(m_sortIndices.begin(), m_sortIndices.end(), 0);
+    float aspectRatio = (float)m_drawExtent.width / (float)m_drawExtent.height;
+    glm::mat4 viewProj = m_scene->getCamera().getProjectionMatrix(aspectRatio) * m_scene->getCamera().getViewMatrix();
+
+    m_sortIndices.clear();
+    m_sortIndices.reserve(objects.size());
+
+    for(uint32_t i = 0; i < objects.size(); ++i)
+    {
+        if(m_scene->isVisible(objects[i], viewProj))
+        {
+            m_sortIndices.push_back(i);
+        }
+    }
 
     MaterialInstance* defaultMaterial = &m_assetManager.getDefaultMaterial();
 
